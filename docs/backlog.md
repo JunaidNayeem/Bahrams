@@ -50,14 +50,14 @@ week 6.
 
 ### PLT: Platform foundations
 
-| ID     | Story                                                                     | Acceptance criteria                                                                                                                | MoSCoW | Sprint |
-| ------ | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------ | ------ |
-| PLT-01 | As an engineer I can run the whole stack locally with one set of commands | `npm ci`, `npx supabase start`, `npm run db:reset`, `npm run dev` give a working site on :3020 with seed data; README documents it | M      | K / 0  |
-| PLT-02 | As an engineer every PR is checked automatically                          | CI runs prettier, lint, typecheck, Vitest, DB reset, build and mobile smoke e2e; failures upload the Playwright report             | M      | K / 0  |
-| PLT-03 | As the owner I have a weekly off-site backup                              | Encrypted `pg_dump` artifact weekly with 90-day retention; restore rehearsed once before launch                                    | M      | K / 6  |
-| PLT-04 | As a shopper I am protected by sane security defaults                     | CSP, HSTS, nosniff, frame-ancestors none, Referrer-Policy, Permissions-Policy on every response; no `X-Powered-By`                 | M      | K / 0  |
-| PLT-05 | As an engineer, enums and money rules have one source of truth            | `src/lib/domain/enums.ts` mirrored by Postgres enums; money helpers in paise with unit tests                                       | M      | K / 1  |
-| PLT-06 | As an operator I can see the app is up                                    | `/api/health` returns `{status:"ok"}` uncached; external uptime monitor configured                                                 | S      | K / 6  |
+| ID     | Story                                                                     | Acceptance criteria                                                                                                                                                                                                  | MoSCoW | Sprint |
+| ------ | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ------ |
+| PLT-01 | As an engineer I can run the whole stack locally with one set of commands | `npm ci`, a filled `.env.local` and `npm run dev` give a working site on :3020 against the hosted demo project (`db:push -- --include-seed` + `db:media -- --allow-remote` set up an empty one); README documents it | M      | K / 0  |
+| PLT-02 | As an engineer every PR is checked automatically                          | CI runs prettier, lint, typecheck, Vitest, DB reset, build and mobile smoke e2e; failures upload the Playwright report                                                                                               | M      | K / 0  |
+| PLT-03 | As the owner I have a weekly off-site backup                              | Encrypted `pg_dump` artifact weekly with 90-day retention; restore rehearsed once before launch                                                                                                                      | M      | K / 6  |
+| PLT-04 | As a shopper I am protected by sane security defaults                     | CSP, HSTS, nosniff, frame-ancestors none, Referrer-Policy, Permissions-Policy on every response; no `X-Powered-By`                                                                                                   | M      | K / 0  |
+| PLT-05 | As an engineer, enums and money rules have one source of truth            | `src/lib/domain/enums.ts` mirrored by Postgres enums; money helpers in paise with unit tests                                                                                                                         | M      | K / 1  |
+| PLT-06 | As an operator I can see the app is up                                    | `/api/health` returns `{status:"ok"}` uncached; external uptime monitor configured                                                                                                                                   | S      | K / 6  |
 
 ### DS: Brand and design system
 

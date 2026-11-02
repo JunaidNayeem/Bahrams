@@ -12,9 +12,8 @@
     "test:watch": "vitest",
     "e2e": "playwright test",
     "format": "prettier --write .",
-    "db:start": "supabase start",
-    "db:reset": "supabase db reset",
-    "db:types": "supabase gen types typescript --local > src/lib/db/database.types.ts",
+    "db:push": "node --env-file=.env.local scripts/db-push.mjs",
+    "db:types": "supabase gen types typescript --project-id csduibahmolbagejicfq --schema public > src/lib/db/database.types.ts",
     "db:media": "node --env-file=.env.local scripts/seed-sample-media.mjs"
   },
   "dependencies": {

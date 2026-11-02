@@ -1,16 +1,14 @@
 # Client demo script
 
 A 20-minute walkthrough of the storefront and admin panel, before payments are integrated.
-All data is local sample data; product photos are generated placeholders until the shoot.
+All data is sample data in the hosted Supabase demo project (42 orders, 19 products, 12 customers);
+product photos are generated placeholders until the shoot.
 
 ## Before the demo
 
-```bash
-npx supabase start          # if Docker was restarted
-npm run db:reset            # clean demo data (42 orders, 19 products, 12 customers)
-npm run db:media            # sample product photos
-npm run dev                 # restart so no cached pages from earlier testing remain
-```
+- The day before: open the site once. The Supabase Free plan pauses a project after 7 days idle.
+- Undo any test edits made while rehearsing (prices, hidden home sections) from the admin panel.
+- Restart `npm run dev` so no cached pages from earlier testing remain.
 
 Store: http://localhost:3020 · Admin: http://localhost:3020/admin
 Owner login: `owner@bahramsilks.local` / `bahram-local-dev` (a second tab with

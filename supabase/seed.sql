@@ -1,8 +1,8 @@
--- Local development seed. EVERYTHING HERE IS SAMPLE DATA.
+-- Demo seed (hosted demo project and CI). EVERYTHING HERE IS SAMPLE DATA.
 -- Weavers are fictional and flagged is_sample; label numbers contain "SAMPLE"; users use the
 -- .local domain. Never load this file into staging or production.
 --
--- Local sign-in (OTP mail lands in Mailpit, http://127.0.0.1:54324):
+-- Demo sign-in:
 --   owner@bahramsilks.local       staff: owner      password: bahram-local-dev
 --   fulfilment@bahramsilks.local  staff: fulfilment password: bahram-local-dev
 --   asha@shopper.local            shopper with a delivered order

@@ -13,7 +13,8 @@ building. Backlog and decisions live in `docs/`.
   `cookies()` are async, caching uses `"use cache"` + `cacheLife`/`cacheTag`). Check
   `node_modules/next/dist/docs/` before using an API you are unsure of.
 - Supabase: Postgres + RLS, Auth (email OTP for shoppers; staff roles), Storage (product media).
-  Local dev via `npx supabase start` (Docker). Migrations in `supabase/migrations/`, seed in `supabase/seed.sql`.
+  Hosted demo project `csduibahmolbagejicfq` for dev (no Docker; CI alone runs a throwaway stack).
+  Migrations in `supabase/migrations/` (apply with `npm run db:push`), seed in `supabase/seed.sql`.
 - Tailwind CSS v4 (tokens in `src/app/globals.css` via `@theme`), shadcn-style primitives on `radix-ui`.
 - Forms: React Hook Form + Zod 4. Tables: TanStack Table. Charts: Recharts. Rich text: Tiptap.
 - Payments: Razorpay **test mode only** until hosting moves off Vercel Hobby (non-commercial terms).
@@ -68,7 +69,7 @@ npm run lint           # eslint
 npm run typecheck      # tsc --noEmit
 npm test               # vitest run
 npm run e2e            # playwright
-npx supabase start     # local Postgres/Auth/Storage in Docker
-npx supabase db reset  # re-apply migrations + seed
-npm run db:types       # regenerate src/lib/db/database.types.ts from local DB
+npm run db:push        # apply pending migrations to the hosted project (-- --dry-run first)
+npm run db:types       # regenerate src/lib/db/database.types.ts from the hosted project
+npm run db:media -- --allow-remote  # upload sample product photos (demo project only)
 ```

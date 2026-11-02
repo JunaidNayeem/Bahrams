@@ -52,7 +52,7 @@ Vercel Hobby is non-commercial only ([ADR 0004](../adr/0004-payments-test-mode-a
   sha256sum -c bahram-silks-<stamp>.dump.gpg.sha256              # integrity of the download
   gpg --decrypt bahram-silks-<stamp>.dump.gpg > backup.dump      # asks for BACKUP_PASSPHRASE
   pg_restore --no-owner --no-privileges --clean --if-exists \
-    --dbname "postgresql://postgres:postgres@127.0.0.1:54322/postgres" backup.dump
+    --dbname "<Session pooler URI of a scratch Supabase project>" backup.dump
   ```
 
   Restoring a full dump into a fresh Supabase project can conflict on Supabase-managed schemas

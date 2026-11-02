@@ -8,7 +8,6 @@ needs a real browser, real routing or a real database.
 
 ```bash
 npx playwright install chromium          # once per machine
-npx supabase start                       # local Postgres/Auth/Storage (Docker)
 npm run e2e                              # both projects; starts `npm run dev` or reuses it
 npx playwright test --project=mobile-chrome          # what CI runs
 npx playwright test e2e/smoke.spec.ts --ui           # debug interactively
@@ -31,8 +30,9 @@ npx playwright show-report                           # last HTML report
 - File per journey: `smoke.spec.ts`, `catalogue.spec.ts`, `checkout.spec.ts`, `admin-orders.spec.ts`.
 - Select by role and accessible name (`getByRole("link", { name: /bahram silks/i })`), never by CSS
   class. If a test cannot find an element by role, that is usually an accessibility bug to fix.
-- Data comes from `supabase/seed.sql`; reset with `npm run db:reset` before a full run. Tests that
-  buy a one-of-a-kind piece must create their own product or reset afterwards, because the seeded
+- Locally, tests run against the shared hosted demo project (data from `supabase/seed.sql`); CI uses
+  a fresh Supabase stack on the runner. Tests must not leave changes behind in the demo data, and
+  tests that buy a one-of-a-kind piece must create their own product, because the seeded
   quantity-1 piece can be sold only once.
 - Payments use Razorpay **test mode** only (test cards/UPI IDs from Razorpay's docs). Never put live
   keys in a test environment.

@@ -127,9 +127,9 @@ approved, pickup scheduled, received, QC, then refund to source, store credit or
 
 ## Environments
 
-| Environment | App                                    | Database                    | Payments                                             |
-| ----------- | -------------------------------------- | --------------------------- | ---------------------------------------------------- |
-| Local       | `npm run dev` on http://localhost:3020 | Supabase CLI in Docker      | Razorpay test keys                                   |
-| CI          | `next build` + `next start`            | Supabase CLI in the runner  | Placeholder test keys (smoke tests do not pay)       |
-| Preview     | Vercel preview deploys                 | Staging Supabase project    | Razorpay test keys                                   |
-| Production  | Vercel (Pro before live sales)         | Production Supabase project | Test keys until [going live](runbooks/going-live.md) |
+| Environment | App                                    | Database                     | Payments                                             |
+| ----------- | -------------------------------------- | ---------------------------- | ---------------------------------------------------- |
+| Local       | `npm run dev` on http://localhost:3020 | Hosted demo Supabase project | Razorpay test keys                                   |
+| CI          | `next build` + `next start`            | Supabase CLI in the runner   | Placeholder test keys (smoke tests do not pay)       |
+| Preview     | Vercel preview deploys                 | Staging Supabase project     | Razorpay test keys                                   |
+| Production  | Vercel (Pro before live sales)         | Production Supabase project  | Test keys until [going live](runbooks/going-live.md) |
