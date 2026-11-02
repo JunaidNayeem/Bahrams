@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v4
         with:
@@ -57,7 +57,7 @@ jobs:
       RAZORPAY_WEBHOOK_SECRET: ci-placeholder-webhook-secret
       CRON_SECRET: ci-placeholder-cron-secret
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v4
         with:
