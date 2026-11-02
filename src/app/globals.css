@@ -1,0 +1,306 @@
+/*
+ * Bahram Silks design tokens, shared by the storefront and /admin.
+ *
+ * Layers:
+ *   1. Brand palette (@theme static): raw colours, always emitted as --color-* variables.
+ *   2. Semantic tokens (:root): shadcn-compatible names mapped to palette steps. A future dark
+ *      theme only needs to remap these under [data-theme="dark"]; components never use raw hex.
+ *   3. @theme inline: exposes semantic tokens, fonts and radii as Tailwind utilities.
+ *
+ * src/app/styleguide/tokens.ts mirrors layers 1 and 2 for the styleguide page and the contrast
+ * tests (tokens.test.ts). Change both files together.
+ *
+ * Gold rule: gold-500 and lighter are decorative (zari lines, stars, borders) and fail text
+ * contrast on ivory. Use `text-gold-text` (gold-700, 5.7:1 on the page background) for any
+ * gold-coloured words.
+ */
+
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* Dark theme is not designed yet; the variant exists so shadcn components compile unchanged. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* 1. Brand palette ------------------------------------------------------------------------ */
+@theme static {
+  /* gold */
+  --color-gold-50: #fbf7ec;
+  --color-gold-100: #f5ebcf;
+  --color-gold-200: #ebd6a0;
+  --color-gold-300: #dfbe6e;
+  --color-gold-400: #d2a646;
+  --color-gold-500: #c08f2e;
+  --color-gold-600: #a37424;
+  --color-gold-700: #835a1f;
+  --color-gold-800: #6c4a1f;
+  --color-gold-900: #5b3e1e;
+  --color-gold-950: #34210e;
+
+  /* madder */
+  --color-madder-50: #fdf3f2;
+  --color-madder-100: #fbe4e1;
+  --color-madder-200: #f6cbc6;
+  --color-madder-300: #eea49c;
+  --color-madder-400: #e27166;
+  --color-madder-500: #d0473b;
+  --color-madder-600: #b4302a;
+  --color-madder-700: #8e2420;
+  --color-madder-800: #75201d;
+  --color-madder-900: #611e1c;
+  --color-madder-950: #360c0b;
+
+  /* ivory */
+  --color-ivory-50: #fffdf8;
+  --color-ivory-100: #fbf7ee;
+  --color-ivory-200: #f4edde;
+  --color-ivory-300: #eadfc8;
+
+  /* indigo */
+  --color-indigo-50: #eff1f8;
+  --color-indigo-100: #dde2f1;
+  --color-indigo-200: #bcc5e3;
+  --color-indigo-300: #93a1cf;
+  --color-indigo-400: #6b7cb8;
+  --color-indigo-500: #4e5f9e;
+  --color-indigo-600: #3d4c85;
+  --color-indigo-700: #323e6c;
+  --color-indigo-800: #2a3358;
+  --color-indigo-900: #232a47;
+  --color-indigo-950: #15192c;
+
+  /* leaf */
+  --color-leaf-50: #f1f7ee;
+  --color-leaf-100: #deedd6;
+  --color-leaf-200: #bedbaf;
+  --color-leaf-300: #95c27e;
+  --color-leaf-400: #6fa556;
+  --color-leaf-500: #4f8a3a;
+  --color-leaf-600: #3e6f2e;
+  --color-leaf-700: #335a27;
+  --color-leaf-800: #2b4822;
+  --color-leaf-900: #243c1e;
+  --color-leaf-950: #11210d;
+
+  /* charcoal */
+  --color-charcoal-50: #f7f5f2;
+  --color-charcoal-100: #ede9e4;
+  --color-charcoal-200: #dad4cc;
+  --color-charcoal-300: #b9b0a5;
+  --color-charcoal-400: #8a8176;
+  --color-charcoal-500: #6f675e;
+  --color-charcoal-600: #5a534c;
+  --color-charcoal-700: #47413b;
+  --color-charcoal-800: #38332e;
+  --color-charcoal-900: #26221f;
+  --color-charcoal-950: #171412;
+}
+
+/* 2. Semantic tokens ---------------------------------------------------------------------- */
+:root {
+  color-scheme: light;
+  --radius: 0.375rem;
+
+  --background: var(--color-ivory-100);
+  --foreground: var(--color-charcoal-900);
+  --card: var(--color-ivory-50);
+  --card-foreground: var(--color-charcoal-900);
+  --popover: var(--color-ivory-50);
+  --popover-foreground: var(--color-charcoal-900);
+  --primary: var(--color-madder-700);
+  --primary-foreground: var(--color-ivory-50);
+  --secondary: var(--color-ivory-200);
+  --secondary-foreground: var(--color-charcoal-900);
+  --muted: var(--color-ivory-200);
+  --muted-foreground: var(--color-charcoal-600);
+  --accent: var(--color-gold-100);
+  --accent-foreground: var(--color-charcoal-900);
+  --destructive: var(--color-madder-600);
+  --destructive-foreground: var(--color-ivory-50);
+  --success: var(--color-leaf-700);
+  --success-foreground: var(--color-ivory-50);
+  --warning: var(--color-gold-700);
+  --warning-foreground: var(--color-ivory-50);
+  --info: var(--color-indigo-600);
+  --info-foreground: var(--color-ivory-50);
+  --gold-text: var(--color-gold-700);
+  --zari: var(--color-gold-500);
+  --border: var(--color-ivory-300);
+  --input: var(--color-charcoal-400);
+  --ring: var(--color-gold-700);
+  --chart-1: var(--color-madder-700);
+  --chart-2: var(--color-gold-600);
+  --chart-3: var(--color-indigo-500);
+  --chart-4: var(--color-leaf-500);
+  --chart-5: var(--color-charcoal-500);
+  --sidebar: var(--color-ivory-200);
+  --sidebar-foreground: var(--color-charcoal-900);
+  --sidebar-primary: var(--color-madder-700);
+  --sidebar-primary-foreground: var(--color-ivory-50);
+  --sidebar-accent: var(--color-gold-100);
+  --sidebar-accent-foreground: var(--color-charcoal-900);
+  --sidebar-border: var(--color-ivory-300);
+  --sidebar-ring: var(--color-gold-700);
+}
+
+/* 3. Tailwind bindings -------------------------------------------------------------------- */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-gold-text: var(--gold-text);
+  --color-zari: var(--zari);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --font-display:
+    var(--font-cormorant), "Cormorant Garamond", ui-serif, Georgia, "Times New Roman", serif;
+  --font-sans:
+    var(--font-inter), "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Noto Sans", sans-serif;
+  --font-devanagari:
+    var(--font-tiro-devanagari), "Tiro Devanagari Hindi", "Noto Serif Devanagari", serif;
+
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 6px);
+}
+
+@theme {
+  /* Display sizes are fluid so headings scale from a 360px phone to desktop without breakpoints. */
+  --text-display-2xl: clamp(2.75rem, 1.95rem + 3.4vw, 4.5rem);
+  --text-display-2xl--line-height: 1.05;
+  --text-display-2xl--letter-spacing: -0.015em;
+  --text-display-xl: clamp(2.25rem, 1.7rem + 2.4vw, 3.5rem);
+  --text-display-xl--line-height: 1.1;
+  --text-display-xl--letter-spacing: -0.01em;
+  --text-display-lg: clamp(1.875rem, 1.5rem + 1.6vw, 2.75rem);
+  --text-display-lg--line-height: 1.15;
+  --text-display-lg--letter-spacing: -0.005em;
+  --text-display-md: clamp(1.5rem, 1.3rem + 0.9vw, 2rem);
+  --text-display-md--line-height: 1.2;
+  --text-display-sm: clamp(1.25rem, 1.15rem + 0.45vw, 1.5rem);
+  --text-display-sm--line-height: 1.25;
+  /* Small tracked capitals above section titles ("The craft", "New arrivals"). */
+  --text-eyebrow: 0.75rem;
+  --text-eyebrow--line-height: 1rem;
+  --text-eyebrow--letter-spacing: 0.16em;
+  --text-eyebrow--font-weight: 600;
+
+  /* Warm, low shadows: tinted with gold-950 rather than black so they sit well on ivory. */
+  --shadow-card: 0 1px 2px rgb(52 33 14 / 0.05), 0 1px 3px rgb(52 33 14 / 0.07);
+  --shadow-raised: 0 2px 4px rgb(52 33 14 / 0.05), 0 6px 16px rgb(52 33 14 / 0.08);
+  --shadow-overlay: 0 8px 24px rgb(52 33 14 / 0.12), 0 24px 56px rgb(52 33 14 / 0.12);
+
+  /* Container widths, used as max-w-prose / max-w-content / max-w-wide. */
+  --container-prose: 42rem;
+  --container-content: 80rem;
+  --container-wide: 96rem;
+
+  --ease-silk: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Page-width wrapper with the standard side gutters. */
+@utility container-page {
+  width: 100%;
+  margin-inline: auto;
+  max-width: var(--container-content);
+  padding-inline: 1rem;
+
+  @media (width >= 40rem) {
+    padding-inline: 1.5rem;
+  }
+
+  @media (width >= 64rem) {
+    padding-inline: 2rem;
+  }
+}
+
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: var(--border);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  :lang(hi) {
+    font-family: var(--font-devanagari);
+  }
+
+  ::selection {
+    background-color: var(--color-gold-200);
+    color: var(--color-charcoal-900);
+  }
+
+  /*
+   * Fallback focus indicator for anything that does not style its own (links in copy, native
+   * elements). Components replace it with ring utilities and outline-none.
+   */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  [hidden]:where(:not([hidden="until-found"])) {
+    display: none !important;
+  }
+}
+
+/* Honour the OS "reduce motion" setting everywhere, including tw-animate-css enter/exit. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

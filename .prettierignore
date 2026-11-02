@@ -1,0 +1,16 @@
+# Generated or vendored
+.next
+node_modules
+coverage
+playwright-report
+test-results
+package-lock.json
+next-env.d.ts
+src/lib/db/database.types.ts
+
+# Supabase CLI state
+supabase/.temp
+supabase/.branches
+
+# The client brief is an exported document; keep it byte-for-byte as received.
+docs/kickoff.md

@@ -1,0 +1,83 @@
+name: Weekly database backup
+
+# Supabase Free has no daily backups, so the production database is dumped here every week.
+# Repository secrets (Settings -> Environments -> production):
+#   SUPABASE_DB_URL    Session-pooler connection string (IPv4; GitHub runners have no IPv6), e.g.
+#                      postgresql://postgres.<ref>:<password>@aws-0-ap-south-1.pooler.supabase.com:5432/postgres
+#   BACKUP_PASSPHRASE  Long random passphrase, also kept in the owner's password manager.
+# The repository must stay private: artifacts are downloadable by anyone with read access.
+# Restore steps: docs/runbooks/going-live.md ("Backups and restore").
+
+on:
+  schedule:
+    # Sundays 21:30 UTC = Monday 03:00 IST, the quietest hour for orders.
+    - cron: "30 21 * * 0"
+  workflow_dispatch:
+
+concurrency:
+  group: db-backup
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    steps:
+      - name: Check secrets
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ] || [ -z "$BACKUP_PASSPHRASE" ]; then
+            echo "::error::SUPABASE_DB_URL and BACKUP_PASSPHRASE secrets must be set"
+            exit 1
+          fi
+
+      - name: Install PostgreSQL 17 client
+        # pg_dump must be at least the server's major version (Supabase runs Postgres 17).
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+            https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-17
+          /usr/lib/postgresql/17/bin/pg_dump --version
+
+      - name: Dump and encrypt
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          umask 077
+          stamp="$(date -u +%Y-%m-%dT%H%MZ)"
+          file="bahram-silks-${stamp}.dump"
+          # Custom format: compressed, and pg_restore can pick individual schemas or tables.
+          /usr/lib/postgresql/17/bin/pg_dump "$SUPABASE_DB_URL" \
+            --format=custom --compress=9 --no-password --file="$file"
+          # The passphrase goes through a file descriptor so it never appears in the process list.
+          gpg --batch --yes --pinentry-mode loopback --passphrase-fd 3 \
+            --symmetric --cipher-algo AES256 --output "${file}.gpg" "$file" \
+            3<<<"$BACKUP_PASSPHRASE"
+          shred -u "$file"
+          sha256sum "${file}.gpg" > "${file}.gpg.sha256"
+          ls -lh "${file}.gpg"
+          echo "BACKUP_FILE=${file}.gpg" >> "$GITHUB_ENV"
+
+      - name: Upload encrypted backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-backup-${{ github.run_id }}
+          path: |
+            ${{ env.BACKUP_FILE }}
+            ${{ env.BACKUP_FILE }}.sha256
+          retention-days: 90
+          if-no-files-found: error
+          # Already compressed by pg_dump and gpg.
+          compression-level: 0
