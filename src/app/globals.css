@@ -293,6 +293,24 @@
   }
 }
 
+/* BrandLoader: weft threads woven across the leaf in turn. Ends fully drawn, so the global
+   reduced-motion rule below leaves a finished mark rather than an empty leaf. */
+.brand-loader__weft {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 0;
+  animation: brand-weave 2.2s cubic-bezier(0.65, 0, 0.35, 1) infinite both;
+}
+
+@keyframes brand-weave {
+  0% {
+    stroke-dashoffset: 100;
+  }
+  45%,
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
 /* Honour the OS "reduce motion" setting everywhere, including tw-animate-css enter/exit. */
 @media (prefers-reduced-motion: reduce) {
   *,

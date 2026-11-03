@@ -1,5 +1,8 @@
+import Image from "next/image";
+
+import { BrandLoader } from "@/components/brand/brand-loader";
+import { BrandMark } from "@/components/brand/brand-mark";
 import { ClaimBadge } from "@/components/brand/claim-badge";
-import { Monogram } from "@/components/brand/monogram";
 import { ProofStrip, WHY_BAHRAM_PROOF_ITEMS } from "@/components/brand/proof-strip";
 import { SectionHeading } from "@/components/brand/section-heading";
 import { StripeBand } from "@/components/brand/stripe-band";
@@ -12,19 +15,45 @@ export function BrandSection() {
   return (
     <StyleguideSection id="brand" title="Brand">
       <Specimen
-        title="Wordmark and monogram"
-        note="Typographic placeholders until a logo concept is commissioned."
+        title="Logo: Peepal on the Ganga"
+        note="Peepal leaf with zari veins above and a woven Ganga below. Below 40px the mark switches to the simplified favicon drawing. Master files in /public/brand; usage in docs/brand/logo.md."
       >
         <div className="flex flex-wrap items-end gap-10">
-          <Wordmark size="lg" />
-          <Wordmark layout="inline" tone="primary" />
-          <Monogram size={56} />
-          <Monogram size={32} />
+          <Image
+            src="/brand/logo-primary.svg"
+            alt="Bahram Silks primary logo"
+            width={240}
+            height={210}
+            unoptimized
+          />
+          <Image
+            src="/brand/logo-horizontal.svg"
+            alt="Bahram Silks horizontal logo"
+            width={294}
+            height={112}
+            unoptimized
+          />
+          <BrandMark size={96} />
+          <BrandMark size={48} />
+          <BrandMark size={32} />
+          <BrandMark size={16} />
+          <BrandMark size={72} tone="mono" />
         </div>
-        <div className="mt-6 flex flex-wrap items-center gap-10 rounded-md bg-charcoal-900 p-6">
+        <div className="mt-6 flex flex-wrap items-center gap-10 rounded-md bg-madder-800 p-6">
+          <BrandMark size={72} tone="reversed" />
           <Wordmark tone="inverse" />
           <Wordmark tone="inverse" layout="inline" size="sm" />
         </div>
+        <div className="mt-6 flex flex-wrap items-end gap-10">
+          <Wordmark size="lg" />
+          <Wordmark layout="inline" tone="primary" />
+        </div>
+      </Specimen>
+      <Specimen
+        title="Loader"
+        note="Weft threads woven across the leaf; static when reduced motion is on."
+      >
+        <BrandLoader />
       </Specimen>
       <Specimen
         title="Zari divider"

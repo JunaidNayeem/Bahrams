@@ -5,9 +5,8 @@ import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 
 /*
- * PLACEHOLDER typographic wordmark until a logo concept is commissioned and chosen (kickoff
- * "Logo direction"). Deliberately text only: no cocoon, loom, spindle or circular-seal shapes,
- * so it cannot be mistaken for the Silk Mark, Handloom Mark or India Handloom Brand logos.
+ * Live-text version of the logo's wordmark (the outlined master is public/brand/logo-*.svg), so
+ * the name stays selectable and crisp at any size. Pair it with <BrandMark> for the full logo.
  */
 
 const wordmarkVariants = cva("inline-flex leading-none select-none", {
@@ -47,7 +46,7 @@ function Wordmark({ layout, size, tone, className, ...props }: WordmarkProps) {
       {...props}
     >
       <span className="sr-only">{siteConfig.name}</span>
-      <span aria-hidden className="font-display font-semibold tracking-[0.01em]">
+      <span aria-hidden className="font-display font-bold tracking-[0.01em]">
         Bahram
       </span>
       <span

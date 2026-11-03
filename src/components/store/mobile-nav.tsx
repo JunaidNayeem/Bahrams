@@ -3,6 +3,7 @@
 import { MenuIcon } from "lucide-react";
 import Link from "next/link";
 
+import { BrandMark } from "@/components/brand/brand-mark";
 import { Wordmark } from "@/components/brand/wordmark";
 import {
   Accordion,
@@ -32,7 +33,8 @@ export function MobileNav({ items }: { items: readonly MegaMenuItem[] }) {
       </SheetTrigger>
       <SheetContent side="left">
         <SheetHeader>
-          <SheetTitle>
+          <SheetTitle className="flex items-center gap-2">
+            <BrandMark size={32} decorative />
             <Wordmark size="sm" layout="inline" />
             <span className="sr-only">Menu</span>
           </SheetTitle>

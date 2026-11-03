@@ -2,6 +2,7 @@ import { SearchIcon, ShoppingBagIcon, UserIcon } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 
+import { BrandMark } from "@/components/brand/brand-mark";
 import { Wordmark } from "@/components/brand/wordmark";
 import { headerNavigation } from "@/config/navigation";
 import { accountUrls, routes } from "@/config/routes";
@@ -31,7 +32,11 @@ export function SiteHeader({ announcement }: { announcement?: string | null }) {
       )}
       <div className="container-page flex h-16 items-center gap-2">
         <MobileNav items={headerNavigation} />
-        <Link href={routes.home} className="mr-auto rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none lg:mr-8">
+        <Link
+          href={routes.home}
+          className="mr-auto flex items-center gap-2 rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none lg:mr-8"
+        >
+          <BrandMark size={36} decorative />
           <Wordmark size="sm" layout="inline" />
           <span className="sr-only">Bahram Silks home</span>
         </Link>
@@ -51,11 +56,16 @@ export function SiteHeader({ announcement }: { announcement?: string | null }) {
                   <div className="flex gap-10 rounded-md border border-border bg-card p-6 shadow-card">
                     {item.groups.map((group) => (
                       <div key={group.label}>
-                        <p className="text-eyebrow text-muted-foreground uppercase">{group.label}</p>
+                        <p className="text-eyebrow text-muted-foreground uppercase">
+                          {group.label}
+                        </p>
                         <ul className="mt-2 space-y-1">
                           {group.links.map((link) => (
                             <li key={link.href}>
-                              <Link href={link.href} className="block py-1 text-sm hover:text-primary hover:underline">
+                              <Link
+                                href={link.href}
+                                className="block py-1 text-sm hover:text-primary hover:underline"
+                              >
                                 {link.label}
                               </Link>
                             </li>

@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { StripeBand } from "@/components/brand/stripe-band";
 import { Wordmark } from "@/components/brand/wordmark";
+import { BrandMark } from "@/components/brand/brand-mark";
 import { footerLegalLinks, footerNavigation } from "@/config/navigation";
 import { routes } from "@/config/routes";
 import { siteConfig } from "@/config/site";
@@ -20,7 +21,10 @@ export async function SiteFooter() {
       <StripeBand pattern="stripe" size="sm" />
       <div className="container-page grid gap-10 py-14 md:grid-cols-[1.4fr_repeat(5,1fr)]">
         <div className="space-y-3">
-          <Wordmark tone="inverse" />
+          <div className="flex items-center gap-3">
+            <BrandMark size={56} tone="reversed" decorative />
+            <Wordmark tone="inverse" />
+          </div>
           <p className="max-w-xs text-sm text-ivory-300">{siteConfig.promise}</p>
         </div>
         {footerNavigation.map((group) => (
@@ -63,9 +67,16 @@ export async function SiteFooter() {
             </p>
           </div>
         </div>
-        <nav aria-label="Legal" className="container-page flex flex-wrap gap-x-5 gap-y-2 pb-10 text-xs">
+        <nav
+          aria-label="Legal"
+          className="container-page flex flex-wrap gap-x-5 gap-y-2 pb-10 text-xs"
+        >
           {footerLegalLinks.map((link) => (
-            <Link key={link.href} href={link.href} className="text-ivory-300 hover:text-ivory-100 hover:underline">
+            <Link
+              key={link.href}
+              href={link.href}
+              className="text-ivory-300 hover:text-ivory-100 hover:underline"
+            >
               {link.label}
             </Link>
           ))}

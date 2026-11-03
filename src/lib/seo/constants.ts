@@ -7,14 +7,14 @@ export const DESCRIPTION_MAX_LENGTH = 155;
 export const TITLE_SEPARATOR = " | ";
 
 /**
- * Default share image (1200x630) and logo for structured data.
- * TODO(client): final brand assets; the brand agent should place them at these paths in /public.
+ * Default share image (1200x630) and logo for structured data, both generated from the logo suite.
+ * TODO(client): swap the share image for a loom photograph after the shoot (and update the alt).
  */
 export const DEFAULT_OG_IMAGE = {
   url: "/og/default.jpg",
   width: 1200,
   height: 630,
-  alt: "Bahram Silks: tussar silk on a handloom in Bhagalpur",
+  alt: "Bahram Silks, the weaving house of Bhagalpur: peepal-leaf logo on madder red",
 } as const;
 
 export const LOGO_PATH = "/brand/logo-512.png";
