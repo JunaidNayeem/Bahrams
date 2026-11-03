@@ -29,7 +29,9 @@ Google will index whatever is on the site. Fix these first, because they make pu
 ## One-time setup
 
 1. **Vercel → Domains:** add `bahramsilk.com` and `www.bahramsilk.com`; set `www` to redirect
-   (308) to the apex. Point DNS at Vercel as it instructs.
+   (308) to the apex. Point DNS at Vercel as it instructs. If the apex redirects to `www` instead,
+   every canonical URL is a redirect: Google shows a grey globe instead of the favicon and reports
+   pages as "Page with redirect". Check with `curl -I https://bahramsilk.com/` (expect 200).
 2. **Vercel → Environment Variables (Production):** `NEXT_PUBLIC_SITE_URL=https://bahramsilk.com`,
    then redeploy (the value is baked into the build).
 3. **Check:** `https://bahramsilk.com/robots.txt` lists `Sitemap: https://bahramsilk.com/sitemap.xml`,
@@ -45,14 +47,24 @@ Google will index whatever is on the site. Fix these first, because they make pu
 8. **Google Merchant Center:** create an account, verify the same domain, and enable free listings.
    Product structured data already includes price, availability, shipping and returns; this is
    what puts products in the Shopping tab and product grids for queries like "silk saree".
-9. **Google Business Profile** for the Bhagalpur shop or workshop (for "silk shop in bhagalpur"),
-   with the website link and photos.
-10. **Bing Webmaster Tools:** import the site from Search Console (covers Bing and DuckDuckGo).
+9. **Google Business Profile** (business.google.com) for the Bhagalpur shop. This, not the
+   website, is what ranks for "best silk in bhagalpur" and "silk shop in bhagalpur" (the map pack).
+   - Name exactly "Bahram Raw Silk"; category "Silk store" (add "Textile mill" or "Saree shop").
+   - Address exactly as on the site and GST record; website `https://bahramsilk.com`; phone.
+   - Opening hours, 10+ real photos (shop front, looms, sarees), products, and a description that
+     names tussar, matka, raw silk sarees and fabric.
+   - Ask every happy customer for a Google review; reply to every review.
+10. **Directory listings with the same name, address and phone (NAP):** IndiaMART, Justdial,
+    TradeIndia and textileinfomedia (competitors in Bhagalpur searches are listed there), plus
+    Instagram, Facebook and YouTube profiles linking to the site. Each one is a citation and a link.
+11. **Bing Webmaster Tools:** import the site from Search Console (covers Bing and DuckDuckGo).
 
 ## After launch
 
 - Weekly for the first two months: Search Console → Pages (anything "not indexed" that should be),
   Enhancements (Product, Breadcrumb, FAQ), and Performance (queries and positions).
-- When the journal or pillar guides are published, add `"articles"` back to `SITEMAP_IDS` in
-  `src/lib/seo/sitemap.ts` and remove `noindex` from those pages.
+- Pillar guides are CMS pages with slug `guides/<slug>` (Admin → Content). Once one is published,
+  `/guides/<slug>` drops its "coming soon" noindex and joins `/sitemap/static.xml` on its own. The
+  Bhagalpur silk guide is live; silk types, Silk Mark and saree care are next. When the journal is
+  published, add `"articles"` back to `SITEMAP_IDS` in `src/lib/seo/sitemap.ts`.
 - Slug changes in the admin create 301 redirects automatically; never delete a live product URL.

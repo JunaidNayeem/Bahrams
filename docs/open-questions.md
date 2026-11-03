@@ -13,15 +13,33 @@ settings, and add a line to the relevant ADR if a decision changed.
   - Blocks: the founding year in copy, the "Heritage seal" logo concept (C) and the `/our-story` page.
   - Default: no founding year anywhere (`siteConfig.foundingYear = null`). **Logo concept C is on hold**;
     concepts A (cocoon monogram) and B (Ganga loom) proceed. Story copy avoids dates.
-- [ ] **Legal entity name, GSTIN, registered address and grievance-officer details**
-  - Blocks: footer seller identity, GST invoices, `/grievance`, Razorpay KYC, legal pages.
-  - Default: placeholders marked `TODO(client)` in `src/config/site.ts` and the `settings` table;
-    invoices cannot be issued in production until set.
+- [x] **Legal entity name, GSTIN, registered address** (answered 2026-11-03, from the letterhead)
+  - Legal name **Bahram Raw Silk** (trading as Bahram Silks). GSTIN **10AAFFB7503A1ZF** (checksum
+    valid; PAN `AAFFB7503A` is a firm's). Mobile **+91-9801616789**. Address Hossainabad, Bounsi
+    Road, Near Jama Masjid, Bhagalpur 812005, Bihar, India.
+  - Letterhead describes the business as "Manufacturers & exporters of handloom, tassar, raw silk,
+    cotton silk, linen silk, dress material, furnishing fabrics, sarees, salwar suit, drapery fabrics,
+    handwoven fabrics". Bankers: Bank of India and Canara Bank, Bhagalpur (for Razorpay KYC).
+  - Set in `src/config/site.ts`, the `legal_entity` and `gst` settings, and the Terms page (v2).
+- [ ] **Grievance officer's name** (designation, email and hours are set)
+  - Blocks: compliance check C2; the E-Commerce Rules 2020 require the name.
+  - Default: the site shows the designation only; set the name in Admin → Settings.
+- [ ] **Address spelling: "Hossainabad" or "Hussainabad"?** The letterhead prints Hussainabad and
+      omits "Near Jama Masjid".
+  - Blocks: Google Business Profile, where the address must match the site and GST record exactly.
+  - Default: Hossainabad, as the client typed it.
+- [ ] **Existing logo**: the letterhead uses a navy "b" monogram and a lowercase "bahram raw silk"
+      wordmark (navy and red). Keep the new loom-leaf mark for the D2C brand, or build on the
+      existing one?
+  - Blocks: final brand assets, favicon, packaging.
+  - Default: the new mark ([docs/brand/logo.md](brand/logo.md)).
 - [ ] **Existing Silk Mark, Handloom Mark or India Handloom Brand registrations**
   - Blocks: which badges can show at launch; the label-number data entry plan.
   - Default: none held. Badges stay off until label numbers are entered ([ADR 0005](adr/0005-compliance-by-design.md)).
     Applications start in week 1.
 - [ ] **Product mix at launch** (sarees only, or also fabric, stoles, dress material, menswear, home furnishing?)
+  - Hint from the letterhead: the business already makes dress material, salwar suits, and
+    furnishing and drapery fabrics, so those routes may be worth opening at launch.
   - Blocks: navigation, collection pages, data model priorities, photography plan.
   - Default: **sarees + fabric by the metre + stoles and dupattas**. Dress material, kurta fabric and
     home furnishing routes exist but stay out of the navigation and sitemap until they have products.
@@ -41,9 +59,9 @@ settings, and add a line to the relevant ADR if a decision changed.
 - [ ] **Who will run operations, support and the admin day to day?**
   - Blocks: staff accounts and roles, training plan, COD confirmation SLA.
   - Default: the seeded local owner account only (`owner@bahramsilks.local`); roles from the brief.
-- [ ] **Domain names and social handles already owned**
-  - Blocks: production URL, email sender domain (SPF/DKIM), social links, Merchant Center.
-  - Default: `bahramsilks.com` and the handles in `src/config/site.ts`, unverified.
+- [ ] **Social handles already owned** (domain answered: `bahramsilk.com`)
+  - Blocks: social links, Merchant Center.
+  - Default: the handles in `src/config/site.ts`, unverified.
 - [ ] **Budget envelope and preference for in-house build vs agency**
   - Blocks: when to move from free tiers to Vercel Pro and Supabase Pro (required before live sales).
   - Default: free tiers through the build ([ADR 0001](adr/0001-stack-nextjs-supabase-free-tier.md)).

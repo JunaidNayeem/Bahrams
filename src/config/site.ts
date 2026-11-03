@@ -18,6 +18,8 @@ export const siteConfig = {
   foundingYear: null as number | null,
   /** Registered seller. The footer and invoices read the `legal_entity` setting instead. */
   legalName: "Bahram Raw Silk",
+  /** Other names people search for; JSON-LD alternateName, which Google uses for the site name. */
+  alternateNames: ["Bahram Raw Silk", "Bahram Silk"],
   gstin: "10AAFFB7503A1ZF",
   /** Seller's state for GST place-of-supply (Bihar, state code 10). */
   sellerState: { name: "Bihar", gstStateCode: "10" },

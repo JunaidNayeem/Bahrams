@@ -105,6 +105,7 @@ export function organizationJsonLd(
     "@type": "Organization" as const,
     "@id": organizationId(),
     name: siteConfig.name,
+    alternateName: siteConfig.alternateNames,
     legalName: siteConfig.legalName,
     taxID: siteConfig.gstin,
     url: siteOrigin(),
@@ -134,6 +135,7 @@ export function websiteJsonLd(): WithContext<WebSiteLd> {
     "@id": websiteId(),
     url: siteOrigin(),
     name: siteConfig.name,
+    alternateName: siteConfig.alternateNames,
     inLanguage: siteConfig.locale,
     publisher: { "@id": organizationId() },
     potentialAction: {

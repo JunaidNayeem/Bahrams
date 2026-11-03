@@ -13,7 +13,7 @@ content writer) · **Legal** (client's lawyer) · **CA** (client's chartered acc
 
 | #   | Check on the platform                                                                                                                               | Owner          | Status                   |
 | --- | --------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ------------------------ |
-| C1  | Footer shows legal entity name, registered address, GSTIN, customer-care email and phone                                                            | Tech + Ops     | Blocked: entity details  |
+| C1  | Footer shows legal entity name, registered address, GSTIN, customer-care email and phone                                                            | Tech + Ops     | Done                     |
 | C2  | `/grievance` names the grievance officer (name, designation, email, phone) and offers a complaint form                                              | Tech + Ops     | Blocked: officer details |
 | C3  | Complaints get a ticket number and an acknowledgement email immediately; admin flags any not acknowledged within **48 hours**                       | Tech           | Todo                     |
 | C4  | Admin flags complaints not resolved within **one month**; dashboard shows breaches                                                                  | Tech           | Todo                     |

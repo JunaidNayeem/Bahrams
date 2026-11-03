@@ -29,7 +29,11 @@ export async function getHomeSections(): Promise<HomeSection[]> {
 
   const now = Date.now();
   return data
-    .filter((s) => (!s.starts_at || Date.parse(s.starts_at) <= now) && (!s.ends_at || Date.parse(s.ends_at) > now))
+    .filter(
+      (s) =>
+        (!s.starts_at || Date.parse(s.starts_at) <= now) &&
+        (!s.ends_at || Date.parse(s.ends_at) > now),
+    )
     .map((s) => ({
       id: s.id,
       type: s.type,
@@ -84,6 +88,25 @@ export async function getPage(slug: string): Promise<CmsPage | null> {
     noindex: data.noindex,
     updatedAt: data.updated_at,
   };
+}
+
+/** Published CMS pages under a path prefix (e.g. "guides/"), for the sitemap. */
+export async function listPublishedPages(
+  prefix: string,
+): Promise<{ slug: string; updatedAt: string }[]> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(CMS_TAG);
+
+  const { data, error } = await createPublicClient()
+    .from("pages")
+    .select("slug, updated_at, noindex, current_version_id")
+    .eq("status", "published")
+    .like("slug", `${prefix}%`);
+  if (error) throw error;
+  return data
+    .filter((p) => p.current_version_id && !p.noindex)
+    .map((p) => ({ slug: p.slug, updatedAt: p.updated_at }));
 }
 
 export interface ApprovedReview {
@@ -154,7 +177,9 @@ export async function listWeavers(slugs?: string[]): Promise<WeaverSummary[]> {
   }));
 }
 
-export async function getWeaver(slug: string): Promise<(WeaverSummary & { specialities: string[] }) | null> {
+export async function getWeaver(
+  slug: string,
+): Promise<(WeaverSummary & { specialities: string[] }) | null> {
   "use cache";
   cacheLife("hours");
   cacheTag(CMS_TAG);

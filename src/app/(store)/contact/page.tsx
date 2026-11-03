@@ -5,29 +5,53 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { routes } from "@/config/routes";
 import { siteConfig } from "@/config/site";
 import { storeJsonLd } from "@/lib/seo/jsonld";
-import { buildMetadata } from "@/lib/seo/metadata";
+import { keywordPageMetadata } from "@/lib/seo/metadata";
 
-export const metadata = buildMetadata({
+// Title and description come from the keyword map ("silk shop in bhagalpur").
+export const metadata = keywordPageMetadata(routes.contact, {
   title: "Contact us",
   description:
     "Talk to Bahram Silks in Bhagalpur: WhatsApp, phone or email for help choosing a saree, video-call shopping, orders and bulk fabric enquiries.",
-  path: routes.contact,
 });
+
+const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+  `${siteConfig.legalName}, ${siteConfig.contact.address}`,
+)}`;
 
 export default function ContactPage() {
   const whatsapp = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? siteConfig.contact.whatsapp;
   const items = [
-    { icon: MessageCircleIcon, label: "WhatsApp", value: "Chat or book a video call", href: `https://wa.me/${whatsapp}` },
-    { icon: PhoneIcon, label: "Phone", value: siteConfig.contact.phone, href: `tel:${siteConfig.contact.phone.replace(/[^+\d]/g, "")}` },
-    { icon: MailIcon, label: "Email", value: siteConfig.contact.email, href: `mailto:${siteConfig.contact.email}` },
-    { icon: MapPinIcon, label: "Visit", value: siteConfig.contact.address, href: null },
+    {
+      icon: MessageCircleIcon,
+      label: "WhatsApp",
+      value: "Chat or book a video call",
+      href: `https://wa.me/${whatsapp}`,
+    },
+    {
+      icon: PhoneIcon,
+      label: "Phone",
+      value: siteConfig.contact.phone,
+      href: `tel:${siteConfig.contact.phone.replace(/[^+\d]/g, "")}`,
+    },
+    {
+      icon: MailIcon,
+      label: "Email",
+      value: siteConfig.contact.email,
+      href: `mailto:${siteConfig.contact.email}`,
+    },
+    {
+      icon: MapPinIcon,
+      label: `Visit ${siteConfig.legalName}`,
+      value: siteConfig.contact.address,
+      href: mapsUrl,
+    },
   ];
   return (
     <div className="container-page max-w-3xl py-12">
       <SectionHeading
         as="h1"
-        title="Contact us"
-        description="We're a small team in Bhagalpur. Message us about any piece — we'll send extra photos or a short video in daylight."
+        title="Visit or contact us in Bhagalpur"
+        description="We're a small team in Bhagalpur. Message us about any piece — we'll send extra photos or a short video in daylight. Please call before you visit the shop."
       />
       <ul className="mt-10 grid gap-4 sm:grid-cols-2">
         {items.map(({ icon: Icon, label, value, href }) => (
@@ -36,7 +60,11 @@ export default function ContactPage() {
             <div>
               <p className="font-medium">{label}</p>
               {href ? (
-                <a href={href} className="text-sm underline-offset-4 hover:underline" {...(href.startsWith("http") ? { target: "_blank", rel: "noopener" } : {})}>
+                <a
+                  href={href}
+                  className="text-sm underline-offset-4 hover:underline"
+                  {...(href.startsWith("http") ? { target: "_blank", rel: "noopener" } : {})}
+                >
                   {value}
                 </a>
               ) : (

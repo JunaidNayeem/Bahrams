@@ -6,6 +6,7 @@ import {
   buildRobots,
   collectionSitemapEntries,
   escapeXmlUrl,
+  guideSitemapEntries,
   listingPaths,
   productSitemapEntries,
   sitemapIndexXml,
@@ -70,6 +71,21 @@ describe("articleSitemapEntries", () => {
     expect(entries.find((e) => e.url.endsWith("/guides/saree-care"))?.lastModified).toBe(
       "2026-08-01",
     );
+  });
+});
+
+describe("guideSitemapEntries", () => {
+  it("lists only guides with a published CMS page, and drops unknown slugs", () => {
+    const entries = guideSitemapEntries([
+      { slug: "guides/bhagalpur-silk-guide", updatedAt: "2026-11-03" },
+      { slug: "guides/not-a-guide", updatedAt: "2026-11-03" },
+    ]);
+    expect(entries).toEqual([
+      expect.objectContaining({
+        url: `${origin}/guides/bhagalpur-silk-guide`,
+        lastModified: "2026-11-03",
+      }),
+    ]);
   });
 });
 

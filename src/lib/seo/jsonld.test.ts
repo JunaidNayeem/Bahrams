@@ -87,6 +87,8 @@ describe("organizationJsonLd / websiteJsonLd", () => {
   it("names the registered seller with a valid Bihar GSTIN", () => {
     const org = organizationJsonLd();
     expect(org.legalName).toBe("Bahram Raw Silk");
+    expect(org.alternateName).toContain("Bahram Raw Silk");
+    expect(websiteJsonLd().alternateName).toEqual(org.alternateName);
     expect(isValidGstin(org.taxID)).toBe(true);
     expect(org.taxID.slice(0, 2)).toBe("10");
   });

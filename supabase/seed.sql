@@ -594,9 +594,73 @@ insert into seed_pages values
    '<h2>Is your silk pure?</h2><p>Pure-silk pieces carry a Silk Mark label; its number is on the product page. Blends are labelled as blends.</p>
 <h2>Do you offer cash on delivery?</h2><p>Yes, for orders up to ₹5,000 on serviceable PIN codes, with a small COD fee shown upfront. We confirm COD orders by WhatsApp or phone before dispatch.</p>
 <h2>Why do handwoven sarees vary?</h2><p>Hand-reeled tussar and hand-spun matka are naturally uneven. Slubs and slight colour variation are signs of handwork.</p>'),
-  ('our-story', 'craft', 'Our Story',
-   'Bahram Silks: woven in Bhagalpur and sold by the hands that made it.',
-   '<p>Bhagalpur, the Silk City, is home to tens of thousands of handloom weavers in Nathnagar, Champanagar, Mirzafari and the neighbouring mohallas. Bahram Silks sells their tussar, matka, ghicha and raw silk directly, with the proof on every page: fibre composition, Silk Mark and Handloom Mark numbers, and the name of the weaver.</p><p>TODO(client): founding story and the link to the Bahram Raw Silk listing (est. 1948), once confirmed.</p>');
+  ('our-story', 'craft', 'Our story: Bahram Raw Silk, Bhagalpur',
+   'Bahram Raw Silk makes handloom tussar, raw silk and cotton-silk sarees, dress material and furnishing fabric in Bhagalpur. Bahram Silks is our online shop.',
+   '<p>Bahram Raw Silk is a manufacturer and exporter of handloom silk in Bhagalpur, Bihar, the Silk City of India. From Hossainabad on Bounsi Road we make tussar, raw silk, cotton-silk and linen-silk sarees, dress material and salwar suits, and furnishing, drapery and other handwoven fabrics.</p>
+<p>Bahram Silks is our online shop. It lets us sell the cloth we make straight to you, without middlemen, and with the proof on every page: the fibre in warp and weft, Silk Mark and Handloom Mark numbers wherever a piece carries them, and the name of the weaver when they agree to be credited.</p>
+<h2>Woven in Bhagalpur</h2>
+<p>Bhagalpur is home to thousands of handloom weavers in Nathnagar, Champanagar, Mirzafari and the neighbouring mohallas. Tussar leads, with its natural gold sheen, followed by ghicha, matka and raw silk. Read <a href="/guides/bhagalpur-silk-guide">our Bhagalpur silk guide</a> to learn how each is made and how to recognise an original piece.</p>
+<h2>Sarees, fabric and bulk orders</h2>
+<p>Shop <a href="/sarees">Bhagalpur silk sarees</a> and <a href="/fabric">silk fabric by the metre</a> online. Boutiques, designers and exporters can <a href="/contact">contact us</a> for bulk quantities and custom weaving.</p>
+<h2>Visit us</h2>
+<p>Bahram Raw Silk, Hossainabad, Bounsi Road, near Jama Masjid, Bhagalpur 812005, Bihar, India. Phone +91-9801616789. Please call before you visit.</p>'),
+  ('guides/bhagalpur-silk-guide', 'craft', 'The Bhagalpur Silk Guide',
+   'What Bhagalpur silk is, the yarns woven in India''s Silk City, the 2013 GI tag, and how to tell an original Bhagalpuri silk saree from a copy.',
+   '<p>Bhagalpur, on the southern bank of the Ganga in Bihar, is known as the Silk City of India. Its weavers have worked tussar and other silks for generations, and "Bhagalpuri silk" is one of the best-known saree names in the country. It is also one of the most copied. This guide explains what Bhagalpur silk is, how it is made, what the GI tag means and how to buy an original piece.</p>
+<p><em>Written by Bahram Raw Silk, manufacturers and exporters of handloom silk in Hossainabad, Bhagalpur.</em></p>
+<h2>What is Bhagalpur silk?</h2>
+<p>Bhagalpur silk is silk cloth woven in and around Bhagalpur. When people say "Bhagalpuri silk" they usually mean tussar: a wild silk with a natural gold-to-honey sheen, a slightly dry hand and a soft, textured drape. Bhagalpur''s weavers also work ghicha, matka and raw (mulberry) silk, and blends such as cotton-silk and linen-silk.</p>
+<p>"Bhagalpur silk" and "Bhagalpuri silk" mean the same thing; Bhagalpuri is simply the adjective. The name tells you where a piece was woven, not what it is made of, so always read the fibre in the warp and the weft.</p>
+<h2>The yarns woven in Bhagalpur</h2>
+<h3>Tussar silk</h3>
+<p>Tussar (also spelt tasar or tussah) comes from wild silkworms, mainly <em>Antheraea mylitta</em>, that feed on arjun, asan and sal trees in the forests of eastern and central India. Jharkhand is the country''s largest producer. The cocoons are gathered from the trees rather than raised indoors. Tussar yarn has a natural colour that runs from pale beige to deep copper, which is why many tussar sarees are left undyed. It is lighter and more breathable than mulberry silk, with a soft gold glow rather than a high shine. <a href="/sarees/tussar-silk">Shop tussar silk sarees</a>.</p>
+<h3>Ghicha silk</h3>
+<p>Ghicha is a thick, uneven tussar yarn drawn by hand from cocoons that cannot be reeled into one long filament. Because the yarn varies along its length, ghicha cloth has a rough, slubbed texture and an earthy look. It is often woven as the weft across a finer tussar warp. <a href="/sarees/ghicha-silk">Shop ghicha silk sarees</a>.</p>
+<h3>Matka silk</h3>
+<p>Matka is a coarse yarn hand-spun from the short mulberry silk fibres left over from reeling, without removing all of the natural gum. That gives matka its heavy, nubby hand and a muted lustre. It holds its shape well, so it is popular for sarees, kurtas and jackets. <a href="/sarees/matka-silk">Shop matka silk sarees</a>.</p>
+<h3>Raw silk</h3>
+<p>In the Indian market, "raw silk" usually means mulberry silk woven before the natural gum (sericin) is fully washed out. It feels crisp, with a gentle sheen that softens as the cloth is worn and washed. Mulberry silk comes from the domesticated <em>Bombyx mori</em> silkworm. <a href="/sarees/raw-silk">Shop raw silk sarees</a>.</p>
+<h3>Blends</h3>
+<p>Cotton-silk, linen-silk and art-silk sarees are also sold as "Bhagalpuri". They can be lovely to wear and kinder on the budget, but they are not pure silk, and an honest seller says so on the label.</p>
+<h2>How a Bhagalpur silk saree is made</h2>
+<ol>
+<li><strong>Cocoons.</strong> Tussar cocoons come from forest-rearing areas in Jharkhand, Bihar and neighbouring states; mulberry yarn and silk waste come from India''s mulberry belts.</li>
+<li><strong>Reeling and spinning.</strong> Cocoons are cooked to soften the gum and reeled into filament yarn, or the leftover fibre is hand-spun into ghicha and matka.</li>
+<li><strong>Dyeing.</strong> Yarn is left in its natural colour or dyed before weaving.</li>
+<li><strong>Warping.</strong> Thousands of warp threads are measured, sized and set on the loom.</li>
+<li><strong>Weaving.</strong> The weaver passes the weft through the warp by hand, building the body, border and pallu. A plain saree takes days on a handloom; a patterned one takes longer.</li>
+<li><strong>Finishing.</strong> The saree is checked, washed or finished, and folded for sale.</li>
+</ol>
+<h2>Where silk is woven in Bhagalpur</h2>
+<p>Most of the weaving happens in mohallas such as Nathnagar, Champanagar and Mirzafari, and in villages around the city. Many households keep a loom at home, and the trade runs through master weavers and manufacturers who buy yarn, give out work and sell the finished cloth across India and abroad.</p>
+<h2>The GI tag: what "Bhagalpur Silk (GI)" means</h2>
+<p>"Bhagalpur Silk" was registered as a Geographical Indication (GI) in 2013. A GI protects a name that is tied to a place and its traditional way of making: only goods made in the defined area by the registered method may use it. A GI is about origin and method; on its own it does not certify that a particular saree is pure silk.</p>
+<p>On this site, the "Bhagalpur Silk (GI)" badge appears only on products we have recorded as GI-eligible. Other pieces are described as "woven in Bhagalpur".</p>
+<h2>Silk Mark and Handloom Mark</h2>
+<p>The Silk Mark is a quality label from the Silk Mark Organisation of India, set up by the Central Silk Board under the Ministry of Textiles. Each label carries a unique number and confirms that the product is made of natural silk. The Handloom Mark confirms that the cloth was woven on a handloom. Ask for both, and check that the label belongs to the piece in front of you.</p>
+<h2>How to identify an original Bhagalpuri silk saree</h2>
+<ul>
+<li><strong>Read the label.</strong> A good seller states the fibre of the warp and the weft, for example "tussar warp, ghicha weft". "Bhagalpuri" on its own is a place, not a fibre.</li>
+<li><strong>Look for the Silk Mark</strong> on any piece sold as pure silk.</li>
+<li><strong>Look at the texture.</strong> Handwoven tussar and ghicha show slubs, small changes in thickness and an uneven natural gold. A perfectly even, mirror-like shine at a very low price usually means polyester or art silk.</li>
+<li><strong>Feel it.</strong> Pure silk warms quickly in the hand; polyester feels slippery and stays cool.</li>
+<li><strong>Try a burn test on a single thread</strong>, never on the saree. Silk burns slowly, smells like burning hair and leaves a soft ash that crumbles to powder. Polyester melts, smells of plastic and leaves a hard bead.</li>
+<li><strong>Check the price.</strong> Pure tussar yarn and days of skilled weaving cost real money. If a "pure Bhagalpuri silk saree" costs less than its yarn would, it is not one.</li>
+<li><strong>Buy close to the loom.</strong> Weavers and manufacturers in Bhagalpur can tell you which yarn went into a piece and who wove it.</li>
+</ul>
+<h2>Choosing a silk shop in Bhagalpur</h2>
+<p>Bhagalpur has many silk shops around its weaving localities and markets. Whoever you buy from, a good shop states the warp and weft fibres, shows Silk Mark labels on pure silk, lets you see the cloth in daylight and explains the price.</p>
+<p>Our shop, Bahram Raw Silk, is at Hossainabad, Bounsi Road, near Jama Masjid, Bhagalpur 812005, Bihar. We make tussar, raw silk, cotton-silk and linen-silk sarees, dress material, and furnishing and drapery fabrics. Please call +91-9801616789 before you visit, or <a href="/contact">contact us</a> to see a piece on video.</p>
+<h2>Caring for Bhagalpur silk</h2>
+<ul>
+<li>Dry-clean the first few times, especially dyed and zari pieces.</li>
+<li>If you hand-wash plain tussar or matka, use cold water and a mild detergent, and never wring.</li>
+<li>Dry in the shade: sunlight fades both natural tussar gold and dyes.</li>
+<li>Iron on the reverse at a low silk setting, with a cotton cloth in between.</li>
+<li>Store folded in muslin or cotton, not plastic, and refold every few months so the creases do not set. Keep zari away from perfume and damp.</li>
+</ul>
+<h2>Shop Bhagalpur silk from the loom</h2>
+<p>Browse <a href="/sarees/bhagalpuri-silk">all Bhagalpuri silk sarees</a>, or shop by yarn: <a href="/sarees/tussar-silk">tussar</a>, <a href="/sarees/ghicha-silk">ghicha</a>, <a href="/sarees/matka-silk">matka</a> and <a href="/sarees/raw-silk">raw silk</a>. Designers, boutiques and tailors can buy <a href="/fabric">silk fabric by the metre</a>, or <a href="/contact">contact us</a> about bulk and export orders.</p>');
 
 do $$
 declare
@@ -617,7 +681,7 @@ end;
 $$;
 
 insert into public.home_sections (type, title, subtitle, config, position) values
-  ('hero', 'Woven in Bhagalpur. Certified pure.', 'Sold by the hands that made it.',
+  ('hero', 'Bhagalpur silk sarees and fabric, certified pure.', 'Sold by the hands that made it.',
    '{"image_path": "home/hero-loom.webp", "alt": "Tussar silk on a pit loom in Bhagalpur", "cta_label": "Shop tussar sarees", "cta_href": "/sarees/tussar-silk"}', 0),
   ('proof_strip', 'Why Bahram', null,
    '{"items": [{"icon": "badge-check", "label": "Silk Mark numbers on every pure-silk piece"}, {"icon": "map-pin", "label": "Bhagalpur Silk (GI) where it qualifies"}, {"icon": "hand", "label": "Handwoven, Handloom Mark where labelled"}, {"icon": "users", "label": "Direct from the weaver"}]}', 1),
@@ -676,6 +740,9 @@ values ('WELCOME10', 'percentage', 1000, 50000, 200000, 'Sample: 10% off your fi
 
 drop table seed_products;
 drop table seed_pages;
+-- Keyword-led SEO titles (the loop above defaults to '<title> | Bahram Silks').
+update public.pages set seo_title = 'Bhagalpur Silk Guide: Bhagalpuri Sarees, GI Tag & How to Buy' where slug = 'guides/bhagalpur-silk-guide';
+update public.pages set seo_title = 'About Bahram Raw Silk, Silk Manufacturers in Bhagalpur' where slug = 'our-story';
 
 -------------------------------------------------------------------------------
 -- DEMO DATA: ~40 historical orders over the last 30 days so the admin dashboard, orders and

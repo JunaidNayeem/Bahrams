@@ -44,6 +44,7 @@ import {
   collectionUrl,
   guideUrl,
   helpUrl,
+  isGuideSlug,
   journalUrl,
   legalUrl,
   occasionUrl,
@@ -238,6 +239,27 @@ export function staticPageSitemapEntries(lastModified?: DateLike): MetadataRoute
       priority: path === routes.home ? 1 : path.startsWith("/legal") ? 0.3 : 0.5,
     }),
   );
+}
+
+/**
+ * Guides that have a published CMS page ("guides/<slug>"). Unlike articleSitemapEntries this
+ * leaves out the noindexed "coming soon" placeholders and slugs the route would 404.
+ */
+export function guideSitemapEntries(
+  pages: readonly { slug: string; updatedAt: DateLike }[],
+): MetadataRoute.Sitemap {
+  return pages.flatMap(({ slug, updatedAt }) => {
+    const guide = slug.replace(/^guides\//, "");
+    return isGuideSlug(guide)
+      ? [
+          entry(guideUrl(guide), {
+            lastModified: updatedAt,
+            changeFrequency: "monthly",
+            priority: 0.7,
+          }),
+        ]
+      : [];
+  });
 }
 
 /* ------------------------------------------------------------------------------------------

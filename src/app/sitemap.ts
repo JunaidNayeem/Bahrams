@@ -1,8 +1,10 @@
 import type { MetadataRoute } from "next";
 
 import { listProductSlugs } from "@/lib/data/catalog";
+import { listPublishedPages } from "@/lib/data/cms";
 import {
   collectionSitemapEntries,
+  guideSitemapEntries,
   productSitemapEntries,
   SITEMAP_IDS,
   staticPageSitemapEntries,
@@ -21,7 +23,10 @@ export default async function sitemap({
 }): Promise<MetadataRoute.Sitemap> {
   switch ((await id) as SitemapId) {
     case "static":
-      return staticPageSitemapEntries();
+      return [
+        ...staticPageSitemapEntries(),
+        ...guideSitemapEntries(await listPublishedPages("guides/")),
+      ];
     case "collections":
       return collectionSitemapEntries();
     case "products":

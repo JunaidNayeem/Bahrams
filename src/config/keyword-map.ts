@@ -392,11 +392,17 @@ export const KEYWORD_MAP: readonly KeywordTarget[] = [
     cluster: "Education",
     path: "/guides/bhagalpur-silk-guide",
     primary: "bhagalpur silk",
-    secondary: ["bhagalpur silk gi tag", "bhagalpur silk history"],
+    secondary: [
+      "bhagalpuri silk",
+      "bhagalpur silk gi tag",
+      "bhagalpur silk history",
+      "how to identify original bhagalpuri silk",
+      "best silk in bhagalpur",
+    ],
     intent: "informational",
-    title: "The Bhagalpur Silk Guide",
+    title: "Bhagalpur Silk Guide: Bhagalpuri Sarees, GI Tag & How to Buy",
     description:
-      "Bhagalpur, India's Silk City: its weaving localities, the 2013 GI tag for Bhagalpur Silk, the yarns woven here and how to buy authentic pieces.",
+      "What Bhagalpur silk is, the yarns woven in India's Silk City, the 2013 GI tag, and how to tell an original Bhagalpuri silk saree from a copy.",
     source: "derived",
   },
   {
@@ -415,22 +421,22 @@ export const KEYWORD_MAP: readonly KeywordTarget[] = [
     cluster: "Local and brand",
     path: "/contact",
     primary: "silk shop in bhagalpur",
-    secondary: ["bhagalpur silk market"],
+    secondary: ["bhagalpur silk market", "silk saree shop in bhagalpur", "best silk in bhagalpur"],
     intent: "local",
     title: "Visit or Contact Our Bhagalpur Silk Shop",
     description:
-      "Find the Bahram Silks shop in Bhagalpur, Bihar, or reach us on WhatsApp, phone or email for help with sarees, fabric and orders.",
+      "Visit Bahram Raw Silk at Hossainabad, Bounsi Road, Bhagalpur, or reach us by phone, WhatsApp or email about sarees, silk fabric and bulk orders.",
     source: "brief",
   },
   {
     cluster: "Local and brand",
     path: "/",
     primary: "bahram silks",
-    secondary: ["bahram silk bhagalpur"],
+    secondary: ["bahram raw silk", "bahram silk bhagalpur", "bhagalpur silk", "bhagalpuri silk"],
     intent: "navigational",
-    title: "Bahram Silks | Bhagalpur Tussar, Matka & Raw Silk",
+    title: "Bahram Silks | Bhagalpur Silk Sarees & Fabric from the Looms",
     description:
-      "Authentic Bhagalpur tussar, raw and matka silk sarees and fabric by the metre, sold direct from the looms of Bhagalpur.",
+      "Bahram Raw Silk, Bhagalpur: makers of tussar, matka and raw silk sarees and fabric by the metre. Original Bhagalpuri silk, shipped across India.",
     source: "brief",
   },
 ];

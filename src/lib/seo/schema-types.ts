@@ -47,6 +47,7 @@ export interface OrganizationLd {
   "@type": "Organization";
   "@id": string;
   name: string;
+  alternateName: readonly string[];
   legalName: string;
   /** GSTIN. */
   taxID: string;
@@ -70,6 +71,7 @@ export interface WebSiteLd {
   "@id": string;
   url: string;
   name: string;
+  alternateName: readonly string[];
   inLanguage: string;
   publisher: NodeRef;
   potentialAction: SearchActionLd;
