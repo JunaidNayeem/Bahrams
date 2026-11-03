@@ -19,7 +19,11 @@ export interface LegalEntity {
 }
 
 export interface GrievanceOfficer {
-  name: string;
+  /**
+   * The E-Commerce Rules 2020 require the officer's name on the site; empty until the client
+   * appoints one, in which case pages show the designation and contact details only.
+   */
+  name?: string | null;
   email: string;
   phone?: string;
   hours?: string;
@@ -48,7 +52,8 @@ export async function getStoreSettings(): Promise<StoreSettings> {
   const { data, error } = await createPublicClient().from("settings").select("key, value");
   if (error) throw error;
   const s = Object.fromEntries(data.map((r) => [r.key, r.value])) as Record<string, unknown>;
-  const num = (key: string, fallback: number) => (typeof s[key] === "number" ? (s[key] as number) : fallback);
+  const num = (key: string, fallback: number) =>
+    typeof s[key] === "number" ? (s[key] as number) : fallback;
 
   const incentive = (s.prepaid_incentive ?? { type: "none" }) as {
     type?: string;
@@ -75,8 +80,12 @@ export async function getStoreSettings(): Promise<StoreSettings> {
     prepaidIncentive,
     returnWindowDays: num("return_window_days", 7),
     legalEntity: (s.legal_entity ?? { name: "Bahram Silks" }) as LegalEntity,
-    grievanceOfficer: (s.grievance_officer ?? { name: "Grievance Officer", email: "grievance@bahramsilk.com" }) as GrievanceOfficer,
-    privacyNoticeVersion: typeof s.privacy_notice_version === "string" ? s.privacy_notice_version : "draft",
+    grievanceOfficer: (s.grievance_officer ?? {
+      name: "Grievance Officer",
+      email: "grievance@bahramsilk.com",
+    }) as GrievanceOfficer,
+    privacyNoticeVersion:
+      typeof s.privacy_notice_version === "string" ? s.privacy_notice_version : "draft",
   };
 }
 

@@ -19,11 +19,14 @@ export const siteConfig = {
   /** Seller's state for GST place-of-supply (Bihar, state code 10). */
   sellerState: { name: "Bihar", gstStateCode: "10" },
   contact: {
-    // TODO(client): real contact details
     email: "care@bahramsilk.com",
-    phone: "+91-00000-00000",
+    phone: "+91-9801616789",
+    // TODO(client): confirm the WhatsApp Business number (NEXT_PUBLIC_WHATSAPP_NUMBER overrides).
     whatsapp: "910000000000",
-    address: "Bhagalpur, Bihar, India",
+    address: "Hossainabad, Bounsi Road, Near Jama Masjid, Bhagalpur 812005, Bihar, India",
+    /** Structured parts of the address above, for JSON-LD and Google Business Profile. */
+    streetAddress: "Hossainabad, Bounsi Road, Near Jama Masjid",
+    postalCode: "812005",
   },
   social: {
     // TODO(client): confirm handles once registered

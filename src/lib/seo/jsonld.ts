@@ -78,7 +78,10 @@ function logo(): ImageObjectLd {
   return { "@type": "ImageObject", url: absoluteUrl(LOGO_PATH), width: 512, height: 512 };
 }
 
-function bhagalpurAddress(street?: string, postalCode?: string): PostalAddressLd {
+function bhagalpurAddress(
+  street: string = siteConfig.contact.streetAddress,
+  postalCode: string = siteConfig.contact.postalCode,
+): PostalAddressLd {
   return compact({
     "@type": "PostalAddress" as const,
     streetAddress: street,
@@ -305,7 +308,7 @@ export interface StoreDetails {
   /** Page that describes the shop; defaults to /contact. */
   path?: string;
   name?: string;
-  /** TODO(client): street address and PIN code of the Bhagalpur shop. */
+  /** Defaults to siteConfig.contact (the registered Bhagalpur address). */
   streetAddress?: string;
   postalCode?: string;
   telephone?: string;

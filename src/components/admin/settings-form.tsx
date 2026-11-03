@@ -29,7 +29,19 @@ export interface SettingsValues {
   officerHours: string;
 }
 
-function F({ name, label, value, hint, prefix }: { name: keyof SettingsValues; label: string; value: string; hint?: string; prefix?: string }) {
+function F({
+  name,
+  label,
+  value,
+  hint,
+  prefix,
+}: {
+  name: keyof SettingsValues;
+  label: string;
+  value: string;
+  hint?: string;
+  prefix?: string;
+}) {
   return (
     <div className="space-y-1.5">
       <Label htmlFor={name}>{label}</Label>
@@ -42,7 +54,15 @@ function F({ name, label, value, hint, prefix }: { name: keyof SettingsValues; l
   );
 }
 
-function Group({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
+function Group({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
   return (
     <section className="rounded-lg border border-border bg-card">
       <div className="border-b border-border px-5 py-3">
@@ -64,36 +84,75 @@ export function SettingsForm({ values, canEdit }: { values: SettingsValues; canE
         const data = new FormData(e.currentTarget);
         start(async () => {
           const res = await saveSettings(data);
-          toast({ title: res.ok ? "Saved" : "Not saved", description: res.message, variant: res.ok ? "default" : "destructive" });
+          toast({
+            title: res.ok ? "Saved" : "Not saved",
+            description: res.message,
+            variant: res.ok ? "default" : "destructive",
+          });
           if (res.ok) router.refresh();
         });
       }}
       className="space-y-6"
     >
       <fieldset disabled={!canEdit || pending} className="space-y-6">
-        <Group title="Cash on delivery" description="COD orders return far more often than prepaid ones; these limits protect margin.">
+        <Group
+          title="Cash on delivery"
+          description="COD orders return far more often than prepaid ones; these limits protect margin."
+        >
           <F name="codMax" label="COD only up to" prefix="₹" value={values.codMax} />
           <F name="codFee" label="COD fee (shown upfront)" prefix="₹" value={values.codFee} />
         </Group>
         <Group title="Shipping and extras">
           <F name="shippingFee" label="Shipping fee" prefix="₹" value={values.shippingFee} />
-          <F name="freeShipping" label="Free shipping above" prefix="₹" value={values.freeShipping} />
+          <F
+            name="freeShipping"
+            label="Free shipping above"
+            prefix="₹"
+            value={values.freeShipping}
+          />
           <F name="giftWrap" label="Gift wrap" prefix="₹" value={values.giftWrap} />
-          <F name="returnWindowDays" label="Return / exchange window (days)" value={values.returnWindowDays} />
+          <F
+            name="returnWindowDays"
+            label="Return / exchange window (days)"
+            value={values.returnWindowDays}
+          />
         </Group>
-        <Group title="Prepaid incentive" description="A small saving for paying online. Set to 0 to switch it off.">
-          <F name="prepaidAmount" label="Discount for prepaid orders" prefix="₹" value={values.prepaidAmount} />
-          <F name="prepaidMessage" label="Message shown to shoppers" value={values.prepaidMessage} />
+        <Group
+          title="Prepaid incentive"
+          description="A small saving for paying online. Set to 0 to switch it off."
+        >
+          <F
+            name="prepaidAmount"
+            label="Discount for prepaid orders"
+            prefix="₹"
+            value={values.prepaidAmount}
+          />
+          <F
+            name="prepaidMessage"
+            label="Message shown to shoppers"
+            value={values.prepaidMessage}
+          />
         </Group>
-        <Group title="Seller details" description="Shown in the footer and on invoices, as the Consumer Protection (E-Commerce) Rules require.">
+        <Group
+          title="Seller details"
+          description="Shown in the footer and on invoices, as the Consumer Protection (E-Commerce) Rules require."
+        >
           <F name="entityName" label="Registered legal name" value={values.entityName} />
           <F name="entityGstin" label="GSTIN" value={values.entityGstin} />
           <F name="entityAddress" label="Registered address" value={values.entityAddress} />
           <F name="entityEmail" label="Contact email" value={values.entityEmail} />
           <F name="entityPhone" label="Contact phone" value={values.entityPhone} />
         </Group>
-        <Group title="Grievance officer" description="Complaints are acknowledged within 48 hours and resolved within one month.">
-          <F name="officerName" label="Name" value={values.officerName} />
+        <Group
+          title="Grievance officer"
+          description="Complaints are acknowledged within 48 hours and resolved within one month."
+        >
+          <F
+            name="officerName"
+            label="Name"
+            value={values.officerName}
+            hint="Required by the E-Commerce Rules before launch. Until set, the site shows the designation only."
+          />
           <F name="officerEmail" label="Email" value={values.officerEmail} />
           <F name="officerPhone" label="Phone" value={values.officerPhone} />
           <F name="officerHours" label="Hours" value={values.officerHours} />
@@ -104,7 +163,9 @@ export function SettingsForm({ values, canEdit }: { values: SettingsValues; canE
           {pending ? "Saving…" : "Save settings"}
         </Button>
       ) : (
-        <p className="text-sm text-muted-foreground">Only the owner or a manager can change settings.</p>
+        <p className="text-sm text-muted-foreground">
+          Only the owner or a manager can change settings.
+        </p>
       )}
     </form>
   );

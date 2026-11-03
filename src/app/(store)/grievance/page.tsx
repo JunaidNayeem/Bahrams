@@ -33,8 +33,12 @@ export default async function GrievancePage() {
         description="If something has gone wrong with an order, a product or how we handled your data, tell us. We acknowledge every complaint within 48 hours and resolve it within one month."
       />
       <dl className="grid gap-3 rounded-md border border-border bg-card p-6 text-sm sm:grid-cols-[10rem_1fr]">
-        <dt className="text-muted-foreground">Name</dt>
-        <dd>{officer.name}</dd>
+        {officer.name && (
+          <>
+            <dt className="text-muted-foreground">Name</dt>
+            <dd>{officer.name}</dd>
+          </>
+        )}
         <dt className="text-muted-foreground">Email</dt>
         <dd>
           <a href={`mailto:${officer.email}`} className="underline">

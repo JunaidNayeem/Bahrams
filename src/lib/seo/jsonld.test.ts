@@ -79,9 +79,8 @@ describe("organizationJsonLd / websiteJsonLd", () => {
     expect(org.logo.url).toMatch(/^https?:\/\//);
     expect(org.sameAs.length).toBeGreaterThan(0);
     expect(org.contactPoint[0]).toMatchObject({ "@type": "ContactPoint", areaServed: "IN" });
-    // siteConfig still holds an all-zero placeholder phone: it must not be published.
-    expect(org.contactPoint[0].telephone).toBeUndefined();
-    expect(org.address.addressLocality).toBe("Bhagalpur");
+    expect(org.contactPoint[0].telephone).toBe("+91-9801616789");
+    expect(org.address).toMatchObject({ addressLocality: "Bhagalpur", postalCode: "812005" });
   });
 
   it("exposes a SearchAction on /search?q=", () => {
@@ -316,18 +315,25 @@ describe("faqPageJsonLd", () => {
 });
 
 describe("storeJsonLd", () => {
-  it("describes the Bhagalpur shop as a ClothingStore, omitting unknown details", () => {
+  it("describes the Bhagalpur shop as a ClothingStore at the registered address", () => {
     const store = storeJsonLd();
     expect(store["@type"]).toBe("ClothingStore");
     expect(store.url).toBe(`${origin}/contact`);
     expect(store.address).toEqual({
       "@type": "PostalAddress",
+      streetAddress: "Hossainabad, Bounsi Road, Near Jama Masjid",
       addressLocality: "Bhagalpur",
       addressRegion: "Bihar",
+      postalCode: "812005",
       addressCountry: "IN",
     });
-    expect(store.telephone).toBeUndefined();
+    expect(store.telephone).toBe("+91-9801616789");
+    expect(store.geo).toBeUndefined();
     expect(store.parentOrganization["@id"]).toBe(`${origin}/#organization`);
+  });
+
+  it("never publishes an all-zero placeholder phone", () => {
+    expect(storeJsonLd({ telephone: "+91-00000-00000" }).telephone).toBeUndefined();
   });
 
   it("includes address, geo and opening hours once the client supplies them", () => {

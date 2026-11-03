@@ -54,7 +54,10 @@ export async function SiteFooter() {
           </address>
           <div className="space-y-1 md:text-right">
             <p>
-              Grievance officer: {grievanceOfficer.name} ·{" "}
+              {grievanceOfficer.name
+                ? `Grievance officer: ${grievanceOfficer.name}`
+                : "Grievance officer"}{" "}
+              ·{" "}
               <a href={`mailto:${grievanceOfficer.email}`} className="underline">
                 {grievanceOfficer.email}
               </a>
