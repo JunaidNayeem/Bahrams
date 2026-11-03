@@ -16,6 +16,9 @@ export const siteConfig = {
   giYear: 2013,
   /** TODO(client): confirm link to the "Bahram Raw Silk" listing (est. 1948) before using. */
   foundingYear: null as number | null,
+  /** Registered seller. The footer and invoices read the `legal_entity` setting instead. */
+  legalName: "Bahram Raw Silk",
+  gstin: "10AAFFB7503A1ZF",
   /** Seller's state for GST place-of-supply (Bihar, state code 10). */
   sellerState: { name: "Bihar", gstStateCode: "10" },
   contact: {

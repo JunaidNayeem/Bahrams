@@ -47,6 +47,9 @@ export interface OrganizationLd {
   "@type": "Organization";
   "@id": string;
   name: string;
+  legalName: string;
+  /** GSTIN. */
+  taxID: string;
   url: string;
   logo: ImageObjectLd;
   description: string;

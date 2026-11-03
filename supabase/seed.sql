@@ -64,9 +64,9 @@ insert into public.settings (key, value, is_public, description) values
   ('return_window_days', '7', true, 'Days from delivery to request a return or exchange.'),
   ('reservation_minutes', '15', false, 'Stock hold at checkout. Enforced in reserve_stock(); informational here.'),
   ('low_stock_threshold_default', '{"piece": 1, "metre": 10}', false, 'Low-stock alert when available falls to or below this.'),
-  ('legal_entity', '{"name": "Bahram Raw Silk", "trade_name": "Bahram Silks", "address": "Hossainabad, Bounsi Road, Near Jama Masjid, Bhagalpur 812005, Bihar, India", "gstin": null, "email": "care@bahramsilk.com", "phone": "+91-9801616789"}', true, 'Seller identity shown in the footer, invoices and legal pages.'),
+  ('legal_entity', '{"name": "Bahram Raw Silk", "trade_name": "Bahram Silks", "address": "Hossainabad, Bounsi Road, Near Jama Masjid, Bhagalpur 812005, Bihar, India", "gstin": "10AAFFB7503A1ZF", "email": "care@bahramsilk.com", "phone": "+91-9801616789"}', true, 'Seller identity shown in the footer, invoices and legal pages.'),
   ('grievance_officer', '{"name": null, "designation": "Grievance Officer", "email": "grievance@bahramsilk.com", "phone": null, "hours": "Monday to Saturday, 10:00 to 18:00 IST"}', true, 'Consumer Protection (E-Commerce) Rules: published grievance officer.'),
-  ('gst', '{"seller_state": "Bihar", "seller_state_code": "10", "gstin": null, "default_hsn_silk": "5007", "default_rate_bps": 500}', true, 'Place of supply and invoice defaults. TODO(client): GSTIN.'),
+  ('gst', '{"seller_state": "Bihar", "seller_state_code": "10", "gstin": "10AAFFB7503A1ZF", "default_hsn_silk": "5007", "default_rate_bps": 500}', true, 'Place of supply and invoice defaults.'),
   ('privacy_notice_version', '"2026-10-draft"', true, 'Version recorded with every consent event.'),
   ('notifications', '{"order_email": true, "order_whatsapp": true, "from_email": "orders@bahramsilk.com"}', false, 'Which order-status channels are active.');
 
@@ -551,7 +551,7 @@ insert into seed_pages values
   ('legal/terms', 'legal', 'Terms of Use',
    'The terms that apply when you browse and buy from Bahram Silks.',
    '<p><strong>Draft for legal review.</strong> TODO(client): confirm with counsel before launch.</p>
-<h2>Who we are</h2><p>This website is operated by the seller named in the footer (TODO(client): registered legal name, address and GSTIN), an inventory e-commerce entity selling its own stock woven in Bhagalpur, Bihar.</p>
+<h2>Who we are</h2><p>This website is operated by Bahram Raw Silk (GSTIN 10AAFFB7503A1ZF), Hossainabad, Bounsi Road, Near Jama Masjid, Bhagalpur 812005, Bihar, India, an inventory e-commerce entity selling its own stock woven in Bhagalpur, Bihar.</p>
 <h2>Products and descriptions</h2><p>We state the fibre of the warp and weft for every product. "Silk Mark", "Handloom" and "Bhagalpur Silk (GI)" are shown only where we hold the matching label or qualification. Handwoven pieces vary slightly in colour and texture; these variations are part of the craft, not defects.</p>
 <h2>Prices</h2><p>Prices are in Indian rupees and include GST. Shipping, cash-on-delivery and gift-wrap charges are shown before you pay. A struck-through prior price is shown only when the item was genuinely sold at that price.</p>
 <h2>Orders</h2><p>An order is accepted when payment is captured, or for cash on delivery when you confirm the order with us. We may cancel an order and refund you in full if a piece is unavailable.</p>

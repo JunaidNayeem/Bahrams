@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { siteOrigin } from "@/config/routes";
+import { isValidGstin } from "@/lib/domain/tax";
 import {
   articleJsonLd,
   breadcrumbJsonLd,
@@ -81,6 +82,13 @@ describe("organizationJsonLd / websiteJsonLd", () => {
     expect(org.contactPoint[0]).toMatchObject({ "@type": "ContactPoint", areaServed: "IN" });
     expect(org.contactPoint[0].telephone).toBe("+91-9801616789");
     expect(org.address).toMatchObject({ addressLocality: "Bhagalpur", postalCode: "812005" });
+  });
+
+  it("names the registered seller with a valid Bihar GSTIN", () => {
+    const org = organizationJsonLd();
+    expect(org.legalName).toBe("Bahram Raw Silk");
+    expect(isValidGstin(org.taxID)).toBe(true);
+    expect(org.taxID.slice(0, 2)).toBe("10");
   });
 
   it("exposes a SearchAction on /search?q=", () => {

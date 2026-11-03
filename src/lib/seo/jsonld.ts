@@ -105,6 +105,8 @@ export function organizationJsonLd(
     "@type": "Organization" as const,
     "@id": organizationId(),
     name: siteConfig.name,
+    legalName: siteConfig.legalName,
+    taxID: siteConfig.gstin,
     url: siteOrigin(),
     logo: logo(),
     description: siteConfig.description,
