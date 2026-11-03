@@ -52,9 +52,16 @@ import {
   routes,
   weaverUrl,
 } from "@/config/routes";
+
+import { isSiteIndexable } from "./metadata";
 import { OCCASIONS } from "@/lib/domain/enums";
 
-export const SITEMAP_IDS = ["static", "collections", "products", "articles"] as const;
+/**
+ * Child sitemaps served at /sitemap/<id>.xml and listed in the /sitemap.xml index.
+ * "articles" joins once the journal and pillar guides are published (they are placeholders with
+ * noindex today, and Search Console flags submitted URLs that are noindex).
+ */
+export const SITEMAP_IDS = ["static", "collections", "products"] as const;
 export type SitemapId = (typeof SITEMAP_IDS)[number];
 
 type SitemapEntry = MetadataRoute.Sitemap[number];
@@ -210,16 +217,15 @@ export function articleSitemapEntries(articles: readonly SitemapArticle[]): Meta
 
 /**
  * Indexable static pages. Excludes search, cart, checkout, account, login and track-order
- * (private or thin utility pages, served with noindex).
+ * (private or thin utility pages, served with noindex), and the journal and bulk-enquiries
+ * pages until they are built (their "coming soon" placeholders are noindex).
  */
 export const STATIC_SITEMAP_PATHS: readonly string[] = [
   routes.home,
   routes.ourStory,
   routes.weavers,
-  routes.journal,
   ...HELP_PAGES.map((p) => helpUrl(p.slug)),
   routes.contact,
-  routes.bulkEnquiries,
   routes.grievance,
   ...LEGAL_PAGES.map((p) => legalUrl(p.slug)),
 ];
@@ -243,18 +249,35 @@ export function sitemapUrls(): string[] {
   return SITEMAP_IDS.map((id) => absoluteUrl(`/sitemap/${id}.xml`));
 }
 
+/** The one URL to submit in Search Console and list in robots.txt: an index of the split maps. */
+export const SITEMAP_INDEX_PATH = "/sitemap.xml";
+
+export function sitemapIndexXml(lastModified?: DateLike): string {
+  const lastmod = lastModified ? `<lastmod>${new Date(lastModified).toISOString()}</lastmod>` : "";
+  const items = sitemapUrls()
+    .map((loc) => `<sitemap><loc>${escapeXmlUrl(loc)}</loc>${lastmod}</sitemap>`)
+    .join("\n");
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${items}
+</sitemapindex>
+`;
+}
+
 /**
  * Crawl everything public; keep bots out of private, transactional and internal-search URLs.
  * "/search?" blocks result pages for any query while the bare /search page stays reachable.
  * Filtered/sorted collection URLs are NOT blocked: crawlers must see their canonical/noindex.
+ * Non-production deployments (Vercel previews) block everything and list no sitemap.
  */
-export function buildRobots(): MetadataRoute.Robots {
+export function buildRobots(indexable: boolean = isSiteIndexable()): MetadataRoute.Robots {
+  if (!indexable) return { rules: { userAgent: "*", disallow: "/" } };
   return {
     rules: {
       userAgent: "*",
       allow: "/",
       disallow: ["/admin", "/account", "/cart", "/checkout", "/api", "/search?"],
     },
-    sitemap: sitemapUrls(),
+    sitemap: absoluteUrl(SITEMAP_INDEX_PATH),
   };
 }

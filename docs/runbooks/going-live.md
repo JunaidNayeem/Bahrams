@@ -9,10 +9,10 @@ for paid hosting ([open questions](../open-questions.md)).
 
 ## 1. Domain and DNS
 
-- [ ] Register or confirm `bahramsilks.com` (and `.in` redirecting to it). Enable registrar lock and 2FA.
+- [ ] Register or confirm `bahramsilk.com` (and `www.bahramsilk.com` redirecting to it). Enable registrar lock and 2FA.
 - [ ] Add the domain to the Vercel project; apex and `www` (redirect `www` → apex or the reverse, pick
       one and keep it).
-- [ ] Set `NEXT_PUBLIC_SITE_URL=https://bahramsilks.com` in Vercel Production; redeploy so canonicals,
+- [ ] Set `NEXT_PUBLIC_SITE_URL=https://bahramsilk.com` in Vercel Production; redeploy so canonicals,
       sitemaps and JSON-LD use it.
 - [ ] Check HTTPS and the HSTS header; once stable for a month, submit to the HSTS preload list.
 
@@ -66,7 +66,7 @@ Vercel Hobby is non-commercial only ([ADR 0004](../adr/0004-payments-test-mode-a
       reviews the legal pages, so publish them first.
 - [ ] Live keys added to Vercel **Production only**: `RAZORPAY_KEY_ID`, `NEXT_PUBLIC_RAZORPAY_KEY_ID`,
       `RAZORPAY_KEY_SECRET`. Preview and development keep test keys.
-- [ ] Live webhook `https://bahramsilks.com/api/webhooks/razorpay` with a new secret
+- [ ] Live webhook `https://bahramsilk.com/api/webhooks/razorpay` with a new secret
       (`RAZORPAY_WEBHOOK_SECRET`), events: `payment.captured`, `payment.failed`, `order.paid`,
       `refund.processed`, `refund.failed`.
 - [ ] Set `PAYMENTS_LIVE_ENABLED=true` in Production; the test-mode notice disappears.
@@ -112,6 +112,6 @@ Vercel Hobby is non-commercial only ([ADR 0004](../adr/0004-payments-test-mode-a
 - [ ] [Compliance checklist](../compliance-checklist.md) complete or waived by the owner.
 - [ ] Core Web Vitals on a mid-range Android over 4G: LCP ≤ 2.5 s, INP ≤ 200 ms, CLS ≤ 0.1.
 - [ ] `robots.txt` allows the storefront (no leftover staging `Disallow: /`); staging is noindex.
-- [ ] Uptime monitor on `https://bahramsilks.com/api/health` alerting the tech lead and operations lead.
+- [ ] Uptime monitor on `https://bahramsilk.com/api/health` alerting the tech lead and operations lead.
 - [ ] Staff accounts created with the least role needed; seeded local accounts absent from production.
 - [ ] Incident contacts written down: Vercel, Supabase, Razorpay support, courier account manager.

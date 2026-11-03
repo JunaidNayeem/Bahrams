@@ -1,8 +1,10 @@
 import Link from "next/link";
 
 import { SectionHeading } from "@/components/brand/section-heading";
-import { weaverUrl } from "@/config/routes";
+import { JsonLd } from "@/components/seo/json-ld";
+import { routes, weaverUrl } from "@/config/routes";
 import { listWeavers } from "@/lib/data/cms";
+import { breadcrumbJsonLd, webPageJsonLd } from "@/lib/seo/jsonld";
 import { buildMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMetadata({
@@ -17,6 +19,15 @@ export default async function WeaversPage() {
   const weavers = await listWeavers();
   return (
     <div className="container-page py-12">
+      <JsonLd
+        data={[
+          webPageJsonLd({ path: routes.weavers, name: "Our weavers", type: "CollectionPage" }),
+          breadcrumbJsonLd([
+            { name: "Home", path: routes.home },
+            { name: "Our weavers", path: routes.weavers },
+          ]),
+        ]}
+      />
       <SectionHeading
         as="h1"
         title="Our weavers"
@@ -33,7 +44,11 @@ export default async function WeaversPage() {
               {w.yearsWeaving ? ` · ${w.yearsWeaving} years at the loom` : ""}
             </p>
             {w.bio && <p className="mt-3 line-clamp-4 text-sm">{w.bio}</p>}
-            {w.isSample && <p className="mt-3 text-xs text-muted-foreground italic">Sample profile for development</p>}
+            {w.isSample && (
+              <p className="mt-3 text-xs text-muted-foreground italic">
+                Sample profile for development
+              </p>
+            )}
           </li>
         ))}
       </ul>

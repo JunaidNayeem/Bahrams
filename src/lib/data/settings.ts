@@ -75,7 +75,7 @@ export async function getStoreSettings(): Promise<StoreSettings> {
     prepaidIncentive,
     returnWindowDays: num("return_window_days", 7),
     legalEntity: (s.legal_entity ?? { name: "Bahram Silks" }) as LegalEntity,
-    grievanceOfficer: (s.grievance_officer ?? { name: "Grievance Officer", email: "grievance@bahramsilks.com" }) as GrievanceOfficer,
+    grievanceOfficer: (s.grievance_officer ?? { name: "Grievance Officer", email: "grievance@bahramsilk.com" }) as GrievanceOfficer,
     privacyNoticeVersion: typeof s.privacy_notice_version === "string" ? s.privacy_notice_version : "draft",
   };
 }

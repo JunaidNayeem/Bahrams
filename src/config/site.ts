@@ -20,7 +20,7 @@ export const siteConfig = {
   sellerState: { name: "Bihar", gstStateCode: "10" },
   contact: {
     // TODO(client): real contact details
-    email: "care@bahramsilks.com",
+    email: "care@bahramsilk.com",
     phone: "+91-00000-00000",
     whatsapp: "910000000000",
     address: "Bhagalpur, Bihar, India",

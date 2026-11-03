@@ -3,6 +3,7 @@ import { siteOrigin } from "@/config/routes";
 import {
   articleJsonLd,
   breadcrumbJsonLd,
+  faqItemsFromHtml,
   faqPageJsonLd,
   organizationJsonLd,
   paiseToSchemaPrice,
@@ -10,6 +11,7 @@ import {
   productJsonLd,
   serializeJsonLd,
   storeJsonLd,
+  webPageJsonLd,
   websiteJsonLd,
   type ProductJsonLdInput,
   type ShippingPolicy,
@@ -340,5 +342,27 @@ describe("storeJsonLd", () => {
     expect(store.telephone).toBe("+91-98350-12345");
     expect(store.geo).toEqual({ "@type": "GeoCoordinates", latitude: 25.25, longitude: 86.98 });
     expect(store.openingHoursSpecification?.[0].dayOfWeek).toEqual(["Monday", "Saturday"]);
+  });
+});
+
+describe("faqItemsFromHtml", () => {
+  it("pairs each <h2> question with the content after it", () => {
+    const html =
+      "<p>Intro.</p><h2>Is your silk pure?</h2><p>Pure pieces carry a <a href='/x'>Silk Mark</a> label.</p>" +
+      "<h2>Do you offer COD?</h2><p>Yes, up to ₹5,000.</p><ul><li>Fee shown upfront</li></ul><h2>Empty</h2>";
+    expect(faqItemsFromHtml(html)).toEqual([
+      { question: "Is your silk pure?", answer: "Pure pieces carry a Silk Mark label." },
+      { question: "Do you offer COD?", answer: "Yes, up to ₹5,000. Fee shown upfront" },
+    ]);
+  });
+});
+
+describe("webPageJsonLd", () => {
+  it("ties the page to the website and, for About pages, the organisation", () => {
+    const page = webPageJsonLd({ path: "/our-story", name: "Our story", type: "AboutPage" });
+    expect(page["@id"]).toBe(`${origin}/our-story#webpage`);
+    expect(page.isPartOf).toEqual({ "@id": `${origin}/#website` });
+    expect(page.about).toEqual({ "@id": `${origin}/#organization` });
+    expect(webPageJsonLd({ path: "/legal/terms", name: "Terms" })).not.toHaveProperty("about");
   });
 });

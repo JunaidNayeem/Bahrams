@@ -23,6 +23,7 @@ import {
   type JsonLdDocument,
   type OrganizationLd,
   type PostalAddressLd,
+  type WebPageLd,
   type WebSiteLd,
   type WithContext,
 } from "./schema-types";
@@ -239,6 +240,58 @@ export function faqPageJsonLd(faqs: readonly FaqItem[]): WithContext<FaqPageLd> 
       acceptedAnswer: { "@type": "Answer", text: faq.answer },
     })),
   };
+}
+
+/**
+ * Questions and answers from CMS rich text written as "<h2>Question</h2>" followed by the
+ * answer, which is how the FAQ page is edited in the admin. Answers become plain text.
+ */
+export function faqItemsFromHtml(html: string): FaqItem[] {
+  const plain = (s: string) =>
+    s
+      .replace(/<[^>]*>/g, " ")
+      .replace(/&nbsp;/g, " ")
+      .replace(/&amp;/g, "&")
+      .replace(/\s+/g, " ")
+      .trim();
+  return html
+    .split(/<h2[^>]*>/i)
+    .slice(1)
+    .map((chunk) => {
+      const [question = "", answer = ""] = chunk.split(/<\/h2>/i);
+      return { question: plain(question), answer: plain(answer) };
+    })
+    .filter((f) => f.question.length > 0 && f.answer.length > 0);
+}
+
+/* ------------------------------------------------------------------------------------------
+ * Web pages (about, help, legal, contact)
+ * ---------------------------------------------------------------------------------------- */
+
+export interface WebPageJsonLdInput {
+  path: string;
+  name: string;
+  description?: string;
+  type?: WebPageLd["@type"];
+  /** ISO 8601. */
+  dateModified?: string;
+}
+
+/** WebPage node tied to the site and the organisation, for pages without a richer type. */
+export function webPageJsonLd(input: WebPageJsonLdInput): WithContext<WebPageLd> {
+  const url = absoluteUrl(input.path);
+  return compact({
+    "@context": SCHEMA_CONTEXT,
+    "@type": input.type ?? "WebPage",
+    "@id": `${url}#webpage`,
+    url,
+    name: input.name,
+    description: input.description,
+    inLanguage: siteConfig.locale,
+    isPartOf: { "@id": websiteId() },
+    about: input.type === "AboutPage" ? { "@id": organizationId() } : undefined,
+    dateModified: input.dateModified,
+  });
 }
 
 /* ------------------------------------------------------------------------------------------

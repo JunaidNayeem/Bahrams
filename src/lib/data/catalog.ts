@@ -122,12 +122,18 @@ type CardRow = {
 };
 
 function toImage(m: CardRow["product_media"][number] | undefined): ProductImage | null {
-  return m ? { url: productMediaUrl(m.storage_path), alt: m.alt, width: m.width, height: m.height } : null;
+  return m
+    ? { url: productMediaUrl(m.storage_path), alt: m.alt, width: m.width, height: m.height }
+    : null;
 }
 
 function toCard(row: CardRow): ProductCard {
-  const images = row.product_media.filter((m) => m.kind === "image").sort((a, b) => a.sort - b.sort);
-  const variants = row.product_variants.filter((v) => v.active).sort((a, b) => a.position - b.position);
+  const images = row.product_media
+    .filter((m) => m.kind === "image")
+    .sort((a, b) => a.sort - b.sort);
+  const variants = row.product_variants
+    .filter((v) => v.active)
+    .sort((a, b) => a.position - b.position);
   return {
     id: row.id,
     slug: row.slug,
@@ -155,7 +161,9 @@ export async function getCollection(path: string): Promise<Collection | null> {
 
   const { data, error } = await createPublicClient()
     .from("collections")
-    .select("id, section, slug, path, title, h1, intro, body, faqs, membership, rules, default_sort, seo_title, seo_description, noindex")
+    .select(
+      "id, section, slug, path, title, h1, intro, body, faqs, membership, rules, default_sort, seo_title, seo_description, noindex",
+    )
     .eq("path", path)
     .maybeSingle();
   if (error) throw error;
@@ -218,7 +226,8 @@ export async function listCollectionProducts(
   // The base query applies the collection's own rules; facets come from this unfiltered set.
   const base = () => {
     let q = supabase.from("products").select(CARD_SELECT, { count: "exact" });
-    if (manualIds) q = q.in("id", manualIds.length ? manualIds : ["00000000-0000-0000-0000-000000000000"]);
+    if (manualIds)
+      q = q.in("id", manualIds.length ? manualIds : ["00000000-0000-0000-0000-000000000000"]);
     if (rules.kinds?.length) q = q.in("kind", rules.kinds);
     if (rules.exclude_kinds?.length) q = q.not("kind", "in", `(${rules.exclude_kinds.join(",")})`);
     if (rules.fibres?.length) q = q.in("primary_fibre", rules.fibres);
@@ -252,7 +261,10 @@ export async function listCollectionProducts(
 
   // Catalogue is small (hundreds of products), so sorting and paging in memory keeps one cached
   // round-trip per collection. Move to SQL ordering/range if it grows past a few thousand.
-  const rows = all as unknown as (CardRow & { featured_rank: number | null; published_at: string | null })[];
+  const rows = all as unknown as (CardRow & {
+    featured_rank: number | null;
+    published_at: string | null;
+  })[];
   const meta = new Map(rows.map((r) => [r.id, r]));
   const sorted = [...filtered].sort((a, b) => {
     switch (sort) {
@@ -261,7 +273,9 @@ export async function listCollectionProducts(
       case "price_desc":
         return b.priceMinPaise - a.priceMinPaise;
       case "newest":
-        return (meta.get(b.id)?.published_at ?? "").localeCompare(meta.get(a.id)?.published_at ?? "");
+        return (meta.get(b.id)?.published_at ?? "").localeCompare(
+          meta.get(a.id)?.published_at ?? "",
+        );
       default: {
         const ra = meta.get(a.id)?.featured_rank ?? Number.MAX_SAFE_INTEGER;
         const rb = meta.get(b.id)?.featured_rank ?? Number.MAX_SAFE_INTEGER;
@@ -316,24 +330,42 @@ export async function searchProducts(query: string, limit = 24): Promise<Product
   const q = query.trim();
   if (q.length < 2) return [];
   const supabase = createPublicClient();
-  const { data: hits, error } = await supabase.rpc("search_products", { p_query: q, p_limit: limit });
+  const { data: hits, error } = await supabase.rpc("search_products", {
+    p_query: q,
+    p_limit: limit,
+  });
   if (error) throw error;
   const ids = (hits ?? []).map((h: { id: string }) => h.id);
   if (ids.length === 0) return [];
 
-  const { data, error: cardError } = await supabase.from("products").select(CARD_SELECT).in("id", ids);
+  const { data, error: cardError } = await supabase
+    .from("products")
+    .select(CARD_SELECT)
+    .in("id", ids);
   if (cardError) throw cardError;
   const byId = new Map((data as unknown as CardRow[]).map((r) => [r.id, toCard(r)]));
   return ids.map((id: string) => byId.get(id)).filter((p): p is ProductCard => Boolean(p));
 }
 
 /** Published product slugs, for generateStaticParams and the sitemap. */
-export async function listProductSlugs(): Promise<{ slug: string; updatedAt: string }[]> {
+export async function listProductSlugs(): Promise<
+  { slug: string; updatedAt: string; images: string[] }[]
+> {
   "use cache";
   cacheLife("hours");
   cacheTag(CATALOG_TAG);
 
-  const { data, error } = await createPublicClient().from("products").select("slug, updated_at");
+  // RLS returns published products only, so drafts never reach the sitemap.
+  const { data, error } = await createPublicClient()
+    .from("products")
+    .select("slug, updated_at, product_media(storage_path, kind, sort)");
   if (error) throw error;
-  return data.map((p) => ({ slug: p.slug, updatedAt: p.updated_at }));
+  return data.map((p) => ({
+    slug: p.slug,
+    updatedAt: p.updated_at,
+    images: [...p.product_media]
+      .filter((m) => m.kind === "image")
+      .sort((a, b) => a.sort - b.sort)
+      .map((m) => productMediaUrl(m.storage_path)),
+  }));
 }

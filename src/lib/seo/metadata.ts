@@ -82,6 +82,30 @@ export function formatTitle(title: string, brandSuffix = true): string {
   return withBrand.length <= TITLE_MAX_LENGTH ? withBrand : clean;
 }
 
+/** Brand line appended to short descriptions so search snippets say who and where. */
+export const BRAND_CONTEXT = `From ${siteConfig.name}, the weaving house of Bhagalpur.`;
+const SHORT_DESCRIPTION = 100;
+
+/**
+ * Descriptions under ~100 characters waste most of the snippet Google shows (about 155), and
+ * many come from short admin-entered copy. Append the brand line when it is missing and fits.
+ */
+export function withBrandContext(text: string): string {
+  const plain = toPlainText(text);
+  if (plain.length >= SHORT_DESCRIPTION || plain.includes(siteConfig.name)) return plain;
+  const joined = `${plain.replace(/\s*[.!?]?$/u, (end) => end.trim() || ".")} ${BRAND_CONTEXT}`;
+  return joined.length <= DESCRIPTION_MAX_LENGTH ? joined : plain;
+}
+
+/**
+ * Only the production deployment may be indexed. Vercel previews (and the *.vercel.app copy of
+ * any non-production build) get noindex everywhere, so they never compete with bahramsilk.com.
+ * Off Vercel (local dev, CI) the site behaves as production so tests see the real directives.
+ */
+export function isSiteIndexable(env: Record<string, string | undefined> = process.env): boolean {
+  return env.VERCEL_ENV ? env.VERCEL_ENV === "production" : true;
+}
+
 /* ------------------------------------------------------------------------------------------
  * Builders
  * ---------------------------------------------------------------------------------------- */
@@ -107,7 +131,7 @@ const NOINDEX_ROBOTS = {
 
 export function buildMetadata(input: BuildMetadataInput): Metadata {
   const title = formatTitle(input.title, input.brandSuffix ?? true);
-  const description = trimDescription(input.description);
+  const description = trimDescription(withBrandContext(input.description));
   const canonical = absoluteUrl(input.canonical ?? input.path);
   const image = input.image ?? DEFAULT_OG_IMAGE;
   const ogImage = {
@@ -146,13 +170,30 @@ export function buildMetadata(input: BuildMetadataInput): Metadata {
       description,
       images: [ogImage.url],
     },
-    robots: input.noindex ? NOINDEX_ROBOTS : INDEX_ROBOTS,
+    robots: input.noindex || !isSiteIndexable() ? NOINDEX_ROBOTS : INDEX_ROBOTS,
+  };
+}
+
+/**
+ * Search-engine ownership tags, from env so codes never live in the repo. A Search Console
+ * "Domain" property verified by DNS needs none of this; the meta tag suits a "URL prefix" one.
+ */
+export function verificationMetadata(
+  env: Record<string, string | undefined> = process.env,
+): Metadata["verification"] | undefined {
+  const google = env.GOOGLE_SITE_VERIFICATION?.trim();
+  const bing = env.BING_SITE_VERIFICATION?.trim();
+  if (!google && !bing) return undefined;
+  return {
+    ...(google ? { google } : {}),
+    ...(bing ? { other: { "msvalidate.01": bing } } : {}),
   };
 }
 
 /** Root-layout defaults: metadataBase, a title template for pages that set plain titles. */
 export function rootMetadata(): Metadata {
   const home = keywordTargetFor("/");
+  const verification = verificationMetadata();
   return {
     metadataBase: new URL(siteOrigin()),
     applicationName: siteConfig.name,
@@ -168,8 +209,9 @@ export function rootMetadata(): Metadata {
       images: [{ ...DEFAULT_OG_IMAGE, url: absoluteUrl(DEFAULT_OG_IMAGE.url) }],
     },
     twitter: { card: "summary_large_image" },
-    robots: INDEX_ROBOTS,
+    robots: isSiteIndexable() ? INDEX_ROBOTS : NOINDEX_ROBOTS,
     formatDetection: { telephone: false, email: false, address: false },
+    ...(verification ? { verification } : {}),
   };
 }
 

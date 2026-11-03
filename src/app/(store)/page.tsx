@@ -15,6 +15,13 @@ import { siteConfig } from "@/config/site";
 import { listFeaturedProducts, listProductsInCollection } from "@/lib/data/catalog";
 import { getHomeSections, listRecentReviews, listWeavers, type HomeSection } from "@/lib/data/cms";
 import { organizationJsonLd, websiteJsonLd } from "@/lib/seo/jsonld";
+import { keywordPageMetadata } from "@/lib/seo/metadata";
+
+// Canonical "/", share image and robots; title and description come from the keyword map.
+export const metadata = keywordPageMetadata(routes.home, {
+  title: `${siteConfig.name} | ${siteConfig.tagline}`,
+  description: siteConfig.description,
+});
 
 const str = (v: unknown) => (typeof v === "string" ? v : undefined);
 const num = (v: unknown, fallback: number) => (typeof v === "number" ? v : fallback);
@@ -43,7 +50,10 @@ async function Hero({ section }: { section: HomeSection }) {
         </div>
       </div>
       {lead?.image && (
-        <Link href={productUrl(lead.slug)} className="relative block aspect-[4/5] overflow-hidden rounded-lg bg-muted md:justify-self-end md:w-[85%]">
+        <Link
+          href={productUrl(lead.slug)}
+          className="relative block aspect-[4/5] overflow-hidden rounded-lg bg-muted md:w-[85%] md:justify-self-end"
+        >
           <Image
             src={lead.image.url}
             alt={lead.image.alt}
@@ -92,7 +102,9 @@ function ShopByFabric({ section }: { section: HomeSection }) {
 async function ProductRow({ section }: { section: HomeSection }) {
   const limit = num(section.config.limit, 8);
   const path = str(section.config.collection_path);
-  const products = path ? await listProductsInCollection(path, limit) : await listFeaturedProducts(limit);
+  const products = path
+    ? await listProductsInCollection(path, limit)
+    : await listFeaturedProducts(limit);
   if (products.length === 0) return null;
   return (
     <section className="container-page py-14">
@@ -112,7 +124,9 @@ async function ProductRow({ section }: { section: HomeSection }) {
 }
 
 async function WeaverStory({ section }: { section: HomeSection }) {
-  const slugs = (Array.isArray(section.config.weaver_slugs) ? section.config.weaver_slugs : []) as string[];
+  const slugs = (
+    Array.isArray(section.config.weaver_slugs) ? section.config.weaver_slugs : []
+  ) as string[];
   const weavers = await listWeavers(slugs);
   return (
     <section className="bg-ivory-200 py-16">
@@ -123,7 +137,10 @@ async function WeaverStory({ section }: { section: HomeSection }) {
             Bhagalpur has some 30,000 handloom weavers on around 25,000 looms, in Nathnagar,
             Champanagar, Mirzafari and beyond. We credit the hands behind every piece.
           </p>
-          <Link href={str(section.config.cta_href) ?? routes.weavers} className={buttonVariants({ variant: "outline" })}>
+          <Link
+            href={str(section.config.cta_href) ?? routes.weavers}
+            className={buttonVariants({ variant: "outline" })}
+          >
             Our weavers
           </Link>
         </div>
@@ -138,7 +155,11 @@ async function WeaverStory({ section }: { section: HomeSection }) {
                 {w.yearsWeaving ? ` · ${w.yearsWeaving} years at the loom` : ""}
               </p>
               {w.bio && <p className="mt-3 line-clamp-3 text-sm">{w.bio}</p>}
-              {w.isSample && <p className="mt-3 text-xs text-muted-foreground italic">Sample profile for development</p>}
+              {w.isSample && (
+                <p className="mt-3 text-xs text-muted-foreground italic">
+                  Sample profile for development
+                </p>
+              )}
             </li>
           ))}
         </ul>
@@ -148,14 +169,20 @@ async function WeaverStory({ section }: { section: HomeSection }) {
 }
 
 async function Reviews({ section }: { section: HomeSection }) {
-  const reviews = await listRecentReviews(num(section.config.limit, 6), num(section.config.min_rating, 4));
+  const reviews = await listRecentReviews(
+    num(section.config.limit, 6),
+    num(section.config.min_rating, 4),
+  );
   if (reviews.length === 0) return null;
   return (
     <section className="container-page py-14">
       <SectionHeading title={section.title ?? "What customers say"} align="center" divider />
       <ul className="mt-8 grid gap-4 md:grid-cols-3">
         {reviews.map((r) => (
-          <li key={r.id} className="flex flex-col gap-3 rounded-md border border-border bg-card p-6">
+          <li
+            key={r.id}
+            className="flex flex-col gap-3 rounded-md border border-border bg-card p-6"
+          >
             <QuoteIcon className="size-5 text-gold-text" aria-hidden />
             <RatingStars rating={r.rating} size="sm" />
             {r.title && <p className="font-medium">{r.title}</p>}

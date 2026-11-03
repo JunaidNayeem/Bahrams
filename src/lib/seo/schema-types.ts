@@ -221,6 +221,18 @@ export interface ArticleLd {
   articleSection?: string;
 }
 
+export interface WebPageLd {
+  "@type": "WebPage" | "AboutPage" | "ContactPage" | "CollectionPage";
+  "@id": string;
+  url: string;
+  name: string;
+  description?: string;
+  inLanguage: string;
+  isPartOf: NodeRef;
+  about?: NodeRef;
+  dateModified?: string;
+}
+
 export interface FaqPageLd {
   "@type": "FAQPage";
   mainEntity: readonly {

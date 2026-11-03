@@ -1,27 +1,14 @@
 import type { Metadata, Viewport } from "next";
 
-import { siteConfig } from "@/config/site";
 import { Toaster } from "@/components/ui/toaster";
+import { rootMetadata } from "@/lib/seo/metadata";
 import { cn } from "@/lib/utils";
 
 import { fontVariables } from "./fonts";
 import "./globals.css";
 
-export const metadata: Metadata = {
-  metadataBase: new URL(siteConfig.url),
-  title: {
-    default: `${siteConfig.name} · ${siteConfig.tagline}`,
-    template: `%s · ${siteConfig.name}`,
-  },
-  description: siteConfig.description,
-  applicationName: siteConfig.name,
-  openGraph: {
-    type: "website",
-    siteName: siteConfig.name,
-    locale: "en_IN",
-  },
-  formatDetection: { telephone: false, address: false, email: false },
-};
+// metadataBase, title template, default share image, robots and Search Console verification.
+export const metadata: Metadata = rootMetadata();
 
 export const viewport: Viewport = {
   // ivory-100, the page background, so the mobile browser chrome blends into the page.

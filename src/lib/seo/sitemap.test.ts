@@ -8,6 +8,7 @@ import {
   escapeXmlUrl,
   listingPaths,
   productSitemapEntries,
+  sitemapIndexXml,
   staticPageSitemapEntries,
 } from "./sitemap";
 
@@ -96,12 +97,31 @@ describe("buildRobots", () => {
       "/api",
       "/search?",
     ]);
-    expect(robots.sitemap).toEqual([
-      `${origin}/sitemap/static.xml`,
-      `${origin}/sitemap/collections.xml`,
-      `${origin}/sitemap/products.xml`,
-      `${origin}/sitemap/articles.xml`,
-    ]);
+    expect(robots.sitemap).toBe(`${origin}/sitemap.xml`);
+  });
+
+  it("blocks everything on non-production deployments", () => {
+    const robots = buildRobots(false);
+    expect(robots.rules).toEqual({ userAgent: "*", disallow: "/" });
+    expect(robots.sitemap).toBeUndefined();
+  });
+});
+
+describe("sitemapIndexXml", () => {
+  it("lists every child sitemap and leaves out the unpublished articles map", () => {
+    const xml = sitemapIndexXml("2026-11-03T00:00:00Z");
+    expect(xml).toContain("<sitemapindex");
+    for (const id of ["static", "collections", "products"]) {
+      expect(xml).toContain(`<loc>${origin}/sitemap/${id}.xml</loc>`);
+    }
+    expect(xml).not.toContain("articles");
+    expect(xml).toContain("<lastmod>2026-11-03T00:00:00.000Z</lastmod>");
+  });
+
+  it("keeps placeholder pages that are noindex out of the static map", () => {
+    const urls = staticPageSitemapEntries().map((e) => e.url);
+    expect(urls).not.toContain(`${origin}/journal`);
+    expect(urls).not.toContain(`${origin}/bulk-enquiries`);
   });
 });
 

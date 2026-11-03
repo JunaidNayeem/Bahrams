@@ -119,7 +119,8 @@ Keep READMEs and notes out of `src/app/`.
 - [Open questions](docs/open-questions.md): what we need from the client and the defaults we assumed
 - [Compliance checklist](docs/compliance-checklist.md): pre-launch legal and dark-pattern checks
 - [Kickoff notes](docs/kickoff-notes.md): inconsistencies found in the brief and how we resolved them
-- Runbooks: [local development](docs/runbooks/local-dev.md), [going live](docs/runbooks/going-live.md)
+- Runbooks: [local development](docs/runbooks/local-dev.md), [going live](docs/runbooks/going-live.md),
+  [publishing on Google](docs/runbooks/google-search.md)
 
 ## Rules that are easy to break
 

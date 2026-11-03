@@ -130,7 +130,7 @@ const nextConfig: NextConfig = {
     // Admin product-photo uploads go through a server action (resized to WebP server-side).
     serverActions: { bodySizeLimit: "12mb" },
   },
-  pageExtensions:["js", "jsx", "md", "mdx", "ts", "tsx"],
+  pageExtensions: ["js", "jsx", "md", "mdx", "ts", "tsx"],
   images: {
     formats: ["image/avif", "image/webp"],
     // Tuned for mid-range Android phones first (360–414 CSS px), then tablet and desktop.
@@ -152,6 +152,13 @@ const nextConfig: NextConfig = {
     // Next blocks optimising images from private IPs; allow it only against a local Supabase.
     dangerouslyAllowLocalIP: isLocalSupabase,
   },
+  async rewrites() {
+    return {
+      // app/sitemap.ts (generateSitemaps) reserves /sitemap.xml but serves nothing there, so the
+      // index lives at /sitemap-index.xml and is exposed at the conventional URL before routing.
+      beforeFiles: [{ source: "/sitemap.xml", destination: "/sitemap-index.xml" }],
+    };
+  },
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },
@@ -161,6 +168,11 @@ const nextConfig: NextConfig = {
       })),
       // Internal search results are thin pages, but the products they link to should be crawled.
       { source: "/search", headers: [{ key: "X-Robots-Tag", value: "noindex, follow" }] },
+      // Preview deployments are public URLs on *.vercel.app; keep them out of search entirely
+      // (images and files included, which page-level robots tags cannot cover).
+      ...(isVercelPreview
+        ? [{ source: "/:path*", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] }]
+        : []),
     ];
   },
   turbopack: {

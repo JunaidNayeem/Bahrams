@@ -1,13 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { siteOrigin } from "@/config/routes";
 import {
+  BRAND_CONTEXT,
   articleMetadata,
   buildMetadata,
   collectionMetadata,
   formatTitle,
+  isSiteIndexable,
   noindexMetadata,
   productMetadata,
   trimDescription,
+  verificationMetadata,
+  withBrandContext,
 } from "./metadata";
 
 const origin = siteOrigin();
@@ -113,7 +117,8 @@ describe("page helpers", () => {
       seoDescription: "Custom copy.",
     });
     expect(meta.title).toEqual({ absolute: "Festive Tussar | Bahram Silks" });
-    expect(meta.description).toBe("Custom copy.");
+    // Short admin copy is kept and gets the brand line (withBrandContext).
+    expect(meta.description).toBe(`Custom copy. ${BRAND_CONTEXT}`);
   });
 
   it("productMetadata builds a specific fallback title and description", () => {
@@ -145,5 +150,48 @@ describe("page helpers", () => {
 
   it("noindexMetadata keeps private pages out of the index", () => {
     expect(noindexMetadata("Your cart", "/cart").robots).toMatchObject({ index: false });
+  });
+});
+
+describe("withBrandContext", () => {
+  it("adds the brand line to short descriptions", () => {
+    expect(withBrandContext("Matka silk sarees in natural tones")).toBe(
+      `Matka silk sarees in natural tones. ${BRAND_CONTEXT}`,
+    );
+  });
+
+  it("leaves long or already-branded descriptions alone", () => {
+    const long =
+      "Tussar silk sarees woven in Bhagalpur, with zari borders, natural dyes and Silk Mark labels on every pure-silk piece.";
+    expect(withBrandContext(long)).toBe(long);
+    expect(withBrandContext("Bahram Silks contact page.")).toBe("Bahram Silks contact page.");
+  });
+
+  it("is applied by buildMetadata", () => {
+    const meta = buildMetadata({
+      title: "Linen sarees",
+      description: "Linen sarees.",
+      path: "/sarees/linen",
+    });
+    expect(meta.description).toBe(`Linen sarees. ${BRAND_CONTEXT}`);
+  });
+});
+
+describe("isSiteIndexable", () => {
+  it("indexes only the Vercel production deployment", () => {
+    expect(isSiteIndexable({ VERCEL_ENV: "production" })).toBe(true);
+    expect(isSiteIndexable({ VERCEL_ENV: "preview" })).toBe(false);
+    expect(isSiteIndexable({ VERCEL_ENV: "development" })).toBe(false);
+    expect(isSiteIndexable({})).toBe(true);
+  });
+});
+
+describe("verificationMetadata", () => {
+  it("emits Google and Bing tags only when configured", () => {
+    expect(verificationMetadata({})).toBeUndefined();
+    expect(verificationMetadata({ GOOGLE_SITE_VERIFICATION: " abc " })).toEqual({ google: "abc" });
+    expect(verificationMetadata({ BING_SITE_VERIFICATION: "xyz" })).toEqual({
+      other: { "msvalidate.01": "xyz" },
+    });
   });
 });

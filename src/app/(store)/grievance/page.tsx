@@ -1,6 +1,8 @@
 import { SectionHeading } from "@/components/brand/section-heading";
+import { JsonLd } from "@/components/seo/json-ld";
 import { routes } from "@/config/routes";
 import { getStoreSettings } from "@/lib/data/settings";
+import { breadcrumbJsonLd, webPageJsonLd } from "@/lib/seo/jsonld";
 import { buildMetadata } from "@/lib/seo/metadata";
 
 export const metadata = buildMetadata({
@@ -16,6 +18,15 @@ export default async function GrievancePage() {
   const { grievanceOfficer: officer, legalEntity } = await getStoreSettings();
   return (
     <div className="container-page max-w-3xl space-y-8 py-12">
+      <JsonLd
+        data={[
+          webPageJsonLd({ path: routes.grievance, name: "Grievance officer", type: "ContactPage" }),
+          breadcrumbJsonLd([
+            { name: "Home", path: routes.home },
+            { name: "Grievance officer", path: routes.grievance },
+          ]),
+        ]}
+      />
       <SectionHeading
         as="h1"
         title="Grievance officer"
@@ -49,8 +60,8 @@ export default async function GrievancePage() {
         </dd>
       </dl>
       <p className="text-sm text-muted-foreground">
-        Please include your order number if you have one. You will receive a ticket number when we acknowledge
-        your complaint.
+        Please include your order number if you have one. You will receive a ticket number when we
+        acknowledge your complaint.
       </p>
     </div>
   );

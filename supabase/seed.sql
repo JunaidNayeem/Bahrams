@@ -64,11 +64,11 @@ insert into public.settings (key, value, is_public, description) values
   ('return_window_days', '7', true, 'Days from delivery to request a return or exchange.'),
   ('reservation_minutes', '15', false, 'Stock hold at checkout. Enforced in reserve_stock(); informational here.'),
   ('low_stock_threshold_default', '{"piece": 1, "metre": 10}', false, 'Low-stock alert when available falls to or below this.'),
-  ('legal_entity', '{"name": "TODO(client): registered legal name", "trade_name": "Bahram Silks", "address": "TODO(client): registered address, Bhagalpur, Bihar", "gstin": null, "email": "care@bahramsilks.com", "phone": null}', true, 'Seller identity shown in the footer, invoices and legal pages.'),
-  ('grievance_officer', '{"name": "TODO(client): officer name", "designation": "Grievance Officer", "email": "grievance@bahramsilks.com", "phone": null, "hours": "Monday to Saturday, 10:00 to 18:00 IST"}', true, 'Consumer Protection (E-Commerce) Rules: published grievance officer.'),
+  ('legal_entity', '{"name": "TODO(client): registered legal name", "trade_name": "Bahram Silks", "address": "TODO(client): registered address, Bhagalpur, Bihar", "gstin": null, "email": "care@bahramsilk.com", "phone": null}', true, 'Seller identity shown in the footer, invoices and legal pages.'),
+  ('grievance_officer', '{"name": "TODO(client): officer name", "designation": "Grievance Officer", "email": "grievance@bahramsilk.com", "phone": null, "hours": "Monday to Saturday, 10:00 to 18:00 IST"}', true, 'Consumer Protection (E-Commerce) Rules: published grievance officer.'),
   ('gst', '{"seller_state": "Bihar", "seller_state_code": "10", "gstin": null, "default_hsn_silk": "5007", "default_rate_bps": 500}', true, 'Place of supply and invoice defaults. TODO(client): GSTIN.'),
   ('privacy_notice_version', '"2026-10-draft"', true, 'Version recorded with every consent event.'),
-  ('notifications', '{"order_email": true, "order_whatsapp": true, "from_email": "orders@bahramsilks.com"}', false, 'Which order-status channels are active.');
+  ('notifications', '{"order_email": true, "order_whatsapp": true, "from_email": "orders@bahramsilk.com"}', false, 'Which order-status channels are active.');
 
 insert into public.shipping_zones (code, name, standard_rate_paise, express_rate_paise) values
   ('bihar', 'Bihar', 4900, 9900),

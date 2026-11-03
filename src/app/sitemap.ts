@@ -9,22 +9,24 @@ import {
   type SitemapId,
 } from "@/lib/seo/sitemap";
 
-// Split sitemaps (/sitemap/static.xml, /sitemap/products.xml, …), listed in robots.txt.
+// Split sitemaps (/sitemap/static.xml, /sitemap/products.xml, …), indexed by /sitemap.xml.
 export function generateSitemaps() {
   return SITEMAP_IDS.map((id) => ({ id }));
 }
 
-export default async function sitemap({ id }: { id: Promise<string> }): Promise<MetadataRoute.Sitemap> {
+export default async function sitemap({
+  id,
+}: {
+  id: Promise<string>;
+}): Promise<MetadataRoute.Sitemap> {
   switch ((await id) as SitemapId) {
     case "static":
       return staticPageSitemapEntries();
     case "collections":
       return collectionSitemapEntries();
     case "products":
+      // Product photos go in as image entries: Google Images is a major route to sarees.
       return productSitemapEntries(await listProductSlugs());
-    case "articles":
-      // Journal and pillar guides are listed here once published (content workstream, week 8+).
-      return [];
     default:
       return [];
   }
