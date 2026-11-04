@@ -8,11 +8,12 @@ import { getWeaver, listWeavers } from "@/lib/data/cms";
 import { fibreLabel } from "@/lib/domain/claims";
 import type { Fibre } from "@/lib/domain/enums";
 import { buildMetadata } from "@/lib/seo/metadata";
+import { slugParamsOrPlaceholder } from "@/lib/static-params";
 
 type Props = PageProps<"/weavers/[slug]">;
 
 export async function generateStaticParams() {
-  return (await listWeavers()).map((w) => ({ slug: w.slug }));
+  return slugParamsOrPlaceholder((await listWeavers()).map((w) => w.slug));
 }
 
 export async function generateMetadata({ params }: Props) {
@@ -42,7 +43,8 @@ async function Weaver({ params }: { params: Props["params"] }) {
       </p>
       {weaver.isSample && (
         <p className="mt-4 rounded-md bg-warning/10 p-3 text-sm">
-          This is a sample profile in development data. Real weavers are named only with their consent.
+          This is a sample profile in development data. Real weavers are named only with their
+          consent.
         </p>
       )}
       <ZariDivider className="my-6 w-24" />

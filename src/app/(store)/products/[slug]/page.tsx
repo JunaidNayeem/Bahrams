@@ -16,15 +16,26 @@ import { siteConfig } from "@/config/site";
 import { listProductSlugs } from "@/lib/data/catalog";
 import { getAvailability, getProduct, type ProductDetail } from "@/lib/data/product";
 import { getStoreSettings } from "@/lib/data/settings";
-import { CLAIM_BADGE_LABELS, compositionLabel, fibreLabel, SILK_MARK_VERIFY_URL } from "@/lib/domain/claims";
+import {
+  CLAIM_BADGE_LABELS,
+  compositionLabel,
+  fibreLabel,
+  SILK_MARK_VERIFY_URL,
+} from "@/lib/domain/claims";
 import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 import { productMetadata } from "@/lib/seo/metadata";
-import { DEFAULT_RETURN_POLICY, NOT_RETURNABLE, productGroupJsonLd, productJsonLd } from "@/lib/seo/product-jsonld";
+import {
+  DEFAULT_RETURN_POLICY,
+  NOT_RETURNABLE,
+  productGroupJsonLd,
+  productJsonLd,
+} from "@/lib/seo/product-jsonld";
+import { slugParamsOrPlaceholder } from "@/lib/static-params";
 
 type Props = PageProps<"/products/[slug]">;
 
 export async function generateStaticParams() {
-  return (await listProductSlugs()).map(({ slug }) => ({ slug }));
+  return slugParamsOrPlaceholder((await listProductSlugs()).map(({ slug }) => slug));
 }
 
 export async function generateMetadata({ params }: Props) {
@@ -57,7 +68,16 @@ function Specs({ product }: { product: ProductDetail }) {
     ["Weave", product.weave],
     ["Zari", product.zari],
     ["Saree length", product.lengthM ? `${product.lengthM} m` : null],
-    ["Blouse piece", product.blouseIncluded ? (product.blouseLengthM ? `Included, ${product.blouseLengthM} m` : "Included") : product.kind === "saree" ? "Not included" : null],
+    [
+      "Blouse piece",
+      product.blouseIncluded
+        ? product.blouseLengthM
+          ? `Included, ${product.blouseLengthM} m`
+          : "Included"
+        : product.kind === "saree"
+          ? "Not included"
+          : null,
+    ],
     ["Fabric width", product.widthCm ? `${product.widthCm} cm` : null],
     ["Weight", product.weightG ? `About ${product.weightG} g` : null],
     ["Occasions", product.occasions.map((o) => OCCASION_TEXT[o] ?? o).join(", ") || null],
@@ -80,16 +100,24 @@ function Specs({ product }: { product: ProductDetail }) {
 function Authenticity({ product }: { product: ProductDetail }) {
   const { claims } = product;
   return (
-    <section aria-labelledby="authenticity" className="space-y-3 rounded-md border border-gold-300 bg-ivory-200/60 p-5">
+    <section
+      aria-labelledby="authenticity"
+      className="space-y-3 rounded-md border border-gold-300 bg-ivory-200/60 p-5"
+    >
       <h2 id="authenticity" className="flex items-center gap-2 font-display text-xl">
         <BadgeCheckIcon className="size-5 text-gold-text" aria-hidden /> Proof of authenticity
       </h2>
       <ul className="space-y-2 text-sm">
         {claims.silkMarkLabelNumber ? (
           <li>
-            Silk Mark label <strong className="font-mono">{claims.silkMarkLabelNumber}</strong> is attached to this
-            piece.{" "}
-            <a href={SILK_MARK_VERIFY_URL} target="_blank" rel="noopener" className="inline-flex items-center gap-1 underline">
+            Silk Mark label <strong className="font-mono">{claims.silkMarkLabelNumber}</strong> is
+            attached to this piece.{" "}
+            <a
+              href={SILK_MARK_VERIFY_URL}
+              target="_blank"
+              rel="noopener"
+              className="inline-flex items-center gap-1 underline"
+            >
               Verify on silkmarkindia.com <ExternalLinkIcon className="size-3" aria-hidden />
             </a>
           </li>
@@ -98,7 +126,8 @@ function Authenticity({ product }: { product: ProductDetail }) {
         )}
         {claims.handloomMarkLabelNumber && (
           <li>
-            Handloom Mark label <strong className="font-mono">{claims.handloomMarkLabelNumber}</strong>.
+            Handloom Mark label{" "}
+            <strong className="font-mono">{claims.handloomMarkLabelNumber}</strong>.
           </li>
         )}
         <li>
@@ -151,7 +180,10 @@ async function ProductJsonLd({ product }: { product: ProductDetail }) {
     color: v.colour ?? undefined,
     shipping,
     returns: product.returnable ? DEFAULT_RETURN_POLICY : NOT_RETURNABLE,
-    rating: product.ratingAvg !== null && product.ratingCount > 0 ? { average: product.ratingAvg, count: product.ratingCount } : null,
+    rating:
+      product.ratingAvg !== null && product.ratingCount > 0
+        ? { average: product.ratingAvg, count: product.ratingCount }
+        : null,
     reviews: product.reviews.slice(0, 5).map((r) => ({
       authorName: r.authorName,
       rating: r.rating,
@@ -255,7 +287,11 @@ async function ProductContent({ params }: { params: Props["params"] }) {
                     <ClaimBadge
                       claim={badge as ClaimBadgeKey}
                       label={CLAIM_BADGE_LABELS[badge]}
-                      detail={badge === "silk_mark" ? (product.claims.silkMarkLabelNumber ?? undefined) : undefined}
+                      detail={
+                        badge === "silk_mark"
+                          ? (product.claims.silkMarkLabelNumber ?? undefined)
+                          : undefined
+                      }
                       size="sm"
                     />
                   )}
@@ -289,7 +325,10 @@ async function ProductContent({ params }: { params: Props["params"] }) {
                 About this piece
               </h2>
               {/* Rich text is sanitised by the admin editor on save; only staff can write it (RLS). */}
-              <div className="max-w-prose space-y-3 leading-relaxed" dangerouslySetInnerHTML={{ __html: product.descriptionHtml }} />
+              <div
+                className="max-w-prose space-y-3 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: product.descriptionHtml }}
+              />
             </section>
           )}
           <section aria-labelledby="details" className="space-y-3">
@@ -312,10 +351,17 @@ async function ProductContent({ params }: { params: Props["params"] }) {
           {product.weaver && (
             <section className="rounded-md border border-border p-5">
               <p className="text-eyebrow text-muted-foreground uppercase">Woven by</p>
-              <Link href={weaverUrl(product.weaver.slug)} className="font-display text-xl hover:underline">
+              <Link
+                href={weaverUrl(product.weaver.slug)}
+                className="font-display text-xl hover:underline"
+              >
                 {product.weaver.name}
               </Link>
-              {product.weaver.locality && <p className="text-sm text-muted-foreground">{product.weaver.locality}, Bhagalpur</p>}
+              {product.weaver.locality && (
+                <p className="text-sm text-muted-foreground">
+                  {product.weaver.locality}, Bhagalpur
+                </p>
+              )}
             </section>
           )}
         </aside>
@@ -327,7 +373,9 @@ async function ProductContent({ params }: { params: Props["params"] }) {
           Reviews
         </h2>
         {product.reviews.length === 0 ? (
-          <p className="text-muted-foreground">No reviews yet. Bought this piece? We&apos;d love to hear from you.</p>
+          <p className="text-muted-foreground">
+            No reviews yet. Bought this piece? We&apos;d love to hear from you.
+          </p>
         ) : (
           <ul className="grid gap-4 md:grid-cols-2">
             {product.reviews.map((r) => (
@@ -340,7 +388,11 @@ async function ProductContent({ params }: { params: Props["params"] }) {
                   {r.authorCity ? `, ${r.authorCity}` : ""}
                   {r.verifiedPurchase ? " · Verified purchase" : ""}
                 </p>
-                {r.replyBody && <p className="border-l-2 border-gold-500 pl-3 text-sm text-muted-foreground">Bahram Silks: {r.replyBody}</p>}
+                {r.replyBody && (
+                  <p className="border-l-2 border-gold-500 pl-3 text-sm text-muted-foreground">
+                    Bahram Silks: {r.replyBody}
+                  </p>
+                )}
               </li>
             ))}
           </ul>
