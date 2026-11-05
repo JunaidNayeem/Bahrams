@@ -41,12 +41,17 @@ export async function listAdminProducts(filters: ProductListFilters): Promise<Pr
     .order("updated_at", { ascending: false });
   if (filters.status) query = query.eq("status", filters.status);
   if (filters.kind) query = query.eq("kind", filters.kind);
-  if (filters.q) query = query.or(`title.ilike.%${filters.q.replace(/[%,()]/g, "")}%,slug.ilike.%${filters.q.replace(/[%,()]/g, "")}%`);
+  if (filters.q)
+    query = query.or(
+      `title.ilike.%${filters.q.replace(/[%,()]/g, "")}%,slug.ilike.%${filters.q.replace(/[%,()]/g, "")}%`,
+    );
 
   const { data, error } = await query;
   if (error) throw error;
   return data.map((p) => {
-    const thumb = p.product_media.filter((m) => m.kind === "image").sort((a, b) => a.sort - b.sort)[0];
+    const thumb = p.product_media
+      .filter((m) => m.kind === "image")
+      .sort((a, b) => a.sort - b.sort)[0];
     return {
       id: p.id,
       slug: p.slug,
@@ -57,12 +62,15 @@ export async function listAdminProducts(filters: ProductListFilters): Promise<Pr
       priceMinPaise: p.price_min_paise,
       priceMaxPaise: p.price_max_paise,
       stock: p.product_variants.reduce(
-        (n, v) => n + v.inventory_levels.reduce((m, l) => m + Number(l.on_hand) - Number(l.reserved), 0),
+        (n, v) =>
+          n + v.inventory_levels.reduce((m, l) => m + Number(l.on_hand) - Number(l.reserved), 0),
         0,
       ),
       sellUnit: p.product_variants[0]?.sell_unit ?? "piece",
       isOneOfAKind: p.is_one_of_a_kind,
-      hasSilkMark: p.authenticity_labels.some((l) => l.label_type === "silk_mark" && l.status !== "void"),
+      hasSilkMark: p.authenticity_labels.some(
+        (l) => l.label_type === "silk_mark" && l.status !== "void",
+      ),
       thumbnail: thumb ? productMediaUrl(thumb.storage_path) : null,
       updatedAt: p.updated_at,
     };
@@ -76,7 +84,7 @@ export async function getAdminProduct(id: string) {
     .select(
       `*,
        product_variants ( *, inventory_levels ( on_hand, reserved, stock_locations ( name ) ) ),
-       product_media ( id, storage_path, alt, sort, kind, width, height ),
+       product_media ( id, storage_path, alt, sort, kind, width, height, variant_id ),
        authenticity_labels ( id, label_type, label_number, status, variant_id )`,
     )
     .eq("id", id)

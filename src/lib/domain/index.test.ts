@@ -25,6 +25,7 @@ describe("domain barrel", () => {
       "formatOrderNumber",
       "slugify",
       "istDate",
+      "imagesForVariant",
     ]) {
       expect(domain, name).toHaveProperty(name);
     }

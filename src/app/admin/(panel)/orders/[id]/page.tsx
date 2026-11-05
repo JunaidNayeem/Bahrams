@@ -23,7 +23,14 @@ import { createClient } from "@/lib/supabase/server";
 export const metadata = { title: "Order" };
 
 const inr = (p: number) => formatINR(p, { omitZeroPaise: true });
-const METHOD: Record<string, string> = { upi: "UPI", card: "Card", netbanking: "Netbanking", wallet: "Wallet", emi: "EMI", cod: "Cash on delivery" };
+const METHOD: Record<string, string> = {
+  upi: "UPI",
+  card: "Card",
+  netbanking: "Netbanking",
+  wallet: "Wallet",
+  emi: "EMI",
+  cod: "Cash on delivery",
+};
 
 interface Address {
   full_name?: string;
@@ -56,7 +63,10 @@ async function Order({ params }: { params: PageProps<"/admin/orders/[id]">["para
   const addr = (o.shipping_address ?? {}) as Address;
   const canAct = staff.role !== "accountant";
   const steps = canAct
-    ? nextStatuses(o.status, "staff").map((to) => ({ to, requiresReason: getTransition(o.status, to)?.requiresReason ?? false }))
+    ? nextStatuses(o.status, "staff").map((to) => ({
+        to,
+        requiresReason: getTransition(o.status, to)?.requiresReason ?? false,
+      }))
     : [];
   const phone = (addr.phone ?? o.phone ?? "").replace(/[^\d]/g, "");
   const whatsapp = phone
@@ -66,8 +76,18 @@ async function Order({ params }: { params: PageProps<"/admin/orders/[id]">["para
     : null;
 
   const timeline = [
-    ...o.order_status_history.map((h) => ({ at: h.created_at, text: h.from_status ? `${ORDER_STATUS_LABELS[h.from_status]} → ${ORDER_STATUS_LABELS[h.to_status]}` : `Created as ${ORDER_STATUS_LABELS[h.to_status]}`, kind: "status" as const })),
-    ...o.order_notes.map((n) => ({ at: n.created_at, text: n.body, kind: (n.customer_visible ? "public" : "note") as "public" | "note" })),
+    ...o.order_status_history.map((h) => ({
+      at: h.created_at,
+      text: h.from_status
+        ? `${ORDER_STATUS_LABELS[h.from_status]} → ${ORDER_STATUS_LABELS[h.to_status]}`
+        : `Created as ${ORDER_STATUS_LABELS[h.to_status]}`,
+      kind: "status" as const,
+    })),
+    ...o.order_notes.map((n) => ({
+      at: n.created_at,
+      text: n.body,
+      kind: (n.customer_visible ? "public" : "note") as "public" | "note",
+    })),
   ].sort((a, b) => b.at.localeCompare(a.at));
 
   const money: [string, number, boolean?][] = [
@@ -89,7 +109,8 @@ async function Order({ params }: { params: PageProps<"/admin/orders/[id]">["para
             <OrderStatusPill status={o.status} />
             <PaymentStatusPill status={o.payment_status} />
             <span>
-              Placed {formatDateTime(o.placed_at ?? o.created_at)} · {o.source} · {o.payment_method ? METHOD[o.payment_method] : "—"}
+              Placed {formatDateTime(o.placed_at ?? o.created_at)} · {o.source} ·{" "}
+              {o.payment_method ? METHOD[o.payment_method] : "—"}
             </span>
           </span>
         }
@@ -99,13 +120,26 @@ async function Order({ params }: { params: PageProps<"/admin/orders/[id]">["para
           <Panel title="Items">
             <ul className="divide-y divide-border">
               {o.order_items.map((it) => (
-                <li key={it.id} className="flex flex-wrap items-start justify-between gap-3 py-3 first:pt-0 last:pb-0">
+                <li
+                  key={it.id}
+                  className="flex flex-wrap items-start justify-between gap-3 py-3 first:pt-0 last:pb-0"
+                >
                   <div>
                     <p className="font-medium">{it.title}</p>
                     <p className="text-xs text-muted-foreground">
-                      {[it.colour, it.sku, formatQuantity(Number(it.quantity), it.sell_unit), `HSN ${it.hsn_code} @ ${it.gst_rate_bps / 100}%`].filter(Boolean).join(" · ")}
+                      {[
+                        it.variant_title,
+                        it.colour,
+                        it.sku,
+                        formatQuantity(Number(it.quantity), it.sell_unit),
+                        `HSN ${it.hsn_code} @ ${it.gst_rate_bps / 100}%`,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
                     </p>
-                    {it.silk_mark_label_number && <p className="mt-1 text-xs">Silk Mark {it.silk_mark_label_number}</p>}
+                    {it.silk_mark_label_number && (
+                      <p className="mt-1 text-xs">Silk Mark {it.silk_mark_label_number}</p>
+                    )}
                   </div>
                   <div className="text-right text-sm tabular-nums">
                     <p>{inr(it.line_total_paise)}</p>
@@ -118,7 +152,10 @@ async function Order({ params }: { params: PageProps<"/admin/orders/[id]">["para
               {money
                 .filter(([, v, total]) => total || v !== 0)
                 .map(([k, v, total]) => (
-                  <div key={k} className={`flex justify-between ${total ? "pt-1 text-base font-semibold" : ""}`}>
+                  <div
+                    key={k}
+                    className={`flex justify-between ${total ? "pt-1 text-base font-semibold" : ""}`}
+                  >
                     <dt>{k}</dt>
                     <dd className="tabular-nums">{v < 0 ? `−${inr(-v)}` : inr(v)}</dd>
                   </div>
@@ -134,7 +171,9 @@ async function Order({ params }: { params: PageProps<"/admin/orders/[id]">["para
             <Panel title="Payment">
               {o.payments.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  {o.payment_method === "cod" ? `Cash on delivery: collect ${inr(o.total_paise)}.` : "No payment captured yet."}
+                  {o.payment_method === "cod"
+                    ? `Cash on delivery: collect ${inr(o.total_paise)}.`
+                    : "No payment captured yet."}
                 </p>
               ) : (
                 <ul className="space-y-2 text-sm">
@@ -145,7 +184,8 @@ async function Order({ params }: { params: PageProps<"/admin/orders/[id]">["para
                         <span className="tabular-nums">{inr(p.amount_paise)}</span>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        <PaymentStatusPill status={p.status} /> <span className="font-mono">{p.razorpay_payment_id}</span>
+                        <PaymentStatusPill status={p.status} />{" "}
+                        <span className="font-mono">{p.razorpay_payment_id}</span>
                       </p>
                     </li>
                   ))}
@@ -160,10 +200,12 @@ async function Order({ params }: { params: PageProps<"/admin/orders/[id]">["para
                   {o.shipments.map((s) => (
                     <li key={s.id}>
                       <p>
-                        {s.courier} {s.service ? `(${s.service})` : ""} · <span className="font-mono">{s.awb}</span>
+                        {s.courier} {s.service ? `(${s.service})` : ""} ·{" "}
+                        <span className="font-mono">{s.awb}</span>
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        <Pill>{s.status.replace(/_/g, " ")}</Pill> shipped {formatDateTime(s.shipped_at)}
+                        <Pill>{s.status.replace(/_/g, " ")}</Pill> shipped{" "}
+                        {formatDateTime(s.shipped_at)}
                         {s.ndr_count > 0 && ` · ${s.ndr_count} failed attempt (${s.ndr_reason})`}
                       </p>
                     </li>
@@ -178,7 +220,10 @@ async function Order({ params }: { params: PageProps<"/admin/orders/[id]">["para
             <ol className="mt-4 space-y-3 border-l border-border pl-4 text-sm">
               {timeline.map((e, i) => (
                 <li key={i} className="relative">
-                  <span className="absolute top-1.5 -left-[1.3rem] size-2 rounded-full bg-gold-500" aria-hidden />
+                  <span
+                    className="absolute top-1.5 -left-[1.3rem] size-2 rounded-full bg-gold-500"
+                    aria-hidden
+                  />
                   <p className={e.kind === "status" ? "font-medium" : ""}>
                     {e.text} {e.kind === "public" && <Pill tone="info">shown to customer</Pill>}
                   </p>
@@ -193,13 +238,18 @@ async function Order({ params }: { params: PageProps<"/admin/orders/[id]">["para
           <Panel title="Next step">
             <OrderActions orderId={o.id} status={o.status} steps={steps} whatsapp={whatsapp} />
             {o.status === "awaiting_cod_confirmation" && (
-              <p className="mt-3 text-xs text-muted-foreground">COD orders are never packed until the customer confirms.</p>
+              <p className="mt-3 text-xs text-muted-foreground">
+                COD orders are never packed until the customer confirms.
+              </p>
             )}
           </Panel>
           <Panel title="Customer">
             <div className="space-y-1 text-sm">
               {o.customers ? (
-                <Link href={adminUrls.customer(o.customers.id)} className="font-medium hover:underline">
+                <Link
+                  href={adminUrls.customer(o.customers.id)}
+                  className="font-medium hover:underline"
+                >
                   {o.customers.full_name ?? o.email}
                 </Link>
               ) : (
@@ -271,4 +321,3 @@ export default function OrderPage({ params }: PageProps<"/admin/orders/[id]">) {
     </Suspense>
   );
 }
-

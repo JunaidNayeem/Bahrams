@@ -57,6 +57,8 @@ export interface ProductImage {
   alt: string;
   width: number | null;
   height: number | null;
+  /** The design (variant) this photo shows; null or absent when shared by every variant. */
+  variantId?: string | null;
 }
 
 export interface ProductCard {

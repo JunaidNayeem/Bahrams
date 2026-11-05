@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { computeCartTotals, type CartTotals } from "@/lib/domain/cart";
 import type { SellUnit } from "@/lib/domain/enums";
+import { imagesForVariant } from "@/lib/domain/variants";
 import { createPublicClient } from "@/lib/supabase/public";
 
 import { productMediaUrl } from "./media";
@@ -81,7 +82,7 @@ export async function getCart(): Promise<Cart> {
       supabase
         .from("product_variants")
         .select(
-          "id, sku, title, colour, sell_unit, price_paise, min_qty, step_qty, max_qty, active, products!inner ( slug, title, hsn_code, is_one_of_a_kind, product_media ( storage_path, alt, sort, kind ) )",
+          "id, sku, title, colour, sell_unit, price_paise, min_qty, step_qty, max_qty, active, products!inner ( slug, title, hsn_code, is_one_of_a_kind, product_media ( storage_path, alt, sort, kind, variant_id ) )",
         )
         .in("id", ids),
       supabase.rpc("variant_availability", { p_variant_ids: ids }),
@@ -94,9 +95,14 @@ export async function getCart(): Promise<Cart> {
     lines = cookieLines.flatMap((c) => {
       const v = byId.get(c.v);
       if (!v) return [];
-      const image = v.products.product_media
-        .filter((m) => m.kind === "image")
-        .sort((a, b) => a.sort - b.sort)[0];
+      // The chosen design's own photo first, so the bag shows exactly the piece that was picked.
+      const [image] = imagesForVariant(
+        v.products.product_media
+          .filter((m) => m.kind === "image")
+          .sort((a, b) => a.sort - b.sort)
+          .map((m) => ({ ...m, variantId: m.variant_id })),
+        v.id,
+      );
       return [
         {
           variantId: v.id,

@@ -12,6 +12,7 @@ import { FIBRES, OCCASIONS, PRODUCT_KINDS, PUBLISH_STATUSES, SELL_UNITS } from "
 import { rupeesToPaise } from "@/lib/domain/money";
 import { validatePriorPrice } from "@/lib/domain/pricing";
 import { slugify } from "@/lib/domain/slug";
+import { variantLabel } from "@/lib/domain/variants";
 import { createClient } from "@/lib/supabase/server";
 
 const EDITORS = ["owner", "manager", "catalogue_editor"] as const;
@@ -69,7 +70,11 @@ const productSchema = z.object({
   primaryFibre: z.enum(FIBRES),
   fibreWarp: optFibre,
   fibreWeft: optFibre,
-  composition: z.string().trim().min(3, "State the composition, e.g. “Tussar silk warp, ghicha silk weft”").max(200),
+  composition: z
+    .string()
+    .trim()
+    .min(3, "State the composition, e.g. “Tussar silk warp, ghicha silk weft”")
+    .max(200),
   weave: text(80),
   zari: text(120),
   description: z.string().trim().max(6000),
@@ -87,7 +92,10 @@ const productSchema = z.object({
   weaverId: z.string().transform((v) => (v === "" ? null : v)),
   returnable: z.boolean(),
   swatchAvailable: z.boolean(),
-  hsnCode: z.string().trim().regex(/^[0-9]{4,8}$/, "4–8 digit HSN code"),
+  hsnCode: z
+    .string()
+    .trim()
+    .regex(/^[0-9]{4,8}$/, "4–8 digit HSN code"),
   gstRate: z.string().refine((v) => [0, 5, 12, 18, 28].includes(Number(v)), "Choose a GST rate"),
   silkMarkLabel: text(40),
   handloomMarkLabel: text(40),
@@ -103,7 +111,11 @@ const productSchema = z.object({
 function fromForm(form: FormData) {
   const s = (k: string) => String(form.get(k) ?? "");
   const b = (k: string) => form.get(k) === "on";
-  const rows = [...new Set([...form.keys()].filter((k) => k.startsWith("variants.")).map((k) => k.split(".")[1]))];
+  const rows = [
+    ...new Set(
+      [...form.keys()].filter((k) => k.startsWith("variants.")).map((k) => k.split(".")[1]),
+    ),
+  ];
   return {
     id: s("id"),
     title: s("title"),
@@ -161,8 +173,13 @@ const escapeHtml = (t: string) =>
 
 /** Plain-text paragraphs → escaped HTML, so stored descriptions can never carry markup or scripts. */
 function paragraphsToHtml(textBody: string): string | null {
-  const paras = textBody.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
-  return paras.length ? paras.map((p) => `<p>${escapeHtml(p).replace(/\n/g, "<br>")}</p>`).join("") : null;
+  const paras = textBody
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+  return paras.length
+    ? paras.map((p) => `<p>${escapeHtml(p).replace(/\n/g, "<br>")}</p>`).join("")
+    : null;
 }
 
 export async function saveProduct(_prev: SaveState, form: FormData): Promise<SaveState> {
@@ -177,14 +194,35 @@ export async function saveProduct(_prev: SaveState, form: FormData): Promise<Sav
   }
   const p = parsed.data;
   const errors: Record<string, string> = {};
-  if (p.madeToOrder && !p.leadTimeDays) errors.leadTimeDays = "Made-to-order pieces need a lead time";
+  if (p.madeToOrder && !p.leadTimeDays)
+    errors.leadTimeDays = "Made-to-order pieces need a lead time";
   if (p.status === "scheduled" && !p.scheduledAt) errors.scheduledAt = "Pick a publish date";
   p.variants.forEach((v, i) => {
     const min = Number(v.minQty);
-    if (v.sellUnit === "piece" && !Number.isInteger(min)) errors[`variants.${i}.minQty`] = "Pieces are whole numbers";
-    if (v.sellUnit === "metre" && !Number.isInteger(min * 2)) errors[`variants.${i}.minQty`] = "Use 0.5 m steps";
+    if (v.sellUnit === "piece" && !Number.isInteger(min))
+      errors[`variants.${i}.minQty`] = "Pieces are whole numbers";
+    if (v.sellUnit === "metre" && !Number.isInteger(min * 2))
+      errors[`variants.${i}.minQty`] = "Use 0.5 m steps";
   });
-  if (Object.keys(errors).length) return { ok: false, message: "Please fix the highlighted fields.", errors };
+  // Shoppers choose between designs by name (and colour): each must be named, and distinctly.
+  if (p.variants.filter((v) => v.active).length > 1) {
+    const seen = new Map<string, number>();
+    p.variants.forEach((v, i) => {
+      if (!v.active) return;
+      if (!v.title && !v.colour) {
+        errors[`variants.${i}.title`] =
+          "Name this design (or give it a colour) so shoppers can tell it apart";
+        return;
+      }
+      const key = variantLabel({ sku: v.sku, title: v.title, colour: v.colour }).toLowerCase();
+      if (seen.has(key))
+        errors[`variants.${i}.title`] =
+          `Same name as design ${seen.get(key)! + 1}; make each one distinct`;
+      else seen.set(key, i);
+    });
+  }
+  if (Object.keys(errors).length)
+    return { ok: false, message: "Please fix the highlighted fields.", errors };
 
   const supabase = await createClient();
   const previous = p.id
@@ -194,7 +232,10 @@ export async function saveProduct(_prev: SaveState, form: FormData): Promise<Sav
   // Compare-at prices must be genuine (E-Commerce Amendment Rules 2026): validate against history.
   const existingIds = p.variants.map((v) => v.id).filter((id): id is string => Boolean(id));
   const { data: history } = existingIds.length
-    ? await supabase.from("price_history").select("variant_id, price_paise, effective_from, effective_to").in("variant_id", existingIds)
+    ? await supabase
+        .from("price_history")
+        .select("variant_id, price_paise, effective_from, effective_to")
+        .in("variant_id", existingIds)
     : { data: [] };
   p.variants.forEach((v, i) => {
     if (v.compareAt === null) return;
@@ -203,7 +244,11 @@ export async function saveProduct(_prev: SaveState, form: FormData): Promise<Sav
       compareAtPaise: rupeesToPaise(v.compareAt),
       history: (history ?? [])
         .filter((h) => h.variant_id === v.id)
-        .map((h) => ({ pricePaise: h.price_paise, effectiveFrom: h.effective_from, effectiveTo: h.effective_to })),
+        .map((h) => ({
+          pricePaise: h.price_paise,
+          effectiveFrom: h.effective_from,
+          effectiveTo: h.effective_to,
+        })),
       now: new Date(),
     });
     if (!result.valid) {
@@ -213,7 +258,8 @@ export async function saveProduct(_prev: SaveState, form: FormData): Promise<Sav
           : "Only a price this piece actually sold at for 7+ days in the last 90 days can be shown as the prior price";
     }
   });
-  if (Object.keys(errors).length) return { ok: false, message: "Prior price can't be shown.", errors };
+  if (Object.keys(errors).length)
+    return { ok: false, message: "Prior price can't be shown.", errors };
 
   const row = {
     title: p.title,
@@ -256,7 +302,10 @@ export async function saveProduct(_prev: SaveState, form: FormData): Promise<Sav
   if (saved.error) {
     return {
       ok: false,
-      message: saved.error.code === "23505" ? "Another product already uses that URL slug." : saved.error.message,
+      message:
+        saved.error.code === "23505"
+          ? "Another product already uses that URL slug."
+          : saved.error.message,
       errors: saved.error.code === "23505" ? { slug: "Already in use" } : {},
     };
   }
@@ -264,7 +313,11 @@ export async function saveProduct(_prev: SaveState, form: FormData): Promise<Sav
 
   // Variants: update existing, insert new. Removed rows are deactivated, never deleted, so past
   // orders keep their references.
-  const { data: defaultLocation } = await supabase.from("stock_locations").select("id").eq("is_default", true).maybeSingle();
+  const { data: defaultLocation } = await supabase
+    .from("stock_locations")
+    .select("id")
+    .eq("is_default", true)
+    .maybeSingle();
   for (const [i, v] of p.variants.entries()) {
     const variantRow = {
       product_id: productId,
@@ -281,12 +334,20 @@ export async function saveProduct(_prev: SaveState, form: FormData): Promise<Sav
       active: v.active,
     };
     const res = v.id
-      ? await supabase.from("product_variants").update(variantRow).eq("id", v.id).select("id").single()
+      ? await supabase
+          .from("product_variants")
+          .update(variantRow)
+          .eq("id", v.id)
+          .select("id")
+          .single()
       : await supabase.from("product_variants").insert(variantRow).select("id").single();
     if (res.error) {
       return {
         ok: false,
-        message: res.error.code === "23505" ? `SKU ${v.sku} is already used by another product.` : res.error.message,
+        message:
+          res.error.code === "23505"
+            ? `SKU ${v.sku} is already used by another product.`
+            : res.error.message,
         errors: res.error.code === "23505" ? { [`variants.${i}.sku`]: "Already in use" } : {},
       };
     }
@@ -298,12 +359,20 @@ export async function saveProduct(_prev: SaveState, form: FormData): Promise<Sav
         p_reason: "received",
         p_note: "Opening stock",
       });
-      if (adj.error) return { ok: false, message: `Saved, but opening stock failed: ${adj.error.message}`, errors: {} };
+      if (adj.error)
+        return {
+          ok: false,
+          message: `Saved, but opening stock failed: ${adj.error.message}`,
+          errors: {},
+        };
     }
   }
   if (p.id) {
     const keep = p.variants.map((v) => v.id).filter((id): id is string => Boolean(id));
-    let deactivate = supabase.from("product_variants").update({ active: false }).eq("product_id", productId);
+    let deactivate = supabase
+      .from("product_variants")
+      .update({ active: false })
+      .eq("product_id", productId);
     if (keep.length) deactivate = deactivate.not("id", "in", `(${keep.join(",")})`);
     await deactivate;
   }
@@ -321,16 +390,31 @@ export async function saveProduct(_prev: SaveState, form: FormData): Promise<Sav
       .in("status", ["attached", "sold"]);
     const normalised = number?.toUpperCase() ?? null;
     const stale = (current ?? []).filter((l) => l.label_number !== normalised);
-    if (stale.length) await supabase.from("authenticity_labels").update({ status: "void" }).in("id", stale.map((l) => l.id));
+    if (stale.length)
+      await supabase
+        .from("authenticity_labels")
+        .update({ status: "void" })
+        .in(
+          "id",
+          stale.map((l) => l.id),
+        );
     if (normalised && !(current ?? []).some((l) => l.label_number === normalised)) {
       const ins = await supabase
         .from("authenticity_labels")
-        .insert({ label_type: type, label_number: normalised, product_id: productId, status: "attached" });
+        .insert({
+          label_type: type,
+          label_number: normalised,
+          product_id: productId,
+          status: "attached",
+        });
       if (ins.error) {
         const field = type === "silk_mark" ? "silkMarkLabel" : "handloomMarkLabel";
         return {
           ok: false,
-          message: ins.error.code === "23505" ? "That label number is already recorded on another piece." : ins.error.message,
+          message:
+            ins.error.code === "23505"
+              ? "That label number is already recorded on another piece."
+              : ins.error.message,
           errors: { [field]: "Label number already used" },
         };
       }
@@ -341,7 +425,10 @@ export async function saveProduct(_prev: SaveState, form: FormData): Promise<Sav
   if (previous && previous.slug !== p.slug) {
     await supabase
       .from("redirects")
-      .upsert({ from_path: productUrl(previous.slug), to_path: productUrl(p.slug), status_code: 301 }, { onConflict: "from_path" });
+      .upsert(
+        { from_path: productUrl(previous.slug), to_path: productUrl(p.slug), status_code: 301 },
+        { onConflict: "from_path" },
+      );
   }
 
   updateTag(CATALOG_TAG);
@@ -358,27 +445,51 @@ export async function saveProduct(_prev: SaveState, form: FormData): Promise<Sav
 
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 
-export async function uploadProductImages(productId: string, form: FormData): Promise<{ ok: boolean; message: string }> {
+export async function uploadProductImages(
+  productId: string,
+  form: FormData,
+): Promise<{ ok: boolean; message: string }> {
   await requireStaff(...EDITORS);
   const supabase = await createClient();
-  const { data: product } = await supabase.from("products").select("slug, title").eq("id", productId).single();
+  const { data: product } = await supabase
+    .from("products")
+    .select("slug, title")
+    .eq("id", productId)
+    .single();
   if (!product) return { ok: false, message: "Product not found." };
-  const { data: existing } = await supabase.from("product_media").select("sort").eq("product_id", productId);
+  const { data: existing } = await supabase
+    .from("product_media")
+    .select("sort")
+    .eq("product_id", productId);
   let sort = Math.max(-1, ...(existing ?? []).map((m) => m.sort)) + 1;
+  // Optional: the design these photos show. Blank means shared by every design.
+  const variantId = String(form.get("variantId") ?? "") || null;
+  if (variantId && !(await variantBelongsTo(supabase, variantId, productId))) {
+    return { ok: false, message: "That design is not part of this product." };
+  }
 
   const files = form.getAll("files").filter((f): f is File => f instanceof File && f.size > 0);
   if (files.length === 0) return { ok: false, message: "Choose at least one image." };
   for (const file of files) {
-    if (file.size > MAX_UPLOAD_BYTES) return { ok: false, message: `${file.name} is larger than 10 MB.` };
-    if (!file.type.startsWith("image/")) return { ok: false, message: `${file.name} is not an image.` };
+    if (file.size > MAX_UPLOAD_BYTES)
+      return { ok: false, message: `${file.name} is larger than 10 MB.` };
+    if (!file.type.startsWith("image/"))
+      return { ok: false, message: `${file.name} is not an image.` };
     // Re-encode server-side: strips EXIF/GPS metadata, normalises orientation, caps size.
-    const image = sharp(Buffer.from(await file.arrayBuffer())).rotate().resize({ width: 2000, height: 2500, fit: "inside", withoutEnlargement: true });
-    const { data: webp, info } = await image.webp({ quality: 82 }).toBuffer({ resolveWithObject: true });
+    const image = sharp(Buffer.from(await file.arrayBuffer()))
+      .rotate()
+      .resize({ width: 2000, height: 2500, fit: "inside", withoutEnlargement: true });
+    const { data: webp, info } = await image
+      .webp({ quality: 82 })
+      .toBuffer({ resolveWithObject: true });
     const path = `products/${product.slug}/${crypto.randomUUID().slice(0, 8)}.webp`;
-    const up = await supabase.storage.from("product-media").upload(path, webp, { contentType: "image/webp", cacheControl: "31536000" });
+    const up = await supabase.storage
+      .from("product-media")
+      .upload(path, webp, { contentType: "image/webp", cacheControl: "31536000" });
     if (up.error) return { ok: false, message: up.error.message };
     await supabase.from("product_media").insert({
       product_id: productId,
+      variant_id: variantId,
       storage_path: path,
       alt: `${product.title}${sort === 0 ? "" : `, photo ${sort + 1}`}`,
       sort: sort++,
@@ -402,23 +513,66 @@ async function mediaContext(mediaId: string) {
   return { supabase, media: data };
 }
 
+async function variantBelongsTo(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  variantId: string,
+  productId: string,
+): Promise<boolean> {
+  const { data } = await supabase
+    .from("product_variants")
+    .select("id")
+    .eq("id", variantId)
+    .eq("product_id", productId)
+    .maybeSingle();
+  return Boolean(data);
+}
+
+/** Which design a photo shows; null makes it a shared photo (shown with every design). */
+export async function setMediaVariant(mediaId: string, variantId: string | null) {
+  const { supabase, media } = await mediaContext(mediaId);
+  if (!media) return { ok: false, message: "Photo not found." };
+  if (variantId && !(await variantBelongsTo(supabase, variantId, media.product_id))) {
+    return { ok: false, message: "That design is not part of this product." };
+  }
+  const { error } = await supabase
+    .from("product_media")
+    .update({ variant_id: variantId })
+    .eq("id", mediaId);
+  if (error) return { ok: false, message: error.message };
+  updateTag(CATALOG_TAG);
+  updateTag(`product:${media.products.slug}`);
+  return {
+    ok: true,
+    message: variantId ? "Photo assigned to the design." : "Photo shared by all designs.",
+  };
+}
+
 export async function updateMediaAlt(mediaId: string, alt: string) {
   const { supabase, media } = await mediaContext(mediaId);
   if (!media) return;
-  await supabase.from("product_media").update({ alt: alt.trim().slice(0, 200) }).eq("id", mediaId);
+  await supabase
+    .from("product_media")
+    .update({ alt: alt.trim().slice(0, 200) })
+    .eq("id", mediaId);
   updateTag(`product:${media.products.slug}`);
 }
 
 export async function moveMedia(mediaId: string, direction: -1 | 1) {
   const { supabase, media } = await mediaContext(mediaId);
   if (!media) return;
-  const { data: all } = await supabase.from("product_media").select("id, sort").eq("product_id", media.product_id).order("sort");
+  const { data: all } = await supabase
+    .from("product_media")
+    .select("id, sort")
+    .eq("product_id", media.product_id)
+    .order("sort");
   const list = all ?? [];
   const i = list.findIndex((m) => m.id === mediaId);
   const j = i + direction;
   if (i < 0 || j < 0 || j >= list.length) return;
   [list[i], list[j]] = [list[j], list[i]];
-  await Promise.all(list.map((m, idx) => supabase.from("product_media").update({ sort: idx }).eq("id", m.id)));
+  await Promise.all(
+    list.map((m, idx) => supabase.from("product_media").update({ sort: idx }).eq("id", m.id)),
+  );
   updateTag(CATALOG_TAG);
   updateTag(`product:${media.products.slug}`);
 }

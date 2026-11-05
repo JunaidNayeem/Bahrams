@@ -14,6 +14,7 @@ import { getCart } from "@/lib/data/cart";
 import { getStoreSettings } from "@/lib/data/settings";
 import { formatINR } from "@/lib/domain/money";
 import { formatQuantity } from "@/lib/domain/quantity";
+import { variantPath } from "@/lib/domain/variants";
 import { noindexMetadata } from "@/lib/seo/metadata";
 
 export const metadata: Metadata = noindexMetadata("Your bag", routes.cart);
@@ -44,8 +45,8 @@ async function CartContents() {
       <section aria-label="Items in your bag">
         {cart.removedCount > 0 && (
           <p className="mb-4 rounded-md bg-warning/10 p-3 text-sm">
-            {cart.removedCount === 1 ? "One item is" : `${cart.removedCount} items are`} no longer available and{" "}
-            {cart.removedCount === 1 ? "was" : "were"} removed.
+            {cart.removedCount === 1 ? "One item is" : `${cart.removedCount} items are`} no longer
+            available and {cart.removedCount === 1 ? "was" : "were"} removed.
           </p>
         )}
         <ul className="divide-y divide-border border-y border-border">
@@ -54,21 +55,41 @@ async function CartContents() {
             return (
               <li key={line.variantId} className="flex gap-4 py-5">
                 <div className="relative aspect-[4/5] w-24 shrink-0 overflow-hidden rounded-md bg-muted">
-                  {line.image && <Image src={line.image.url} alt={line.image.alt} fill sizes="96px" className="object-cover" />}
+                  {line.image && (
+                    <Image
+                      src={line.image.url}
+                      alt={line.image.alt}
+                      fill
+                      sizes="96px"
+                      className="object-cover"
+                    />
+                  )}
                 </div>
                 <div className="flex flex-1 flex-col gap-2">
                   <div className="flex justify-between gap-4">
                     <div>
-                      <Link href={productUrl(line.productSlug)} className="font-display text-lg hover:underline">
+                      <Link
+                        href={variantPath(productUrl(line.productSlug), line.sku)}
+                        className="font-display text-lg hover:underline"
+                      >
                         {line.productTitle}
                       </Link>
                       <p className="text-sm text-muted-foreground">
-                        {[line.colour ?? line.variantTitle, formatQuantity(line.quantity, line.sellUnit), line.sku]
+                        {[
+                          line.variantTitle,
+                          line.colour,
+                          formatQuantity(line.quantity, line.sellUnit),
+                          line.sku,
+                        ]
                           .filter(Boolean)
                           .join(" · ")}
                       </p>
                     </div>
-                    <Price pricePaise={totals.lines.find((t) => t.id === line.variantId)?.lineTotalPaise ?? 0} />
+                    <Price
+                      pricePaise={
+                        totals.lines.find((t) => t.id === line.variantId)?.lineTotalPaise ?? 0
+                      }
+                    />
                   </div>
                   {line.sellUnit === "metre" && (
                     <p className="text-xs text-muted-foreground">
@@ -90,7 +111,11 @@ async function CartContents() {
                     sellUnit={line.sellUnit}
                     quantity={line.quantity}
                     minQty={line.minQty}
-                    maxQty={Math.min(line.maxQty ?? Infinity, line.available, line.sellUnit === "metre" ? 100 : 10)}
+                    maxQty={Math.min(
+                      line.maxQty ?? Infinity,
+                      line.available,
+                      line.sellUnit === "metre" ? 100 : 10,
+                    )}
                     fixedQuantity={line.isOneOfAKind}
                   />
                 </div>
@@ -100,7 +125,10 @@ async function CartContents() {
         </ul>
       </section>
 
-      <aside aria-labelledby="summary" className="h-fit space-y-4 rounded-md border border-border bg-card p-6">
+      <aside
+        aria-labelledby="summary"
+        className="h-fit space-y-4 rounded-md border border-border bg-card p-6"
+      >
         <h2 id="summary" className="font-display text-display-sm">
           Order summary
         </h2>
@@ -112,7 +140,11 @@ async function CartContents() {
           </div>
           <div className="flex justify-between">
             <dt>Shipping</dt>
-            <dd>{totals.shipping.chargedPaise === 0 ? "Free" : formatINR(totals.shipping.chargedPaise, { omitZeroPaise: true })}</dd>
+            <dd>
+              {totals.shipping.chargedPaise === 0
+                ? "Free"
+                : formatINR(totals.shipping.chargedPaise, { omitZeroPaise: true })}
+            </dd>
           </div>
           <div className="flex justify-between border-t border-border pt-2 text-base font-semibold">
             <dt>Total</dt>
@@ -133,12 +165,16 @@ async function CartContents() {
             <li>{settings.prepaidIncentive.message} (applied at checkout).</li>
           )}
           <li>
-            Cash on delivery on orders up to {formatINR(settings.codMaxOrderPaise, { omitZeroPaise: true })}, with a{" "}
+            Cash on delivery on orders up to{" "}
+            {formatINR(settings.codMaxOrderPaise, { omitZeroPaise: true })}, with a{" "}
             {formatINR(settings.codFeePaise, { omitZeroPaise: true })} fee.
           </li>
           <li>One-of-a-kind pieces are held for 15 minutes once you start checkout.</li>
         </ul>
-        <Link href={routes.checkout} className={buttonVariants({ size: "lg", className: "w-full" })}>
+        <Link
+          href={routes.checkout}
+          className={buttonVariants({ size: "lg", className: "w-full" })}
+        >
           Checkout
         </Link>
       </aside>

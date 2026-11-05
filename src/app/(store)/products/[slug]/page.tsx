@@ -9,6 +9,7 @@ import { JsonLd } from "@/components/seo/json-ld";
 import { BuyBox } from "@/components/store/buy-box";
 import { DeliveryCheck } from "@/components/store/delivery-check";
 import { ProductGallery } from "@/components/store/product-gallery";
+import { VariantSelectionProvider } from "@/components/store/variant-selection";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RatingStars } from "@/components/ui/rating-stars";
 import { absoluteUrl, CATALOGUE_SECTIONS, productUrl, routes, weaverUrl } from "@/config/routes";
@@ -31,6 +32,13 @@ import {
   productJsonLd,
 } from "@/lib/seo/product-jsonld";
 import { slugParamsOrPlaceholder } from "@/lib/static-params";
+import {
+  firstImageByVariant,
+  imagesForVariant,
+  variantLabel,
+  variantPath,
+  variesByOf,
+} from "@/lib/domain/variants";
 
 type Props = PageProps<"/products/[slug]">;
 
@@ -143,6 +151,9 @@ function Authenticity({ product }: { product: ProductDetail }) {
 
 async function Purchase({ product }: { product: ProductDetail }) {
   const availability = await getAvailability(product.variants.map((v) => v.id));
+  const variantThumbs = Object.fromEntries(
+    [...firstImageByVariant(product.images)].map(([id, img]) => [id, img.url]),
+  );
   return (
     <BuyBox
       productTitle={product.title}
@@ -152,6 +163,7 @@ async function Purchase({ product }: { product: ProductDetail }) {
       leadTimeDays={product.leadTimeDays}
       variants={product.variants}
       availability={availability}
+      variantThumbs={variantThumbs}
       whatsappNumber={process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? siteConfig.contact.whatsapp}
     />
   );
@@ -166,11 +178,14 @@ async function ProductJsonLd({ product }: { product: ProductDetail }) {
     handlingDays: { min: 1, max: 2 },
     transitDays: { min: 2, max: 7 },
   };
+  const many = product.variants.length > 1;
   const variants = product.variants.map((v) => ({
-    name: v.colour ? `${product.title} — ${v.colour}` : product.title,
+    name: many && (v.title || v.colour) ? `${product.title} — ${variantLabel(v)}` : product.title,
     slug: product.slug,
+    // Each design has its own URL (?variant=<sku>) that preselects it, as Google asks of variants.
+    path: many ? variantPath(productUrl(product.slug), v.sku) : undefined,
     description: product.subtitle ?? product.composition,
-    images: product.images.map((i) => i.url),
+    images: imagesForVariant(product.images, v.id).map((i) => i.url),
     sku: v.sku,
     pricePaise: v.pricePaise,
     sellUnit: v.sellUnit,
@@ -200,7 +215,7 @@ async function ProductJsonLd({ product }: { product: ProductDetail }) {
           slug: product.slug,
           description: product.subtitle ?? product.composition,
           productGroupId: product.id,
-          variesBy: ["color"],
+          variesBy: variesByOf(product.variants),
           images: product.images.map((i) => i.url),
           material: fibreLabel(product.primaryFibre),
           variants,
@@ -260,62 +275,67 @@ async function ProductContent({ params }: { params: Props["params"] }) {
         / <span aria-current="page">{product.title}</span>
       </nav>
 
-      <div className="grid gap-10 lg:grid-cols-[1.15fr_1fr]">
-        <ProductGallery images={product.images} title={product.title} />
+      {/* Shares the chosen design between the gallery and the buy box. */}
+      <VariantSelectionProvider variants={product.variants}>
+        <div className="grid gap-10 lg:grid-cols-[1.15fr_1fr]">
+          <ProductGallery images={product.images} title={product.title} />
 
-        <div className="space-y-6">
-          <header className="space-y-3">
-            <p className="text-eyebrow text-gold-text uppercase">
-              {fibreLabel(product.primaryFibre)} · {product.claims.originLabel}
+          <div className="space-y-6">
+            <header className="space-y-3">
+              <p className="text-eyebrow text-gold-text uppercase">
+                {fibreLabel(product.primaryFibre)} · {product.claims.originLabel}
+              </p>
+              <h1 className="font-display text-display-lg">{product.title}</h1>
+              {product.subtitle && <p className="text-muted-foreground">{product.subtitle}</p>}
+              {product.ratingCount > 0 && product.ratingAvg !== null && (
+                <a href="#reviews" className="inline-block">
+                  <RatingStars rating={product.ratingAvg} count={product.ratingCount} />
+                </a>
+              )}
+              {/* Badges come only from computeClaims(): no record, no badge. */}
+              <ul className="flex flex-wrap gap-2" aria-label="Certifications">
+                {product.claims.badges.map((badge) => (
+                  <li key={badge}>
+                    {badge === "woven_in_bhagalpur" ? (
+                      <span className="inline-flex items-center rounded-full border border-border px-3 py-1 text-xs">
+                        {CLAIM_BADGE_LABELS[badge]}
+                      </span>
+                    ) : (
+                      <ClaimBadge
+                        claim={badge as ClaimBadgeKey}
+                        label={CLAIM_BADGE_LABELS[badge]}
+                        detail={
+                          badge === "silk_mark"
+                            ? (product.claims.silkMarkLabelNumber ?? undefined)
+                            : undefined
+                        }
+                        size="sm"
+                      />
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </header>
+
+            <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+              <Purchase product={product} />
+            </Suspense>
+
+            <DeliveryCheck
+              madeToOrderLeadDays={product.madeToOrder ? product.leadTimeDays : null}
+            />
+
+            <p className="text-sm text-muted-foreground">
+              {product.returnable
+                ? "Easy 7-day exchange or store credit, with free reverse pickup. Refund to source on request."
+                : "Cut-to-order and final-sale items can't be returned; we'll always fix a defect."}{" "}
+              <Link href="/help/returns" className="underline">
+                Returns policy
+              </Link>
             </p>
-            <h1 className="font-display text-display-lg">{product.title}</h1>
-            {product.subtitle && <p className="text-muted-foreground">{product.subtitle}</p>}
-            {product.ratingCount > 0 && product.ratingAvg !== null && (
-              <a href="#reviews" className="inline-block">
-                <RatingStars rating={product.ratingAvg} count={product.ratingCount} />
-              </a>
-            )}
-            {/* Badges come only from computeClaims(): no record, no badge. */}
-            <ul className="flex flex-wrap gap-2" aria-label="Certifications">
-              {product.claims.badges.map((badge) => (
-                <li key={badge}>
-                  {badge === "woven_in_bhagalpur" ? (
-                    <span className="inline-flex items-center rounded-full border border-border px-3 py-1 text-xs">
-                      {CLAIM_BADGE_LABELS[badge]}
-                    </span>
-                  ) : (
-                    <ClaimBadge
-                      claim={badge as ClaimBadgeKey}
-                      label={CLAIM_BADGE_LABELS[badge]}
-                      detail={
-                        badge === "silk_mark"
-                          ? (product.claims.silkMarkLabelNumber ?? undefined)
-                          : undefined
-                      }
-                      size="sm"
-                    />
-                  )}
-                </li>
-              ))}
-            </ul>
-          </header>
-
-          <Suspense fallback={<Skeleton className="h-64 w-full" />}>
-            <Purchase product={product} />
-          </Suspense>
-
-          <DeliveryCheck madeToOrderLeadDays={product.madeToOrder ? product.leadTimeDays : null} />
-
-          <p className="text-sm text-muted-foreground">
-            {product.returnable
-              ? "Easy 7-day exchange or store credit, with free reverse pickup. Refund to source on request."
-              : "Cut-to-order and final-sale items can't be returned; we'll always fix a defect."}{" "}
-            <Link href="/help/returns" className="underline">
-              Returns policy
-            </Link>
-          </p>
+          </div>
         </div>
-      </div>
+      </VariantSelectionProvider>
 
       <div className="mt-16 grid gap-12 lg:grid-cols-[1.15fr_1fr]">
         <div className="space-y-10">

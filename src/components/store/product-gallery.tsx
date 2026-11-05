@@ -4,9 +4,25 @@ import Image from "next/image";
 import { useState } from "react";
 
 import type { ProductImage } from "@/lib/data/catalog";
+import { imagesForVariant } from "@/lib/domain/variants";
 import { cn } from "@/lib/utils";
 
+import { useVariantSelection } from "./variant-selection";
+
+/** Shows the selected design's own photos, then shared ones; never another design's photos. */
 export function ProductGallery({ images, title }: { images: ProductImage[]; title: string }) {
+  const selectedId = useVariantSelection()?.selectedId;
+  // Keyed by design so the first photo shows again whenever the shopper picks another design.
+  return (
+    <Gallery
+      key={selectedId ?? "all"}
+      images={imagesForVariant(images, selectedId)}
+      title={title}
+    />
+  );
+}
+
+function Gallery({ images, title }: { images: ProductImage[]; title: string }) {
   const [active, setActive] = useState(0);
   const current = images[active];
   if (!current) return <div className="aspect-[4/5] rounded-md bg-muted" />;
@@ -24,7 +40,9 @@ export function ProductGallery({ images, title }: { images: ProductImage[]; titl
                 aria-pressed={i === active}
                 className={cn(
                   "relative block size-16 overflow-hidden rounded-md border-2 md:size-20",
-                  i === active ? "border-foreground" : "border-transparent opacity-80 hover:opacity-100",
+                  i === active
+                    ? "border-foreground"
+                    : "border-transparent opacity-80 hover:opacity-100",
                 )}
               >
                 <Image src={img.url} alt="" fill sizes="80px" className="object-cover" />

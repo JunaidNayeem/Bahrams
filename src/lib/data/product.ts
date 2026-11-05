@@ -87,7 +87,11 @@ export interface ProductDetail {
  * percentages), so a product counts as all-silk only when every recorded fibre is a silk.
  */
 function compositionShares(primary: Fibre, warp: Fibre | null, weft: Fibre | null): FibreShare[] {
-  if (warp && weft) return [{ fibre: warp, percent: 50 }, { fibre: weft, percent: 50 }];
+  if (warp && weft)
+    return [
+      { fibre: warp, percent: 50 },
+      { fibre: weft, percent: 50 },
+    ];
   return [{ fibre: warp ?? weft ?? primary, percent: 100 }];
 }
 
@@ -102,7 +106,7 @@ export async function getProduct(slug: string): Promise<ProductDetail | null> {
     .select(
       `*,
        weavers ( slug, name, locality, is_sample ),
-       product_media ( storage_path, alt, sort, kind, width, height ),
+       product_media ( storage_path, alt, sort, kind, width, height, variant_id ),
        product_variants ( *, variant_price_tiers ( min_qty, price_paise ), price_history ( price_paise, effective_from, effective_to ) ),
        authenticity_labels ( label_type, label_number, status, variant_id ),
        reviews ( id, author_name, author_city, rating, title, body, verified_purchase, reply_body, created_at, status )`,
@@ -113,8 +117,11 @@ export async function getProduct(slug: string): Promise<ProductDetail | null> {
   if (!p) return null;
 
   const now = new Date();
-  const liveLabels = p.authenticity_labels.filter((l) => l.status === "attached" || l.status === "sold");
-  const labelOf = (type: string) => liveLabels.find((l) => l.label_type === type)?.label_number ?? null;
+  const liveLabels = p.authenticity_labels.filter(
+    (l) => l.status === "attached" || l.status === "sold",
+  );
+  const labelOf = (type: string) =>
+    liveLabels.find((l) => l.label_type === type)?.label_number ?? null;
 
   const variants: Variant[] = p.product_variants
     .filter((v) => v.active)
@@ -184,12 +191,23 @@ export async function getProduct(slug: string): Promise<ProductDetail | null> {
       giEligible: p.gi_eligible,
     }),
     weaver: p.weavers
-      ? { slug: p.weavers.slug, name: p.weavers.name, locality: p.weavers.locality, isSample: p.weavers.is_sample }
+      ? {
+          slug: p.weavers.slug,
+          name: p.weavers.name,
+          locality: p.weavers.locality,
+          isSample: p.weavers.is_sample,
+        }
       : null,
     images: p.product_media
       .filter((m) => m.kind === "image")
       .sort((a, b) => a.sort - b.sort)
-      .map((m) => ({ url: productMediaUrl(m.storage_path), alt: m.alt, width: m.width, height: m.height })),
+      .map((m) => ({
+        url: productMediaUrl(m.storage_path),
+        alt: m.alt,
+        width: m.width,
+        height: m.height,
+        variantId: m.variant_id,
+      })),
     variants,
     reviews: p.reviews
       .filter((r) => r.status === "approved")
@@ -235,7 +253,9 @@ export async function getPincode(pincode: string): Promise<Pincode | null> {
 
   const { data, error } = await createPublicClient()
     .from("serviceable_pincodes")
-    .select("pincode, city, state, cod_available, prepaid_available, est_days_min, est_days_max, active")
+    .select(
+      "pincode, city, state, cod_available, prepaid_available, est_days_min, est_days_max, active",
+    )
     .eq("pincode", pincode)
     .maybeSingle();
   if (error) throw error;

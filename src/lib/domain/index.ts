@@ -19,3 +19,4 @@ export * from "./compliance";
 export * from "./validation";
 export * from "./numbering";
 export * from "./slug";
+export * from "./variants";

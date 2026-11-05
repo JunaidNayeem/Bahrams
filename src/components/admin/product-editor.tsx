@@ -402,7 +402,7 @@ export function ProductEditor({
 
         <Section
           title="Variants and prices"
-          description="Prices in rupees, GST-inclusive. Fabric is priced per metre and sold in 0.5 m steps."
+          description="One variant per design or colour, each with its own price, stock and photos. Prices in rupees, GST-inclusive. Fabric is priced per metre and sold in 0.5 m steps."
         >
           {e.variants && <p className="text-sm text-destructive">{e.variants}</p>}
           <div className="space-y-4">
@@ -411,9 +411,23 @@ export function ProductEditor({
               return (
                 <fieldset key={key} className="rounded-md border border-border p-4">
                   <legend className="px-1 text-xs font-medium text-muted-foreground">
-                    Variant {i + 1}
+                    Design {i + 1}
                   </legend>
                   <input type="hidden" name={`variants.${i}.id`} value={v.id} />
+                  <Field
+                    label="Design name"
+                    name={`variants.${i}.title`}
+                    error={err("title")}
+                    className="mb-3"
+                    hint="What makes this one different, e.g. “Peacock border” or “Temple pallu”. Shoppers pick by this name and the design's photos (assign photos to it in Photos)."
+                  >
+                    <Input
+                      id={`variants.${i}.title`}
+                      name={`variants.${i}.title`}
+                      defaultValue={v.title}
+                      maxLength={80}
+                    />
+                  </Field>
                   <div className="grid gap-3 sm:grid-cols-3">
                     <Field label="SKU" name={`variants.${i}.sku`} error={err("sku")}>
                       <Input
@@ -523,7 +537,7 @@ export function ProductEditor({
             })}
           </div>
           <Button type="button" variant="outline" size="sm" onClick={addVariant}>
-            <PlusIcon /> Add variant
+            <PlusIcon /> Add design
           </Button>
         </Section>
 

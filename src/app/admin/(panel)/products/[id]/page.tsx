@@ -12,6 +12,7 @@ import { adminUrls, productUrl } from "@/config/routes";
 import { requireStaff } from "@/lib/auth";
 import { getAdminProduct, listWeaverOptions } from "@/lib/data/admin/products";
 import { productMediaUrl } from "@/lib/data/media";
+import { variantLabel } from "@/lib/domain/variants";
 
 import { toEditorValues } from "../editor-values";
 
@@ -27,7 +28,18 @@ async function Editor({ params }: { params: PageProps<"/admin/products/[id]">["p
   const media = [...product.product_media]
     .filter((m) => m.kind === "image")
     .sort((a, b) => a.sort - b.sort)
-    .map((m) => ({ id: m.id, url: productMediaUrl(m.storage_path), alt: m.alt }));
+    .map((m) => ({
+      id: m.id,
+      url: productMediaUrl(m.storage_path),
+      alt: m.alt,
+      variantId: m.variant_id,
+    }));
+  // Numbered as in the editor ("Design 2 · Peacock border") so staff can match photos to rows.
+  const variants = [...product.product_variants]
+    .sort((a, b) => a.position - b.position)
+    .map((v, i) => ({ id: v.id, active: v.active, label: `Design ${i + 1} · ${variantLabel(v)}` }))
+    .filter((v) => v.active)
+    .map(({ id, label }) => ({ id, label }));
 
   return (
     <>
@@ -37,7 +49,11 @@ async function Editor({ params }: { params: PageProps<"/admin/products/[id]">["p
         back={{ href: adminUrls.products, label: "Products" }}
         actions={
           product.status === "published" ? (
-            <Link href={productUrl(product.slug)} target="_blank" className={buttonVariants({ variant: "outline" })}>
+            <Link
+              href={productUrl(product.slug)}
+              target="_blank"
+              className={buttonVariants({ variant: "outline" })}
+            >
               View in store <ExternalLinkIcon />
             </Link>
           ) : undefined
@@ -48,7 +64,7 @@ async function Editor({ params }: { params: PageProps<"/admin/products/[id]">["p
         key={product.updated_at}
         initial={toEditorValues(product)}
         weavers={weavers}
-        aside={<MediaManager productId={product.id} items={media} />}
+        aside={<MediaManager productId={product.id} items={media} variants={variants} />}
       />
     </>
   );
