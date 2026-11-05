@@ -1,3 +1,4 @@
+import { isSilkFibre } from "../claims/fibres";
 import type { Fibre, ProductKind } from "../enums";
 import { mulDivRoundHalfUp, roundHalfUp, sumPaise, type Paise } from "../money";
 import { SELLER_GST_STATE_CODE } from "./states";
@@ -111,26 +112,18 @@ export function isInThresholdGap(rule: GstRateRule, unitPriceInclusivePaise: Pai
   );
 }
 
-const SILK_HSN_FIBRES: readonly Fibre[] = [
-  "tussar",
-  "ghicha",
-  "matka",
-  "raw_silk",
-  "mulberry",
-  "eri",
-  "noil",
-];
-
 /**
  * Default HSN for a new product. Returns null where classification depends on facts we do not
- * hold (blends are classified by the predominant fibre by weight), so staff must choose.
+ * hold (blends are classified by the predominant fibre by weight; man-made fibres split by
+ * filament or staple yarn; khadi may be cotton or silk), so staff must choose.
+ * 5007 covers woven fabric of silk and of silk waste, so spun and throwster silk count too.
  */
 export function suggestHsn(kind: ProductKind, fibre: Fibre): string | null {
   if (kind === "stole_dupatta") return "6214";
   if (kind === "home_furnishing") return "6304";
-  if (SILK_HSN_FIBRES.includes(fibre)) return "5007";
-  if (fibre === "cotton") return "5208";
-  if (fibre === "linen") return "5309";
+  if (isSilkFibre(fibre)) return "5007";
+  if (fibre === "cotton" || fibre === "mercerised_cotton") return "5208";
+  if (fibre === "linen" || fibre === "organic_linen") return "5309";
   return null;
 }
 

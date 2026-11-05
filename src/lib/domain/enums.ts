@@ -15,7 +15,11 @@ export const PRODUCT_KINDS = [
 ] as const;
 export type ProductKind = (typeof PRODUCT_KINDS)[number];
 
-/** Primary fibre / yarn. Leads navigation (tussar and matka first). */
+/**
+ * Primary fibre / yarn, also used for warp and weft. Leads navigation (tussar and matka first).
+ * Values from "silk" on were added in migration 20261105000001 (appended, so the order still
+ * mirrors Postgres). Grouping and display order for forms live in claims/fibres.ts.
+ */
 export const FIBRES = [
   "tussar",
   "ghicha",
@@ -28,6 +32,29 @@ export const FIBRES = [
   "linen",
   "cotton",
   "blend",
+  "silk",
+  "desi_tussar",
+  "handspun_tussar",
+  "munga",
+  "katia",
+  "dupion",
+  "spun_silk",
+  "throwster",
+  "silk_blend",
+  "modal_silk",
+  "kota",
+  "organic_linen",
+  "mercerised_cotton",
+  "khadi",
+  "viscose",
+  "handspun_viscose",
+  "modal",
+  "polyester",
+  "staple",
+  "rollex",
+  "zari",
+  "handspun_yarn",
+  "slub",
 ] as const;
 export type Fibre = (typeof FIBRES)[number];
 

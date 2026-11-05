@@ -9,8 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 import { CATALOGUE_SECTIONS } from "@/config/routes";
-import { fibreLabel } from "@/lib/domain/claims";
-import { FIBRES, OCCASIONS, PRODUCT_KINDS, PUBLISH_STATUSES, type SellUnit } from "@/lib/domain/enums";
+import { FIBRE_GROUPS, fibreLabel } from "@/lib/domain/claims";
+import { OCCASIONS, PRODUCT_KINDS, PUBLISH_STATUSES, type SellUnit } from "@/lib/domain/enums";
 import { slugify } from "@/lib/domain/slug";
 import { cn } from "@/lib/utils";
 
@@ -101,10 +101,25 @@ function Field({
   );
 }
 
-function Check({ name, label, defaultChecked, hint }: { name: string; label: string; defaultChecked: boolean; hint?: string }) {
+function Check({
+  name,
+  label,
+  defaultChecked,
+  hint,
+}: {
+  name: string;
+  label: string;
+  defaultChecked: boolean;
+  hint?: string;
+}) {
   return (
     <label className="flex items-start gap-3 text-sm">
-      <input type="checkbox" name={name} defaultChecked={defaultChecked} className="mt-0.5 size-4 accent-madder-700" />
+      <input
+        type="checkbox"
+        name={name}
+        defaultChecked={defaultChecked}
+        className="mt-0.5 size-4 accent-madder-700"
+      />
       <span>
         {label}
         {hint && <span className="block text-xs text-muted-foreground">{hint}</span>}
@@ -113,7 +128,15 @@ function Check({ name, label, defaultChecked, hint }: { name: string; label: str
   );
 }
 
-function Section({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
+function Section({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
   return (
     <section className="rounded-lg border border-border bg-card">
       <div className="border-b border-border px-5 py-3">
@@ -125,12 +148,17 @@ function Section({ title, description, children }: { title: string; description?
   );
 }
 
+// Grouped by classification (silk, blends, cotton and linen, man-made, metallic, yarn types).
 const fibreOptions = (
   <>
-    {FIBRES.map((f) => (
-      <option key={f} value={f}>
-        {fibreLabel(f)}
-      </option>
+    {FIBRE_GROUPS.map((g) => (
+      <optgroup key={g.key} label={g.label}>
+        {g.fibres.map((f) => (
+          <option key={f} value={f}>
+            {fibreLabel(f)}
+          </option>
+        ))}
+      </optgroup>
     ))}
   </>
 );
@@ -163,7 +191,11 @@ export function ProductEditor({
       const result = await saveProduct(state, data);
       setState(result);
       if (result.message) {
-        toast({ title: result.ok ? "Saved" : "Not saved", description: result.message, variant: result.ok ? "default" : "destructive" });
+        toast({
+          title: result.ok ? "Saved" : "Not saved",
+          description: result.message,
+          variant: result.ok ? "default" : "destructive",
+        });
       }
     });
   }
@@ -173,7 +205,19 @@ export function ProductEditor({
       ...r,
       {
         key: rowKey++,
-        v: { id: "", sku: "", title: "", colour: "", colourHex: "", sellUnit: r[0]?.v.sellUnit ?? "piece", price: "", compareAt: "", minQty: "1", active: true, stock: null },
+        v: {
+          id: "",
+          sku: "",
+          title: "",
+          colour: "",
+          colourHex: "",
+          sellUnit: r[0]?.v.sellUnit ?? "piece",
+          price: "",
+          compareAt: "",
+          minQty: "1",
+          active: true,
+          stock: null,
+        },
       },
     ]);
 
@@ -195,7 +239,11 @@ export function ProductEditor({
               required
             />
           </Field>
-          <Field label="Subtitle" name="subtitle" hint="One line shown under the title, e.g. the weave or occasion.">
+          <Field
+            label="Subtitle"
+            name="subtitle"
+            hint="One line shown under the title, e.g. the weave or occasion."
+          >
             <Input id="subtitle" name="subtitle" defaultValue={initial.subtitle} />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -208,20 +256,45 @@ export function ProductEditor({
                 ))}
               </select>
             </Field>
-            <Field label="Main fibre" name="primaryFibre" hint="Drives the fabric filters and collections.">
-              <select id="primaryFibre" name="primaryFibre" defaultValue={initial.primaryFibre} className={inputCls}>
+            <Field
+              label="Main fibre"
+              name="primaryFibre"
+              hint="Drives the fabric filters and collections."
+            >
+              <select
+                id="primaryFibre"
+                name="primaryFibre"
+                defaultValue={initial.primaryFibre}
+                className={inputCls}
+              >
                 {fibreOptions}
               </select>
             </Field>
           </div>
-          <Field label="Description" name="description" error={e.description} hint="Plain paragraphs; leave a blank line between them. Write it yourself — never paste supplier text.">
-            <Textarea id="description" name="description" defaultValue={initial.description} rows={7} />
+          <Field
+            label="Description"
+            name="description"
+            error={e.description}
+            hint="Plain paragraphs; leave a blank line between them. Write it yourself — never paste supplier text."
+          >
+            <Textarea
+              id="description"
+              name="description"
+              defaultValue={initial.description}
+              rows={7}
+            />
           </Field>
           <Field label="Occasions" name="occasions">
             <div className="flex flex-wrap gap-4">
               {OCCASIONS.map((o) => (
                 <label key={o} className="flex items-center gap-2 text-sm capitalize">
-                  <input type="checkbox" name="occasions" value={o} defaultChecked={initial.occasions.includes(o)} className="size-4 accent-madder-700" />
+                  <input
+                    type="checkbox"
+                    name="occasions"
+                    value={o}
+                    defaultChecked={initial.occasions.includes(o)}
+                    className="size-4 accent-madder-700"
+                  />
                   {o}
                 </label>
               ))}
@@ -229,68 +302,134 @@ export function ProductEditor({
           </Field>
         </Section>
 
-        <Section title="Fibre and make" description="Honest composition labels are the brand's promise: state warp and weft plainly.">
+        <Section
+          title="Fibre and make"
+          description="Honest composition labels are the brand's promise: state warp and weft plainly."
+        >
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Warp" name="fibreWarp">
-              <select id="fibreWarp" name="fibreWarp" defaultValue={initial.fibreWarp} className={inputCls}>
+              <select
+                id="fibreWarp"
+                name="fibreWarp"
+                defaultValue={initial.fibreWarp}
+                className={inputCls}
+              >
                 <option value="">Not recorded</option>
                 {fibreOptions}
               </select>
             </Field>
             <Field label="Weft" name="fibreWeft">
-              <select id="fibreWeft" name="fibreWeft" defaultValue={initial.fibreWeft} className={inputCls}>
+              <select
+                id="fibreWeft"
+                name="fibreWeft"
+                defaultValue={initial.fibreWeft}
+                className={inputCls}
+              >
                 <option value="">Not recorded</option>
                 {fibreOptions}
               </select>
             </Field>
           </div>
           <Field label="Composition (shown to customers)" name="composition" error={e.composition}>
-            <Input id="composition" name="composition" defaultValue={initial.composition} placeholder="Tussar silk warp, ghicha silk weft" />
+            <Input
+              id="composition"
+              name="composition"
+              defaultValue={initial.composition}
+              placeholder="Tussar silk warp, ghicha silk weft"
+            />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Weave" name="weave">
-              <Input id="weave" name="weave" defaultValue={initial.weave} placeholder="Plain, stripe, check, jacquard…" />
+              <Input
+                id="weave"
+                name="weave"
+                defaultValue={initial.weave}
+                placeholder="Plain, stripe, check, jacquard…"
+              />
             </Field>
             <Field label="Zari" name="zari" hint="Leave empty if there is no zari.">
-              <Input id="zari" name="zari" defaultValue={initial.zari} placeholder="Tested zari border" />
+              <Input
+                id="zari"
+                name="zari"
+                defaultValue={initial.zari}
+                placeholder="Tested zari border"
+              />
             </Field>
           </div>
           <div className="grid gap-4 sm:grid-cols-4">
             <Field label="Length (m)" name="lengthM" error={e.lengthM}>
-              <Input id="lengthM" name="lengthM" inputMode="decimal" defaultValue={initial.lengthM} />
+              <Input
+                id="lengthM"
+                name="lengthM"
+                inputMode="decimal"
+                defaultValue={initial.lengthM}
+              />
             </Field>
             <Field label="Blouse (m)" name="blouseLengthM" error={e.blouseLengthM}>
-              <Input id="blouseLengthM" name="blouseLengthM" inputMode="decimal" defaultValue={initial.blouseLengthM} />
+              <Input
+                id="blouseLengthM"
+                name="blouseLengthM"
+                inputMode="decimal"
+                defaultValue={initial.blouseLengthM}
+              />
             </Field>
             <Field label="Width (cm)" name="widthCm" error={e.widthCm}>
-              <Input id="widthCm" name="widthCm" inputMode="decimal" defaultValue={initial.widthCm} />
+              <Input
+                id="widthCm"
+                name="widthCm"
+                inputMode="decimal"
+                defaultValue={initial.widthCm}
+              />
             </Field>
             <Field label="Weight (g)" name="weightG" error={e.weightG}>
-              <Input id="weightG" name="weightG" inputMode="numeric" defaultValue={initial.weightG} />
+              <Input
+                id="weightG"
+                name="weightG"
+                inputMode="numeric"
+                defaultValue={initial.weightG}
+              />
             </Field>
           </div>
-          <Check name="blouseIncluded" label="Blouse piece included" defaultChecked={initial.blouseIncluded} />
+          <Check
+            name="blouseIncluded"
+            label="Blouse piece included"
+            defaultChecked={initial.blouseIncluded}
+          />
           <Field label="Care" name="care">
             <Textarea id="care" name="care" defaultValue={initial.care} rows={2} />
           </Field>
         </Section>
 
-        <Section title="Variants and prices" description="Prices in rupees, GST-inclusive. Fabric is priced per metre and sold in 0.5 m steps.">
+        <Section
+          title="Variants and prices"
+          description="Prices in rupees, GST-inclusive. Fabric is priced per metre and sold in 0.5 m steps."
+        >
           {e.variants && <p className="text-sm text-destructive">{e.variants}</p>}
           <div className="space-y-4">
             {rows.map(({ key, v }, i) => {
               const err = (f: string) => e[`variants.${i}.${f}`];
               return (
                 <fieldset key={key} className="rounded-md border border-border p-4">
-                  <legend className="px-1 text-xs font-medium text-muted-foreground">Variant {i + 1}</legend>
+                  <legend className="px-1 text-xs font-medium text-muted-foreground">
+                    Variant {i + 1}
+                  </legend>
                   <input type="hidden" name={`variants.${i}.id`} value={v.id} />
                   <div className="grid gap-3 sm:grid-cols-3">
                     <Field label="SKU" name={`variants.${i}.sku`} error={err("sku")}>
-                      <Input id={`variants.${i}.sku`} name={`variants.${i}.sku`} defaultValue={v.sku} className="font-mono uppercase" />
+                      <Input
+                        id={`variants.${i}.sku`}
+                        name={`variants.${i}.sku`}
+                        defaultValue={v.sku}
+                        className="font-mono uppercase"
+                      />
                     </Field>
                     <Field label="Colour" name={`variants.${i}.colour`}>
                       <div className="flex gap-2">
-                        <Input id={`variants.${i}.colour`} name={`variants.${i}.colour`} defaultValue={v.colour} />
+                        <Input
+                          id={`variants.${i}.colour`}
+                          name={`variants.${i}.colour`}
+                          defaultValue={v.colour}
+                        />
                         <input
                           type="color"
                           name={`variants.${i}.colourHex`}
@@ -301,13 +440,23 @@ export function ProductEditor({
                       </div>
                     </Field>
                     <Field label="Sold by" name={`variants.${i}.sellUnit`}>
-                      <select id={`variants.${i}.sellUnit`} name={`variants.${i}.sellUnit`} defaultValue={v.sellUnit} className={inputCls}>
+                      <select
+                        id={`variants.${i}.sellUnit`}
+                        name={`variants.${i}.sellUnit`}
+                        defaultValue={v.sellUnit}
+                        className={inputCls}
+                      >
                         <option value="piece">Piece</option>
                         <option value="metre">Metre</option>
                       </select>
                     </Field>
                     <Field label="Price (₹)" name={`variants.${i}.price`} error={err("price")}>
-                      <Input id={`variants.${i}.price`} name={`variants.${i}.price`} inputMode="decimal" defaultValue={v.price} />
+                      <Input
+                        id={`variants.${i}.price`}
+                        name={`variants.${i}.price`}
+                        inputMode="decimal"
+                        defaultValue={v.price}
+                      />
                     </Field>
                     <Field
                       label="Prior price (₹)"
@@ -315,25 +464,56 @@ export function ProductEditor({
                       error={err("compareAt")}
                       hint="Optional. Shown struck through only if it's a real recent price."
                     >
-                      <Input id={`variants.${i}.compareAt`} name={`variants.${i}.compareAt`} inputMode="decimal" defaultValue={v.compareAt} />
+                      <Input
+                        id={`variants.${i}.compareAt`}
+                        name={`variants.${i}.compareAt`}
+                        inputMode="decimal"
+                        defaultValue={v.compareAt}
+                      />
                     </Field>
-                    <Field label="Minimum quantity" name={`variants.${i}.minQty`} error={err("minQty")}>
-                      <Input id={`variants.${i}.minQty`} name={`variants.${i}.minQty`} inputMode="decimal" defaultValue={v.minQty} />
+                    <Field
+                      label="Minimum quantity"
+                      name={`variants.${i}.minQty`}
+                      error={err("minQty")}
+                    >
+                      <Input
+                        id={`variants.${i}.minQty`}
+                        name={`variants.${i}.minQty`}
+                        inputMode="decimal"
+                        defaultValue={v.minQty}
+                      />
                     </Field>
                   </div>
                   <div className="mt-3 flex flex-wrap items-center gap-4">
                     {v.id ? (
                       <p className="text-xs text-muted-foreground">
-                        In stock: <span className="font-medium text-foreground">{v.stock ?? "0"}</span> — change stock in Inventory.
+                        In stock:{" "}
+                        <span className="font-medium text-foreground">{v.stock ?? "0"}</span> —
+                        change stock in Inventory.
                       </p>
                     ) : (
-                      <Field label="Opening stock" name={`variants.${i}.openingStock`} className="w-40">
-                        <Input id={`variants.${i}.openingStock`} name={`variants.${i}.openingStock`} inputMode="decimal" placeholder="0" />
+                      <Field
+                        label="Opening stock"
+                        name={`variants.${i}.openingStock`}
+                        className="w-40"
+                      >
+                        <Input
+                          id={`variants.${i}.openingStock`}
+                          name={`variants.${i}.openingStock`}
+                          inputMode="decimal"
+                          placeholder="0"
+                        />
                       </Field>
                     )}
                     <Check name={`variants.${i}.active`} label="Active" defaultChecked={v.active} />
                     {rows.length > 1 && (
-                      <Button type="button" variant="ghost" size="sm" className="ml-auto" onClick={() => setRows((r) => r.filter((x) => x.key !== key))}>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="ml-auto"
+                        onClick={() => setRows((r) => r.filter((x) => x.key !== key))}
+                      >
                         <Trash2Icon /> Remove
                       </Button>
                     )}
@@ -347,8 +527,16 @@ export function ProductEditor({
           </Button>
         </Section>
 
-        <Section title="Search engines" description="Leave blank to use the defaults from the title and keyword map.">
-          <Field label="URL slug" name="slug" error={e.slug} hint={`/products/${slug || "…"} — changing it adds a 301 redirect from the old URL automatically.`}>
+        <Section
+          title="Search engines"
+          description="Leave blank to use the defaults from the title and keyword map."
+        >
+          <Field
+            label="URL slug"
+            name="slug"
+            error={e.slug}
+            hint={`/products/${slug || "…"} — changing it adds a 301 redirect from the old URL automatically.`}
+          >
             <Input
               id="slug"
               name="slug"
@@ -364,9 +552,19 @@ export function ProductEditor({
             <Input id="seoTitle" name="seoTitle" defaultValue={initial.seoTitle} maxLength={70} />
           </Field>
           <Field label="Meta description" name="seoDescription" hint="Up to 155 characters.">
-            <Textarea id="seoDescription" name="seoDescription" defaultValue={initial.seoDescription} maxLength={170} rows={2} />
+            <Textarea
+              id="seoDescription"
+              name="seoDescription"
+              defaultValue={initial.seoDescription}
+              maxLength={170}
+              rows={2}
+            />
           </Field>
-          <Check name="noindex" label="Hide from search engines (noindex)" defaultChecked={initial.noindex} />
+          <Check
+            name="noindex"
+            label="Hide from search engines (noindex)"
+            defaultChecked={initial.noindex}
+          />
         </Section>
       </div>
 
@@ -382,20 +580,55 @@ export function ProductEditor({
             </select>
           </Field>
           <Field label="Publish at (if scheduled)" name="scheduledAt" error={e.scheduledAt}>
-            <Input id="scheduledAt" name="scheduledAt" type="datetime-local" defaultValue={initial.scheduledAt} />
+            <Input
+              id="scheduledAt"
+              name="scheduledAt"
+              type="datetime-local"
+              defaultValue={initial.scheduledAt}
+            />
           </Field>
         </Section>
 
         <Section title="Authenticity" description="Store badges render only from these records.">
-          <Field label="Silk Mark label number" name="silkMarkLabel" error={e.silkMarkLabel} hint="Needed for “Pure Silk” and “Silk Mark” badges.">
-            <Input id="silkMarkLabel" name="silkMarkLabel" defaultValue={initial.silkMarkLabel} className="font-mono uppercase" />
+          <Field
+            label="Silk Mark label number"
+            name="silkMarkLabel"
+            error={e.silkMarkLabel}
+            hint="Needed for “Pure Silk” and “Silk Mark” badges."
+          >
+            <Input
+              id="silkMarkLabel"
+              name="silkMarkLabel"
+              defaultValue={initial.silkMarkLabel}
+              className="font-mono uppercase"
+            />
           </Field>
-          <Field label="Handloom Mark label number" name="handloomMarkLabel" error={e.handloomMarkLabel} hint="Needed to describe the piece as Handloom.">
-            <Input id="handloomMarkLabel" name="handloomMarkLabel" defaultValue={initial.handloomMarkLabel} className="font-mono uppercase" />
+          <Field
+            label="Handloom Mark label number"
+            name="handloomMarkLabel"
+            error={e.handloomMarkLabel}
+            hint="Needed to describe the piece as Handloom."
+          >
+            <Input
+              id="handloomMarkLabel"
+              name="handloomMarkLabel"
+              defaultValue={initial.handloomMarkLabel}
+              className="font-mono uppercase"
+            />
           </Field>
-          <Check name="giEligible" label="Bhagalpur Silk (GI) eligible" defaultChecked={initial.giEligible} hint="Only for pieces made by the traditional process." />
+          <Check
+            name="giEligible"
+            label="Bhagalpur Silk (GI) eligible"
+            defaultChecked={initial.giEligible}
+            hint="Only for pieces made by the traditional process."
+          />
           <Field label="Weaver" name="weaverId">
-            <select id="weaverId" name="weaverId" defaultValue={initial.weaverId} className={inputCls}>
+            <select
+              id="weaverId"
+              name="weaverId"
+              defaultValue={initial.weaverId}
+              className={inputCls}
+            >
               <option value="">Not credited</option>
               {weavers.map((w) => (
                 <option key={w.id} value={w.id}>
@@ -408,22 +641,51 @@ export function ProductEditor({
         </Section>
 
         <Section title="Selling">
-          <Check name="isOneOfAKind" label="One of a kind" defaultChecked={initial.isOneOfAKind} hint="Quantity 1; held for 15 min at checkout." />
+          <Check
+            name="isOneOfAKind"
+            label="One of a kind"
+            defaultChecked={initial.isOneOfAKind}
+            hint="Quantity 1; held for 15 min at checkout."
+          />
           <Check name="madeToOrder" label="Made to order" defaultChecked={initial.madeToOrder} />
           <Field label="Lead time (days)" name="leadTimeDays" error={e.leadTimeDays}>
-            <Input id="leadTimeDays" name="leadTimeDays" inputMode="numeric" defaultValue={initial.leadTimeDays} />
+            <Input
+              id="leadTimeDays"
+              name="leadTimeDays"
+              inputMode="numeric"
+              defaultValue={initial.leadTimeDays}
+            />
           </Field>
-          <Check name="returnable" label="Returnable" defaultChecked={initial.returnable} hint="Untick for custom-cut fabric and final-sale items." />
-          <Check name="swatchAvailable" label="Swatch available" defaultChecked={initial.swatchAvailable} />
+          <Check
+            name="returnable"
+            label="Returnable"
+            defaultChecked={initial.returnable}
+            hint="Untick for custom-cut fabric and final-sale items."
+          />
+          <Check
+            name="swatchAvailable"
+            label="Swatch available"
+            defaultChecked={initial.swatchAvailable}
+          />
         </Section>
 
         <Section title="Tax">
           <div className="grid grid-cols-2 gap-3">
             <Field label="HSN code" name="hsnCode" error={e.hsnCode}>
-              <Input id="hsnCode" name="hsnCode" defaultValue={initial.hsnCode} inputMode="numeric" />
+              <Input
+                id="hsnCode"
+                name="hsnCode"
+                defaultValue={initial.hsnCode}
+                inputMode="numeric"
+              />
             </Field>
             <Field label="GST rate" name="gstRate" error={e.gstRate}>
-              <select id="gstRate" name="gstRate" defaultValue={initial.gstRate} className={inputCls}>
+              <select
+                id="gstRate"
+                name="gstRate"
+                defaultValue={initial.gstRate}
+                className={inputCls}
+              >
                 {[0, 5, 12, 18, 28].map((r) => (
                   <option key={r} value={r}>
                     {r}%
@@ -432,7 +694,9 @@ export function ProductEditor({
               </select>
             </Field>
           </div>
-          <p className="text-xs text-muted-foreground">Silk sarees and fabric: HSN 5007 at 5%. Confirm stitched garments with the CA.</p>
+          <p className="text-xs text-muted-foreground">
+            Silk sarees and fabric: HSN 5007 at 5%. Confirm stitched garments with the CA.
+          </p>
         </Section>
 
         {aside}

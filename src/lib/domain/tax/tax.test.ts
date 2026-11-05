@@ -143,6 +143,13 @@ describe("GST rates", () => {
     expect(suggestHsn("home_furnishing", "ghicha")).toBe("6304");
     expect(suggestHsn("saree", "cotton_silk")).toBeNull();
     expect(suggestHsn("dress_material", "blend")).toBeNull();
+    expect(suggestHsn("saree", "desi_tussar")).toBe("5007");
+    expect(suggestHsn("fabric", "throwster")).toBe("5007");
+    expect(suggestHsn("saree", "mercerised_cotton")).toBe("5208");
+    expect(suggestHsn("fabric", "organic_linen")).toBe("5309");
+    expect(suggestHsn("saree", "modal_silk")).toBeNull();
+    expect(suggestHsn("saree", "polyester")).toBeNull();
+    expect(suggestHsn("saree", "khadi")).toBeNull();
   });
 });
 

@@ -2,11 +2,13 @@ import { describe, expect, it } from "vitest";
 import { FIBRES } from "../enums";
 import {
   CLAIM_BADGE_LABELS,
+  FIBRE_GROUPS,
   FIBRE_LABELS,
   SILK_FIBRES,
   compositionLabel,
   compositionPercentLabel,
   computeClaims,
+  fibreGroupOf,
   giDisplayName,
   isPureSilkComposition,
   isSilkFibre,
@@ -116,18 +118,63 @@ describe("composition", () => {
   });
 
   it("classifies silk fibres honestly", () => {
-    expect(SILK_FIBRES).toEqual([
-      "tussar",
-      "ghicha",
-      "matka",
-      "raw_silk",
-      "mulberry",
-      "eri",
-      "noil",
-    ]);
-    expect(isSilkFibre("cotton_silk")).toBe(false);
-    expect(isSilkFibre("blend")).toBe(false);
+    expect([...SILK_FIBRES].sort()).toEqual(
+      [
+        "tussar",
+        "desi_tussar",
+        "handspun_tussar",
+        "ghicha",
+        "katia",
+        "munga",
+        "matka",
+        "raw_silk",
+        "mulberry",
+        "silk",
+        "dupion",
+        "spun_silk",
+        "throwster",
+        "eri",
+        "noil",
+      ].sort(),
+    );
+    // Blends, silk look-alikes, unverified trade names and unstated yarns are never pure silk.
+    for (const fibre of [
+      "cotton_silk",
+      "blend",
+      "silk_blend",
+      "modal_silk",
+      "kota",
+      "viscose",
+      "modal",
+      "polyester",
+      "staple",
+      "rollex",
+      "zari",
+      "handspun_yarn",
+      "slub",
+    ] as const) {
+      expect(isSilkFibre(fibre)).toBe(false);
+    }
     for (const fibre of FIBRES) expect(FIBRE_LABELS[fibre]).toBeTruthy();
+  });
+
+  it("puts every fibre in exactly one group", () => {
+    const grouped = FIBRE_GROUPS.flatMap((g) => g.fibres);
+    expect([...grouped].sort()).toEqual([...FIBRES].sort());
+    expect(new Set(grouped).size).toBe(grouped.length);
+    expect(fibreGroupOf("zari")).toBe("metallic");
+    expect(fibreGroupOf("modal_silk")).toBe("blend");
+  });
+
+  it("never lets a modal-silk or zari composition count as pure silk", () => {
+    expect(
+      isPureSilkComposition([
+        { fibre: "tussar", percent: 80 },
+        { fibre: "zari", percent: 20 },
+      ]),
+    ).toBe(false);
+    expect(isPureSilkComposition([{ fibre: "modal_silk", percent: 100 }])).toBe(false);
+    expect(isPureSilkComposition([{ fibre: "desi_tussar", percent: 100 }])).toBe(true);
   });
 
   it("labels warp and weft", () => {
