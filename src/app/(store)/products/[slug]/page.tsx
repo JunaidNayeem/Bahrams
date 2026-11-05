@@ -49,6 +49,8 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props) {
   const product = await getProduct((await params).slug);
   if (!product) return {};
+  // Share image: the main photo of the design the page opens on.
+  const [main] = imagesForVariant(product.images, product.variants[0]?.id);
   return productMetadata({
     name: product.title,
     slug: product.slug,
@@ -56,7 +58,7 @@ export async function generateMetadata({ params }: Props) {
     seoTitle: product.seoTitle,
     seoDescription: product.seoDescription,
     productType: fibreLabel(product.primaryFibre),
-    image: product.images[0] ? { url: product.images[0].url, alt: product.images[0].alt } : null,
+    image: main ? { url: main.url, alt: main.alt } : null,
     noindex: product.noindex,
   });
 }

@@ -399,14 +399,12 @@ export async function saveProduct(_prev: SaveState, form: FormData): Promise<Sav
           stale.map((l) => l.id),
         );
     if (normalised && !(current ?? []).some((l) => l.label_number === normalised)) {
-      const ins = await supabase
-        .from("authenticity_labels")
-        .insert({
-          label_type: type,
-          label_number: normalised,
-          product_id: productId,
-          status: "attached",
-        });
+      const ins = await supabase.from("authenticity_labels").insert({
+        label_type: type,
+        label_number: normalised,
+        product_id: productId,
+        status: "attached",
+      });
       if (ins.error) {
         const field = type === "silk_mark" ? "silkMarkLabel" : "handloomMarkLabel";
         return {
@@ -557,18 +555,21 @@ export async function updateMediaAlt(mediaId: string, alt: string) {
   updateTag(`product:${media.products.slug}`);
 }
 
+/** Moves a photo up or down among the photos of the same design (or among the shared photos). */
 export async function moveMedia(mediaId: string, direction: -1 | 1) {
   const { supabase, media } = await mediaContext(mediaId);
   if (!media) return;
   const { data: all } = await supabase
     .from("product_media")
-    .select("id, sort")
+    .select("id, sort, variant_id")
     .eq("product_id", media.product_id)
     .order("sort");
   const list = all ?? [];
   const i = list.findIndex((m) => m.id === mediaId);
-  const j = i + direction;
-  if (i < 0 || j < 0 || j >= list.length) return;
+  if (i < 0) return;
+  let j = i + direction;
+  while (j >= 0 && j < list.length && list[j].variant_id !== list[i].variant_id) j += direction;
+  if (j < 0 || j >= list.length) return;
   [list[i], list[j]] = [list[j], list[i]];
   await Promise.all(
     list.map((m, idx) => supabase.from("product_media").update({ sort: idx }).eq("id", m.id)),

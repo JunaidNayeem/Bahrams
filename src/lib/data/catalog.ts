@@ -3,6 +3,7 @@ import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 
 import type { Fibre, Occasion, ProductKind, SellUnit } from "@/lib/domain/enums";
+import { imagesForVariant } from "@/lib/domain/variants";
 import { createPublicClient } from "@/lib/supabase/public";
 
 import { productMediaUrl } from "./media";
@@ -90,8 +91,8 @@ export interface ProductListFilters {
 const CARD_SELECT = `
   id, slug, title, kind, primary_fibre, price_min_paise, price_max_paise, is_one_of_a_kind,
   made_to_order, gi_eligible, rating_avg, rating_count, featured_rank, published_at,
-  product_media ( storage_path, alt, sort, kind, width, height ),
-  product_variants ( colour, sell_unit, position, active )
+  product_media ( storage_path, alt, sort, kind, width, height, variant_id ),
+  product_variants ( id, colour, sell_unit, position, active )
 ` as const;
 
 type CardRow = {
@@ -114,8 +115,10 @@ type CardRow = {
     kind: string;
     width: number | null;
     height: number | null;
+    variant_id: string | null;
   }[];
   product_variants: {
+    id: string;
     colour: string | null;
     sell_unit: SellUnit;
     position: number;
@@ -130,12 +133,17 @@ function toImage(m: CardRow["product_media"][number] | undefined): ProductImage 
 }
 
 function toCard(row: CardRow): ProductCard {
-  const images = row.product_media
-    .filter((m) => m.kind === "image")
-    .sort((a, b) => a.sort - b.sort);
   const variants = row.product_variants
     .filter((v) => v.active)
     .sort((a, b) => a.position - b.position);
+  // The card shows what the product page opens on: the first design's photos, then shared ones.
+  const images = imagesForVariant(
+    row.product_media
+      .filter((m) => m.kind === "image")
+      .sort((a, b) => a.sort - b.sort)
+      .map((m) => ({ ...m, variantId: m.variant_id })),
+    variants[0]?.id,
+  );
   return {
     id: row.id,
     slug: row.slug,
