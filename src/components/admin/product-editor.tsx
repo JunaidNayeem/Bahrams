@@ -12,7 +12,10 @@ import { CATALOGUE_SECTIONS } from "@/config/routes";
 import { FIBRE_GROUPS, fibreLabel } from "@/lib/domain/claims";
 import { OCCASIONS, PRODUCT_KINDS, PUBLISH_STATUSES, type SellUnit } from "@/lib/domain/enums";
 import { slugify } from "@/lib/domain/slug";
+import { variantLabel } from "@/lib/domain/variants";
 import { cn } from "@/lib/utils";
+
+import { DesignPhotos, type MediaItem } from "./media-manager";
 
 export interface EditorVariant {
   id: string;
@@ -168,15 +171,23 @@ let rowKey = 0;
 export function ProductEditor({
   initial,
   weavers,
+  photos = [],
   aside,
 }: {
   initial: EditorValues;
   weavers: { id: string; name: string; locality: string | null }[];
+  /** Saved product photos; each design's are shown and uploaded inside that design's row. */
+  photos?: MediaItem[];
   aside?: React.ReactNode;
 }) {
   const [state, setState] = useState<SaveState>({ ok: false, message: null, errors: {} });
   const [pending, startTransition] = useTransition();
   const [rows, setRows] = useState(() => initial.variants.map((v) => ({ key: rowKey++, v })));
+  // Saved designs a photo can be moved to, numbered as the rows are ("Design 2 · Temple pallu").
+  const photoTargets = rows.flatMap(({ v }, i) =>
+    v.id ? [{ id: v.id, label: `Design ${i + 1} · ${variantLabel(v)}` }] : [],
+  );
+  const savedIds = new Set(initial.variants.map((v) => v.id).filter(Boolean));
   const [title, setTitle] = useState(initial.title);
   const [slug, setSlug] = useState(initial.slug);
   const [slugTouched, setSlugTouched] = useState(Boolean(initial.id));
@@ -419,7 +430,7 @@ export function ProductEditor({
                     name={`variants.${i}.title`}
                     error={err("title")}
                     className="mb-3"
-                    hint="What makes this one different, e.g. “Peacock border” or “Temple pallu”. Shoppers pick by this name and the design's photos (assign photos to it in Photos)."
+                    hint="What makes this one different, e.g. “Peacock border” or “Temple pallu”. Shoppers pick by this name and the photos you upload below."
                   >
                     <Input
                       id={`variants.${i}.title`}
@@ -532,6 +543,23 @@ export function ProductEditor({
                       </Button>
                     )}
                   </div>
+                  <div className="mt-4 border-t border-border pt-4">
+                    {initial.id && v.id ? (
+                      <DesignPhotos
+                        productId={initial.id}
+                        variantId={v.id}
+                        label={`Design ${i + 1}`}
+                        items={photos.filter((m) => m.variantId === v.id)}
+                        targets={photoTargets}
+                        isMain={i === 0}
+                      />
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        Photos: click <strong>Save</strong> first, then upload this design&apos;s
+                        photos here.
+                      </p>
+                    )}
+                  </div>
                 </fieldset>
               );
             })}
@@ -540,6 +568,22 @@ export function ProductEditor({
             <PlusIcon /> Add design
           </Button>
         </Section>
+
+        {initial.id && (
+          <Section
+            title="Shared photos"
+            description="Optional. Shown with every design, after that design's own photos, e.g. a fabric close-up or the blouse piece. Photos of one design belong in that design above."
+          >
+            <DesignPhotos
+              productId={initial.id}
+              variantId={null}
+              label="shared photos"
+              items={photos.filter((m) => !m.variantId || !savedIds.has(m.variantId))}
+              targets={photoTargets}
+              isMain={false}
+            />
+          </Section>
+        )}
 
         <Section
           title="Search engines"

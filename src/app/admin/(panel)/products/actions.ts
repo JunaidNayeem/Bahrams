@@ -318,6 +318,8 @@ export async function saveProduct(_prev: SaveState, form: FormData): Promise<Sav
     .select("id")
     .eq("is_default", true)
     .maybeSingle();
+  // Ids of every variant in this save, including ones just inserted (which had no id in the form).
+  const savedIds: string[] = [];
   for (const [i, v] of p.variants.entries()) {
     const variantRow = {
       product_id: productId,
@@ -351,6 +353,7 @@ export async function saveProduct(_prev: SaveState, form: FormData): Promise<Sav
         errors: res.error.code === "23505" ? { [`variants.${i}.sku`]: "Already in use" } : {},
       };
     }
+    savedIds.push(res.data.id);
     if (!v.id && v.openingStock && defaultLocation) {
       const adj = await supabase.rpc("apply_stock_adjustment", {
         p_variant_id: res.data.id,
@@ -367,14 +370,14 @@ export async function saveProduct(_prev: SaveState, form: FormData): Promise<Sav
         };
     }
   }
+  // Rows removed in the editor are deactivated. Keep everything saved above: a design added in
+  // this save has no id in the form, and deactivating by form ids alone switched new designs off.
   if (p.id) {
-    const keep = p.variants.map((v) => v.id).filter((id): id is string => Boolean(id));
-    let deactivate = supabase
+    await supabase
       .from("product_variants")
       .update({ active: false })
-      .eq("product_id", productId);
-    if (keep.length) deactivate = deactivate.not("id", "in", `(${keep.join(",")})`);
-    await deactivate;
+      .eq("product_id", productId)
+      .not("id", "in", `(${savedIds.join(",")})`);
   }
 
   // Authenticity labels are records, not text: badges on the store render only from these rows.
