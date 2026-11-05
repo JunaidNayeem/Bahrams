@@ -8,6 +8,7 @@ import { CATALOG_TAG } from "@/lib/data/catalog";
 import { CMS_TAG } from "@/lib/data/cms";
 import { markupToHtml } from "@/lib/cms/simple-markup";
 import { PUBLISH_STATUSES } from "@/lib/domain/enums";
+import type { Json } from "@/lib/db/database.types";
 import { createClient } from "@/lib/supabase/server";
 
 const CONTENT_STAFF = ["owner", "manager", "catalogue_editor"] as const;
@@ -108,4 +109,29 @@ export async function renameHomeSection(id: string, title: string): Promise<Cont
   if (error) return { ok: false, message: error.message };
   updateTag(CMS_TAG);
   return { ok: true, message: "Heading updated." };
+}
+
+/** The product the home hero shows. Null goes back to the newest (or featured-ranked) piece. */
+export async function setHeroProduct(sectionId: string, productId: string | null): Promise<ContentResult> {
+  await requireStaff(...CONTENT_STAFF);
+  const supabase = await createClient();
+  const { data: section } = await supabase.from("home_sections").select("id, type, config").eq("id", sectionId).single();
+  if (!section || section.type !== "hero") return { ok: false, message: "Hero section not found." };
+
+  let title: string | null = null;
+  if (productId) {
+    const { data: product } = await supabase.from("products").select("title, status").eq("id", productId).maybeSingle();
+    if (!product) return { ok: false, message: "Product not found." };
+    if (product.status !== "published") return { ok: false, message: `"${product.title}" isn't published yet, so the home page can't show it.` };
+    title = product.title;
+  }
+
+  const config = { ...(section.config as Record<string, unknown>) };
+  if (productId) config.product_id = productId;
+  else delete config.product_id;
+  const { error } = await supabase.from("home_sections").update({ config: config as { [key: string]: Json | undefined } }).eq("id", sectionId);
+  if (error) return { ok: false, message: error.message };
+  updateTag(CMS_TAG);
+  updateTag(CATALOG_TAG);
+  return { ok: true, message: title ? `The home page now features "${title}".` : "The home page now features the newest piece." };
 }

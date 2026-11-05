@@ -50,7 +50,6 @@ const ADMIN_ROUTES = new Set([
   "/admin/products/new",
   "/admin/collections",
   "/admin/media",
-  "/admin/authenticity",
   "/admin/inventory",
   "/admin/orders",
   "/admin/shipments",

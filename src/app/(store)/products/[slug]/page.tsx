@@ -1,4 +1,4 @@
-import { BadgeCheckIcon, ExternalLinkIcon } from "lucide-react";
+import { BadgeCheckIcon } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -21,7 +21,6 @@ import {
   CLAIM_BADGE_LABELS,
   compositionLabel,
   fibreLabel,
-  SILK_MARK_VERIFY_URL,
 } from "@/lib/domain/claims";
 import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 import { productMetadata } from "@/lib/seo/metadata";
@@ -107,46 +106,21 @@ function Specs({ product }: { product: ProductDetail }) {
   );
 }
 
-function Authenticity({ product }: { product: ProductDetail }) {
-  const { claims } = product;
+/** Shown only for products with the GI tag ticked in the admin. */
+function GiTag({ product }: { product: ProductDetail }) {
+  if (!product.giEligible) return null;
   return (
     <section
-      aria-labelledby="authenticity"
+      aria-labelledby="gi-tag"
       className="space-y-3 rounded-md border border-gold-300 bg-ivory-200/60 p-5"
     >
-      <h2 id="authenticity" className="flex items-center gap-2 font-display text-xl">
-        <BadgeCheckIcon className="size-5 text-gold-text" aria-hidden /> Proof of authenticity
+      <h2 id="gi-tag" className="flex items-center gap-2 font-display text-xl">
+        <BadgeCheckIcon className="size-5 text-gold-text" aria-hidden /> Bhagalpur Silk (GI)
       </h2>
-      <ul className="space-y-2 text-sm">
-        {claims.silkMarkLabelNumber ? (
-          <li>
-            Silk Mark label <strong className="font-mono">{claims.silkMarkLabelNumber}</strong> is
-            attached to this piece.{" "}
-            <a
-              href={SILK_MARK_VERIFY_URL}
-              target="_blank"
-              rel="noopener"
-              className="inline-flex items-center gap-1 underline"
-            >
-              Verify on silkmarkindia.com <ExternalLinkIcon className="size-3" aria-hidden />
-            </a>
-          </li>
-        ) : (
-          <li>This piece does not carry a Silk Mark label, so we do not call it pure silk.</li>
-        )}
-        {claims.handloomMarkLabelNumber && (
-          <li>
-            Handloom Mark label{" "}
-            <strong className="font-mono">{claims.handloomMarkLabelNumber}</strong>.
-          </li>
-        )}
-        <li>
-          {product.giEligible
-            ? "Woven by the traditional process in Bhagalpur, so it is sold as Bhagalpur Silk (GI), registered in 2013."
-            : "Woven in Bhagalpur. It is not sold under the Bhagalpur Silk GI tag."}
-        </li>
-        <li>Fibre stated per warp and weft: {product.composition}.</li>
-      </ul>
+      <p className="text-sm">
+        Woven by the traditional process in Bhagalpur, so it is sold as Bhagalpur Silk (GI),
+        registered in 2013. Fibre in warp and weft: {product.composition}.
+      </p>
     </section>
   );
 }
@@ -369,7 +343,7 @@ async function ProductContent({ params }: { params: Props["params"] }) {
           )}
         </div>
         <aside className="space-y-6">
-          <Authenticity product={product} />
+          <GiTag product={product} />
           {product.weaver && (
             <section className="rounded-md border border-border p-5">
               <p className="text-eyebrow text-muted-foreground uppercase">Woven by</p>

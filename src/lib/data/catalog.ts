@@ -321,6 +321,21 @@ export async function listFeaturedProducts(limit = 8): Promise<ProductCard[]> {
   return (data as unknown as CardRow[]).map(toCard);
 }
 
+/** One live product as a card (the home hero's chosen piece). Null if missing or not published. */
+export async function getProductCard(id: string): Promise<ProductCard | null> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(CATALOG_TAG);
+
+  const { data, error } = await createPublicClient()
+    .from("products")
+    .select(CARD_SELECT)
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? toCard(data as unknown as CardRow) : null;
+}
+
 export async function listProductsInCollection(path: string, limit = 8): Promise<ProductCard[]> {
   "use cache";
   cacheLife("hours");

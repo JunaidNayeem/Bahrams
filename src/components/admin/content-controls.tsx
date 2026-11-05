@@ -2,16 +2,26 @@
 
 import { ArrowDownIcon, ArrowUpIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 
-import { moveHomeSection, renameHomeSection, savePage, toggleHomeSection, type ContentResult } from "@/app/admin/(panel)/content/actions";
+import {
+  moveHomeSection,
+  renameHomeSection,
+  savePage,
+  setHeroProduct,
+  toggleHomeSection,
+  type ContentResult,
+} from "@/app/admin/(panel)/content/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
+import { CMS_MEDIA_CLASSES } from "@/lib/cms/media-classes";
 import { markupToHtml } from "@/lib/cms/simple-markup";
+
+import { ContentMediaToolbar } from "./content-media-toolbar";
 
 function useRun() {
   const router = useRouter();
@@ -32,6 +42,7 @@ export function HomeSectionRow({
   active,
   first,
   last,
+  hero,
 }: {
   id: string;
   type: string;
@@ -39,8 +50,11 @@ export function HomeSectionRow({
   active: boolean;
   first: boolean;
   last: boolean;
+  /** Hero only: the product it features, and the published products to choose from. */
+  hero?: { productId: string | null; options: { id: string; title: string }[] };
 }) {
   const { pending, run } = useRun();
+  const picked = hero?.productId && hero.options.some((o) => o.id === hero.productId) ? hero.productId : "";
   return (
     <li className="flex flex-wrap items-center gap-3 py-3">
       <div className="flex flex-col">
@@ -64,6 +78,28 @@ export function HomeSectionRow({
         <Switch checked={active} disabled={pending} onCheckedChange={(v) => run(() => toggleHomeSection(id, v))} />
         {active ? "Shown" : "Hidden"}
       </label>
+      {hero && (
+        <div className="w-full space-y-1 pl-11">
+          <label htmlFor={`hero-product-${id}`} className="text-xs font-medium">
+            Featured product (the large photo)
+          </label>
+          <select
+            id={`hero-product-${id}`}
+            value={picked}
+            disabled={pending}
+            onChange={(e) => run(() => setHeroProduct(id, e.target.value || null))}
+            className="h-9 w-full rounded-md border border-input bg-card px-2 text-sm"
+          >
+            <option value="">Automatic: newest published product</option>
+            {hero.options.map((o) => (
+              <option key={o.id} value={o.id}>
+                {o.title}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-muted-foreground">Only published products are listed. Its first design&rsquo;s first photo is shown.</p>
+        </div>
+      )}
     </li>
   );
 }
@@ -80,6 +116,22 @@ export function PageEditorForm({
   const { pending, run } = useRun();
   const [body, setBody] = useState(initial.body);
   const [preview, setPreview] = useState(false);
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
+  // Cursor position, kept so media lands where the editor was even after focus moves to a button.
+  const cursor = useRef<number | null>(null);
+
+  /** Puts a media line on its own, between paragraphs, at the cursor (or at the end). */
+  function insertBlock(markup: string) {
+    setBody((current) => {
+      const at = Math.min(cursor.current ?? current.length, current.length);
+      const before = current.slice(0, at).replace(/\s+$/, "");
+      const after = current.slice(at).replace(/^\s+/, "");
+      const next = `${before}${before ? "\n\n" : ""}${markup}\n\n${after}`;
+      cursor.current = (before ? before.length + 2 : 0) + markup.length + 2;
+      return after ? next : next.trimEnd() + "\n";
+    });
+    setPreview(false);
+  }
   return (
     <form
       onSubmit={(e) => {
@@ -102,19 +154,36 @@ export function PageEditorForm({
               {preview ? "Edit" : "Preview"}
             </Button>
           </div>
+          <ContentMediaToolbar onInsert={insertBlock} />
           {preview ? (
             <div
-              className="min-h-96 space-y-3 rounded-md border border-border p-4 text-sm leading-relaxed [&_a]:underline [&_h2]:mt-4 [&_h2]:font-display [&_h2]:text-xl [&_h3]:font-semibold [&_li]:ml-5 [&_ol]:list-decimal [&_ul]:list-disc"
+              className={`min-h-96 space-y-3 rounded-md border border-border p-4 text-sm leading-relaxed [&_a]:underline [&_h2]:mt-4 [&_h2]:font-display [&_h2]:text-xl [&_h3]:font-semibold [&_li]:ml-5 [&_ol]:list-decimal [&_ul]:list-disc ${CMS_MEDIA_CLASSES}`}
               // markupToHtml escapes everything; only its own tags are produced.
               dangerouslySetInnerHTML={{ __html: markupToHtml(body) }}
             />
           ) : (
-            <Textarea id="body" value={body} onChange={(e) => setBody(e.target.value)} rows={22} className="min-h-96 font-mono text-sm" />
+            <Textarea
+              id="body"
+              ref={bodyRef}
+              value={body}
+              onChange={(e) => {
+                setBody(e.target.value);
+                cursor.current = e.target.selectionStart;
+              }}
+              onSelect={(e) => (cursor.current = e.currentTarget.selectionStart)}
+              rows={22}
+              className="min-h-96 font-mono text-sm"
+            />
           )}
           <input type="hidden" name="body" value={body} />
           <p className="text-xs text-muted-foreground">
             <code>## Heading</code> · <code>### Subheading</code> · <code>- bullet</code> · <code>1. numbered</code> · <code>**bold**</code> ·{" "}
             <code>[link](/path)</code> · blank line = new paragraph
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Photos and videos: click where they should go, then use the buttons above. Each sits on its own line as{" "}
+            <code>![description](address)</code> or <code>@[title](address)</code>; move or delete that line to move or remove it. Add a
+            caption with <code>![description](address &quot;Caption&quot;)</code>. Use Preview to check.
           </p>
         </div>
       </div>

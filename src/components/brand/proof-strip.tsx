@@ -28,16 +28,15 @@ const PROOF_ICONS: Record<ProofKey, LucideIcon> = {
 };
 
 /**
- * Default "Why Bahram" copy for the home page.
- * TODO(client): these are brand-level statements. Before launch confirm Bahram is a registered
- * Silk Mark authorised user and that the handloom wording matches the Handloom Mark status.
+ * Default "Why Bahram" copy for the home page. No Silk Mark claim: the store does not record
+ * Silk Mark labels (owner's decision, 2026-11-05), so it must not promise them.
  */
 export const WHY_BAHRAM_PROOF_ITEMS: readonly ProofItem[] = [
   {
     key: "silk_mark",
-    title: "Silk Mark certified",
-    description: "Pure-silk pieces carry a Silk Mark label number you can check yourself.",
-    href: "/guides/how-to-verify-silk-mark",
+    title: "Fibre stated plainly",
+    description: "Every piece lists the fibre in warp and weft, so you know exactly what you buy.",
+    href: "/guides/silk-types-explained",
   },
   {
     key: "gi_bhagalpur",

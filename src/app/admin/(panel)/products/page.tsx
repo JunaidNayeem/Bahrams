@@ -84,9 +84,9 @@ async function ProductTable({ searchParams }: { searchParams: SP }) {
                       <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         {fibreLabel(p.primaryFibre)}
                         {p.isOneOfAKind && " · One of a kind"}
-                        {p.hasSilkMark && (
+                        {p.giEligible && (
                           <span className="inline-flex items-center gap-0.5 text-gold-text">
-                            · <BadgeCheckIcon className="size-3" aria-hidden /> Silk Mark
+                            · <BadgeCheckIcon className="size-3" aria-hidden /> GI
                           </span>
                         )}
                       </p>

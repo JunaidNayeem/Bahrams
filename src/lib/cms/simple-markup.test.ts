@@ -34,3 +34,70 @@ describe("htmlToMarkup", () => {
     expect(markupToHtml(htmlToMarkup(markupToHtml(source)))).toBe(markupToHtml(source));
   });
 });
+
+describe("images and videos", () => {
+  const IMG = "https://x.supabase.co/storage/v1/object/public/cms-media/pages/a1.webp";
+
+  it("renders an image line as a figure, with an optional caption", () => {
+    expect(markupToHtml(`![Weaver at the loom](${IMG})`)).toBe(
+      `<figure><img src="${IMG}" alt="Weaver at the loom" loading="lazy" decoding="async"></figure>`,
+    );
+    expect(markupToHtml(`![Loom](${IMG} "Our Champanagar unit")`)).toContain(
+      "<figcaption>Our Champanagar unit</figcaption>",
+    );
+  });
+
+  it("places media between paragraphs", () => {
+    const html = markupToHtml(`First paragraph.\n![Loom](${IMG})\nSecond paragraph.`);
+    expect(html).toBe(
+      `<p>First paragraph.</p><figure><img src="${IMG}" alt="Loom" loading="lazy" decoding="async"></figure><p>Second paragraph.</p>`,
+    );
+  });
+
+  it("only accepts https and same-site image addresses", () => {
+    expect(markupToHtml("![x](javascript:alert(1))")).not.toContain("<img");
+    expect(markupToHtml("![x](http://insecure.example/a.png)")).not.toContain("<img");
+    expect(markupToHtml("![x](//evil.example/a.png)")).not.toContain("<img");
+    expect(markupToHtml('![x" onerror="alert(1)](/a.png)')).not.toContain('" onerror="');
+  });
+
+  it("embeds YouTube (no-cookie) and Vimeo links", () => {
+    for (const url of [
+      "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "https://youtu.be/dQw4w9WgXcQ",
+      "https://www.youtube.com/shorts/dQw4w9WgXcQ",
+    ]) {
+      expect(markupToHtml(`@[Tussar weaving](${url})`)).toContain(
+        '<iframe src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ" title="Tussar weaving"',
+      );
+    }
+    expect(markupToHtml("@[Reeling](https://vimeo.com/123456)")).toContain(
+      'src="https://player.vimeo.com/video/123456?dnt=1"',
+    );
+  });
+
+  it("plays uploaded MP4/WebM files and links anything else", () => {
+    expect(markupToHtml("@[Pallu close-up](https://x.supabase.co/v/clip.mp4)")).toContain(
+      '<video src="https://x.supabase.co/v/clip.mp4" controls preload="metadata" playsinline aria-label="Pallu close-up">',
+    );
+    expect(markupToHtml("@[Elsewhere](https://example.com/page)")).toBe(
+      '<p><a href="https://example.com/page">Elsewhere</a></p>',
+    );
+    expect(markupToHtml("@[x](javascript:alert(1))")).not.toContain("<iframe");
+  });
+
+  it("round-trips images and videos through the editor", () => {
+    const source = [
+      "Intro.",
+      "",
+      `![Loom](${IMG} "Caption & more")`,
+      "",
+      "@[Weaving](https://youtu.be/dQw4w9WgXcQ)",
+      "",
+      "@[Reeling](https://vimeo.com/123456)",
+      "",
+      "@[Clip](https://x.supabase.co/v/clip.mp4)",
+    ].join("\n");
+    expect(htmlToMarkup(markupToHtml(source))).toBe(source);
+  });
+});

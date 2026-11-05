@@ -83,7 +83,17 @@ export async function SiteFooter() {
               {link.label}
             </Link>
           ))}
-          <span className="ml-auto text-ivory-300">© {siteConfig.name}</span>
+          <span className="ml-auto text-ivory-300">
+            © {siteConfig.name} · Designed &amp; developed by{" "}
+            <a
+              href="https://junaidnayeem.in"
+              target="_blank"
+              rel="noopener"
+              className="text-ivory-100 underline hover:text-gold-300"
+            >
+              Junaid Nayeem
+            </a>
+          </span>
         </nav>
       </div>
     </footer>

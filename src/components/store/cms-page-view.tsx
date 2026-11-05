@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ZariDivider } from "@/components/brand/zari-divider";
 import { JsonLd } from "@/components/seo/json-ld";
 import { routes } from "@/config/routes";
+import { CMS_MEDIA_CLASSES } from "@/lib/cms/media-classes";
 import { getPage } from "@/lib/data/cms";
 import { breadcrumbJsonLd, faqItemsFromHtml, faqPageJsonLd, webPageJsonLd } from "@/lib/seo/jsonld";
 import { buildMetadata, toPlainText } from "@/lib/seo/metadata";
@@ -61,7 +62,7 @@ export async function CmsPageView({ slug }: { slug: string }) {
       <ZariDivider className="my-6 w-24" />
       {/* body_html is sanitised by the admin editor on save; only staff can write page_versions. */}
       <div
-        className="space-y-4 leading-relaxed [&_a]:underline [&_h2]:mt-8 [&_h2]:font-display [&_h2]:text-display-sm [&_h3]:mt-6 [&_h3]:font-semibold [&_li]:ml-5 [&_ol]:list-decimal [&_ul]:list-disc"
+        className={`space-y-4 leading-relaxed [&_a]:underline [&_h2]:mt-8 [&_h2]:font-display [&_h2]:text-display-sm [&_h3]:mt-6 [&_h3]:font-semibold [&_li]:ml-5 [&_ol]:list-decimal [&_ul]:list-disc ${CMS_MEDIA_CLASSES}`}
         dangerouslySetInnerHTML={{ __html: page.bodyHtml }}
       />
     </article>

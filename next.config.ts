@@ -73,7 +73,14 @@ const csp: Record<string, string[]> = {
     ...clarity,
     ...vercelLive,
   ],
-  "frame-src": [razorpay.api, razorpay.checkout, ...vercelLive],
+  // Videos embedded in CMS pages (src/lib/cms/simple-markup.ts): YouTube no-cookie and Vimeo only.
+  "frame-src": [
+    razorpay.api,
+    razorpay.checkout,
+    "https://www.youtube-nocookie.com",
+    "https://player.vimeo.com",
+    ...vercelLive,
+  ],
   "worker-src": ["'self'", "blob:"],
   "object-src": ["'none'"],
   "base-uri": ["'self'"],

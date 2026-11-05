@@ -45,6 +45,9 @@ docs/                   kickoff brief, ADRs, backlog, open questions
 - **Money is integer paise** (`number`, never floats), INR. Displayed prices are GST-inclusive.
 - **Claims need records.** "Pure Silk", "Silk Mark", "Handloom" and "GI" badges render only when the
   matching record exists (label number / GI-eligibility flag). Use `src/lib/domain/claims`.
+  Owner decision 2026-11-05: Silk Mark / Handloom Mark label entry and the admin Authenticity page
+  were removed; the only per-product claim staff set is the GI tag (`gi_eligible`). So no copy may
+  promise Silk Mark numbers or "certified pure silk". The label tables and claims engine remain.
 - **Discounts need genuine price history.** A compare-at / "prior price" is shown only if
   `src/lib/domain/pricing` validates it against `price_history`. No fake timers, pre-ticked add-ons,
   hidden or drip charges (Dark Patterns Guidelines 2023; E-Commerce Amendment Rules from 1 Jan 2027).

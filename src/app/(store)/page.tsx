@@ -12,7 +12,11 @@ import { buttonVariants } from "@/components/ui/button";
 import { RatingStars } from "@/components/ui/rating-stars";
 import { productUrl, routes, weaverUrl } from "@/config/routes";
 import { siteConfig } from "@/config/site";
-import { listFeaturedProducts, listProductsInCollection } from "@/lib/data/catalog";
+import {
+  getProductCard,
+  listFeaturedProducts,
+  listProductsInCollection,
+} from "@/lib/data/catalog";
 import { getHomeSections, listRecentReviews, listWeavers, type HomeSection } from "@/lib/data/cms";
 import { organizationJsonLd, websiteJsonLd } from "@/lib/seo/jsonld";
 import { keywordPageMetadata } from "@/lib/seo/metadata";
@@ -27,7 +31,11 @@ const str = (v: unknown) => (typeof v === "string" ? v : undefined);
 const num = (v: unknown, fallback: number) => (typeof v === "number" ? v : fallback);
 
 async function Hero({ section }: { section: HomeSection }) {
-  const [lead] = await listFeaturedProducts(1);
+  // The piece chosen in Admin → Content → Hero; the newest/featured one if none is chosen, or the
+  // chosen one is no longer live or has no photo.
+  const chosenId = str(section.config.product_id);
+  const chosen = chosenId ? await getProductCard(chosenId) : null;
+  const lead = chosen?.image ? chosen : (await listFeaturedProducts(1))[0];
   const ctaHref = str(section.config.cta_href) ?? routes.sarees;
   return (
     <section className="container-page grid items-center gap-10 py-12 md:grid-cols-2 md:py-20">
@@ -37,8 +45,8 @@ async function Hero({ section }: { section: HomeSection }) {
           {section.title ?? siteConfig.promise}
         </h1>
         <p className="max-w-prose text-lg text-muted-foreground">
-          Tussar, ghicha, matka and raw silk from our own looms in Bhagalpur — every pure-silk piece
-          sold with its Silk Mark number, and the weave in warp and weft stated plainly.
+          Tussar, ghicha, matka and raw silk from our own looms in Bhagalpur, with the weave in warp
+          and weft stated plainly and GI-tagged pieces marked as Bhagalpur Silk (GI).
         </p>
         <div className="flex flex-wrap gap-3">
           <Link href={ctaHref} className={buttonVariants({ size: "lg" })}>

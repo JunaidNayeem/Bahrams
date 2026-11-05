@@ -13,8 +13,8 @@ export const RETURN_RESOLUTION_PREFERENCE: readonly ReturnResolution[] = [
 
 export const RETURN_CONDITIONS: readonly string[] = [
   "Unused and unwashed, with no perfume, stains or alterations",
-  "All tags, the Silk Mark and Handloom Mark labels intact",
-  "Returned with the original packaging and authenticity card",
+  "All tags and labels intact",
+  "Returned in the original packaging",
 ];
 
 export interface ReturnItemFacts {

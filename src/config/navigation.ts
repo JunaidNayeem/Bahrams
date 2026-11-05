@@ -291,12 +291,6 @@ export const adminNavigation: readonly AdminNavGroup[] = [
         roles: ["owner", "manager", "catalogue_editor"],
       },
       {
-        label: "Authenticity",
-        href: adminUrls.authenticity,
-        icon: "BadgeCheck",
-        roles: ["owner", "manager", "catalogue_editor"],
-      },
-      {
         label: "Inventory",
         href: adminUrls.inventory,
         icon: "Warehouse",

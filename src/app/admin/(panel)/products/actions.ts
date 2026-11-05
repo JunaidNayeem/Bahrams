@@ -5,7 +5,7 @@ import { updateTag } from "next/cache";
 import sharp from "sharp";
 import { z } from "zod";
 
-import { adminUrls, productUrl } from "@/config/routes";
+import { adminUrls, productUrl, sectionUrl } from "@/config/routes";
 import { requireStaff } from "@/lib/auth";
 import { CATALOG_TAG } from "@/lib/data/catalog";
 import { FIBRES, OCCASIONS, PRODUCT_KINDS, PUBLISH_STATUSES, SELL_UNITS } from "@/lib/domain/enums";
@@ -97,8 +97,6 @@ const productSchema = z.object({
     .trim()
     .regex(/^[0-9]{4,8}$/, "4–8 digit HSN code"),
   gstRate: z.string().refine((v) => [0, 5, 12, 18, 28].includes(Number(v)), "Choose a GST rate"),
-  silkMarkLabel: text(40),
-  handloomMarkLabel: text(40),
   status: z.enum(PUBLISH_STATUSES),
   scheduledAt: z.string().transform((v) => (v === "" ? null : new Date(v).toISOString())),
   seoTitle: text(70),
@@ -145,8 +143,6 @@ function fromForm(form: FormData) {
     swatchAvailable: b("swatchAvailable"),
     hsnCode: s("hsnCode"),
     gstRate: s("gstRate"),
-    silkMarkLabel: s("silkMarkLabel"),
-    handloomMarkLabel: s("handloomMarkLabel"),
     status: s("status"),
     scheduledAt: s("scheduledAt"),
     seoTitle: s("seoTitle"),
@@ -261,6 +257,35 @@ export async function saveProduct(_prev: SaveState, form: FormData): Promise<Sav
   if (Object.keys(errors).length)
     return { ok: false, message: "Prior price can't be shown.", errors };
 
+  // Designs removed in the editor (saved before, missing from this form) are deleted for real,
+  // with their photos. One that has been ordered can only be switched off (untick Active).
+  const removed = p.id ? await removedVariants(supabase, p.id, existingIds) : [];
+  if (removed.length) {
+    const ids = removed.map((v) => v.id);
+    const [{ data: ordered }, { data: held }] = await Promise.all([
+      supabase.from("order_items").select("variant_id").in("variant_id", ids),
+      supabase
+        .from("stock_reservations")
+        .select("variant_id")
+        .in("variant_id", ids)
+        .eq("status", "active"),
+    ]);
+    const blocked = removed.find(
+      (v) =>
+        ordered?.some((o) => o.variant_id === v.id) || held?.some((r) => r.variant_id === v.id),
+    );
+    if (blocked) {
+      const name = variantLabel({ sku: blocked.sku, title: blocked.title, colour: blocked.colour });
+      return {
+        ok: false,
+        message: ordered?.some((o) => o.variant_id === blocked.id)
+          ? `"${name}" has been ordered, so it can't be removed. Reload the page and untick its Active box instead.`
+          : `A shopper is checking out with "${name}" right now. Try removing it in 15 minutes.`,
+        errors: {},
+      };
+    }
+  }
+
   const row = {
     title: p.title,
     slug: p.slug,
@@ -311,15 +336,27 @@ export async function saveProduct(_prev: SaveState, form: FormData): Promise<Sav
   }
   const productId = saved.data.id;
 
-  // Variants: update existing, insert new. Removed rows are deactivated, never deleted, so past
-  // orders keep their references.
+  // Removed designs go first, so their SKUs are free for designs added in this same save.
+  if (removed.length) {
+    const ids = removed.map((v) => v.id);
+    const { data: media } = await supabase
+      .from("product_media")
+      .select("id, storage_path")
+      .in("variant_id", ids);
+    // Their photos would otherwise fall back to "shared by all designs" (variant_id set null).
+    if (media?.length) await supabase.from("product_media").delete().in("id", media.map((m) => m.id));
+    const del = await supabase.from("product_variants").delete().in("id", ids);
+    if (del.error) return { ok: false, message: del.error.message, errors: {} };
+    if (media?.length)
+      await supabase.storage.from("product-media").remove(media.map((m) => m.storage_path));
+  }
+
+  // Variants: update existing, insert new.
   const { data: defaultLocation } = await supabase
     .from("stock_locations")
     .select("id")
     .eq("is_default", true)
     .maybeSingle();
-  // Ids of every variant in this save, including ones just inserted (which had no id in the form).
-  const savedIds: string[] = [];
   for (const [i, v] of p.variants.entries()) {
     const variantRow = {
       product_id: productId,
@@ -353,7 +390,6 @@ export async function saveProduct(_prev: SaveState, form: FormData): Promise<Sav
         errors: res.error.code === "23505" ? { [`variants.${i}.sku`]: "Already in use" } : {},
       };
     }
-    savedIds.push(res.data.id);
     if (!v.id && v.openingStock && defaultLocation) {
       const adj = await supabase.rpc("apply_stock_adjustment", {
         p_variant_id: res.data.id,
@@ -370,58 +406,6 @@ export async function saveProduct(_prev: SaveState, form: FormData): Promise<Sav
         };
     }
   }
-  // Rows removed in the editor are deactivated. Keep everything saved above: a design added in
-  // this save has no id in the form, and deactivating by form ids alone switched new designs off.
-  if (p.id) {
-    await supabase
-      .from("product_variants")
-      .update({ active: false })
-      .eq("product_id", productId)
-      .not("id", "in", `(${savedIds.join(",")})`);
-  }
-
-  // Authenticity labels are records, not text: badges on the store render only from these rows.
-  for (const [type, number] of [
-    ["silk_mark", p.silkMarkLabel],
-    ["handloom_mark", p.handloomMarkLabel],
-  ] as const) {
-    const { data: current } = await supabase
-      .from("authenticity_labels")
-      .select("id, label_number")
-      .eq("product_id", productId)
-      .eq("label_type", type)
-      .in("status", ["attached", "sold"]);
-    const normalised = number?.toUpperCase() ?? null;
-    const stale = (current ?? []).filter((l) => l.label_number !== normalised);
-    if (stale.length)
-      await supabase
-        .from("authenticity_labels")
-        .update({ status: "void" })
-        .in(
-          "id",
-          stale.map((l) => l.id),
-        );
-    if (normalised && !(current ?? []).some((l) => l.label_number === normalised)) {
-      const ins = await supabase.from("authenticity_labels").insert({
-        label_type: type,
-        label_number: normalised,
-        product_id: productId,
-        status: "attached",
-      });
-      if (ins.error) {
-        const field = type === "silk_mark" ? "silkMarkLabel" : "handloomMarkLabel";
-        return {
-          ok: false,
-          message:
-            ins.error.code === "23505"
-              ? "That label number is already recorded on another piece."
-              : ins.error.message,
-          errors: { [field]: "Label number already used" },
-        };
-      }
-    }
-  }
-
   // A renamed product keeps its old URL working (301), so links and rankings are not lost.
   if (previous && previous.slug !== p.slug) {
     await supabase
@@ -514,6 +498,19 @@ async function mediaContext(mediaId: string) {
   return { supabase, media: data };
 }
 
+/** Saved designs of a product that the submitted editor form no longer contains. */
+async function removedVariants(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  productId: string,
+  keptIds: string[],
+) {
+  const { data } = await supabase
+    .from("product_variants")
+    .select("id, sku, title, colour")
+    .eq("product_id", productId);
+  return (data ?? []).filter((v) => !keptIds.includes(v.id));
+}
+
 async function variantBelongsTo(
   supabase: Awaited<ReturnType<typeof createClient>>,
   variantId: string,
@@ -588,4 +585,104 @@ export async function deleteMedia(mediaId: string) {
   await supabase.storage.from("product-media").remove([media.storage_path]);
   updateTag(CATALOG_TAG);
   updateTag(`product:${media.products.slug}`);
+}
+
+/* ------------------------------------------------------------------------------------------
+ * Permanent delete
+ * ---------------------------------------------------------------------------------------- */
+
+/**
+ * Deletes a product for good: its designs, prices, price history, stock, photos (rows and
+ * files), collection links, reviews, cart/wishlist/waitlist entries. The audit log keeps a
+ * copy of the product row.
+ *
+ * Refused once the product has been ordered: invoices, returns and verified reviews point at
+ * it, so it should be archived instead. Silk Mark / Handloom labels go back to "in stock"
+ * (they are physical tags with their own audit trail, never deleted).
+ */
+export async function deleteProduct(productId: string): Promise<{ ok: boolean; message: string }> {
+  await requireStaff("owner", "manager");
+  const supabase = await createClient();
+
+  const { data: product } = await supabase
+    .from("products")
+    .select("id, slug, title, kind, status, product_variants ( id ), product_media ( storage_path )")
+    .eq("id", productId)
+    .maybeSingle();
+  if (!product) return { ok: false, message: "Product not found. It may already be deleted." };
+
+  const { count: orderLines, error: orderErr } = await supabase
+    .from("order_items")
+    .select("id", { count: "exact", head: true })
+    .eq("product_id", productId);
+  if (orderErr) return { ok: false, message: orderErr.message };
+  if (orderLines) {
+    return {
+      ok: false,
+      message: `This product appears in ${orderLines} order line${orderLines > 1 ? "s" : ""}, so it can't be deleted (invoices and returns refer to it). Set its status to Archived instead: it disappears from the store and the history stays intact.`,
+    };
+  }
+
+  const variantIds = product.product_variants.map((v) => v.id);
+  if (variantIds.length > 0) {
+    const { count: held } = await supabase
+      .from("stock_reservations")
+      .select("id", { count: "exact", head: true })
+      .in("variant_id", variantIds)
+      .eq("status", "active");
+    if (held) {
+      return {
+        ok: false,
+        message: "A shopper is checking out with this product right now. Try again in 15 minutes.",
+      };
+    }
+  }
+
+  const { data: labels } = await supabase
+    .from("authenticity_labels")
+    .select("id, status")
+    .eq("product_id", productId);
+  if (labels?.some((l) => l.status === "sold")) {
+    return {
+      ok: false,
+      message: "A Silk Mark / Handloom label on this product is marked sold. Archive it instead.",
+    };
+  }
+  const attached = (labels ?? []).filter((l) => l.status === "attached").map((l) => l.id);
+  if (attached.length > 0) {
+    const { error } = await supabase
+      .from("authenticity_labels")
+      .update({ status: "in_stock", product_id: null, variant_id: null })
+      .in("id", attached);
+    if (error) return { ok: false, message: error.message };
+  }
+
+  // Everything else hangs off the product with ON DELETE CASCADE.
+  const { error: delErr } = await supabase.from("products").delete().eq("id", productId);
+  if (delErr) return { ok: false, message: delErr.message };
+
+  // Photo files: only the paths this product recorded (a folder may be shared after a rename).
+  const paths = product.product_media.map((m) => m.storage_path);
+  let fileNote = "";
+  if (paths.length > 0) {
+    const { error } = await supabase.storage.from("product-media").remove(paths);
+    if (error) fileNote = ` Some photo files could not be removed from storage (${error.message}).`;
+  }
+
+  // A page Google may have indexed: send its URL (and older renamed URLs) to the section page.
+  if (product.status === "published") {
+    const oldUrl = productUrl(product.slug);
+    const target = sectionUrl(product.kind);
+    await supabase
+      .from("redirects")
+      .upsert({ from_path: oldUrl, to_path: target, status_code: 301 }, { onConflict: "from_path" });
+    await supabase.from("redirects").update({ to_path: target }).eq("to_path", oldUrl);
+  }
+
+  updateTag(CATALOG_TAG);
+  updateTag(`product:${product.slug}`);
+  return {
+    ok: true,
+    message: `"${product.title}" and its ${paths.length} photo${paths.length === 1 ? "" : "s"} were deleted.${fileNote}`,
+  };
 }

@@ -17,7 +17,7 @@ export interface ProductListRow {
   stock: number;
   sellUnit: SellUnit;
   isOneOfAKind: boolean;
-  hasSilkMark: boolean;
+  giEligible: boolean;
   thumbnail: string | null;
   updatedAt: string;
 }
@@ -33,10 +33,9 @@ export async function listAdminProducts(filters: ProductListFilters): Promise<Pr
   let query = supabase
     .from("products")
     .select(
-      `id, slug, title, kind, primary_fibre, status, price_min_paise, price_max_paise, is_one_of_a_kind, updated_at,
+      `id, slug, title, kind, primary_fibre, status, price_min_paise, price_max_paise, is_one_of_a_kind, gi_eligible, updated_at,
        product_media ( storage_path, sort, kind ),
-       product_variants ( sell_unit, inventory_levels ( on_hand, reserved ) ),
-       authenticity_labels ( label_type, status )`,
+       product_variants ( sell_unit, inventory_levels ( on_hand, reserved ) )`,
     )
     .order("updated_at", { ascending: false });
   if (filters.status) query = query.eq("status", filters.status);
@@ -68,9 +67,7 @@ export async function listAdminProducts(filters: ProductListFilters): Promise<Pr
       ),
       sellUnit: p.product_variants[0]?.sell_unit ?? "piece",
       isOneOfAKind: p.is_one_of_a_kind,
-      hasSilkMark: p.authenticity_labels.some(
-        (l) => l.label_type === "silk_mark" && l.status !== "void",
-      ),
+      giEligible: p.gi_eligible,
       thumbnail: thumb ? productMediaUrl(thumb.storage_path) : null,
       updatedAt: p.updated_at,
     };

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
+import { DeleteProductButton } from "@/components/admin/delete-product-button";
 import { ProductEditor } from "@/components/admin/product-editor";
 import { PageHeader, PublishStatusPill } from "@/components/admin/ui";
 import { buttonVariants } from "@/components/ui/button";
@@ -17,7 +18,8 @@ import { toEditorValues } from "../editor-values";
 export const metadata = { title: "Edit product" };
 
 async function Editor({ params }: { params: PageProps<"/admin/products/[id]">["params"] }) {
-  await requireStaff("owner", "manager", "catalogue_editor");
+  const staff = await requireStaff("owner", "manager", "catalogue_editor");
+  const canDelete = staff.role === "owner" || staff.role === "manager";
   const { id } = await params;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
   const [product, weavers] = await Promise.all([getAdminProduct(id), listWeaverOptions()]);
@@ -41,15 +43,25 @@ async function Editor({ params }: { params: PageProps<"/admin/products/[id]">["p
         description={<PublishStatusPill status={product.status} />}
         back={{ href: adminUrls.products, label: "Products" }}
         actions={
-          product.status === "published" ? (
-            <Link
-              href={productUrl(product.slug)}
-              target="_blank"
-              className={buttonVariants({ variant: "outline" })}
-            >
-              View in store <ExternalLinkIcon />
-            </Link>
-          ) : undefined
+          <>
+            {product.status === "published" && (
+              <Link
+                href={productUrl(product.slug)}
+                target="_blank"
+                className={buttonVariants({ variant: "outline" })}
+              >
+                View in store <ExternalLinkIcon />
+              </Link>
+            )}
+            {canDelete && (
+              <DeleteProductButton
+                productId={product.id}
+                title={product.title}
+                photoCount={photos.length}
+                designCount={product.product_variants.filter((v) => v.active).length}
+              />
+            )}
+          </>
         }
       />
       {/* key resets the uncontrolled form after a save brings back fresh data. */}

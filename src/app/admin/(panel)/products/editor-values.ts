@@ -55,8 +55,6 @@ export function emptyEditorValues(): EditorValues {
     swatchAvailable: false,
     hsnCode: "5007",
     gstRate: "5",
-    silkMarkLabel: "",
-    handloomMarkLabel: "",
     status: "draft",
     scheduledAt: "",
     seoTitle: "",
@@ -69,8 +67,6 @@ export function emptyEditorValues(): EditorValues {
 }
 
 export function toEditorValues(p: AdminProduct): EditorValues {
-  const label = (type: string) =>
-    p.authenticity_labels.find((l) => l.label_type === type && (l.status === "attached" || l.status === "sold"))?.label_number ?? "";
   return {
     id: p.id,
     title: p.title,
@@ -100,8 +96,6 @@ export function toEditorValues(p: AdminProduct): EditorValues {
     swatchAvailable: p.swatch_available,
     hsnCode: p.hsn_code,
     gstRate: String(p.gst_rate_bps / 100),
-    silkMarkLabel: label("silk_mark"),
-    handloomMarkLabel: label("handloom_mark"),
     status: p.status,
     scheduledAt: toLocalInput(p.scheduled_at),
     seoTitle: str(p.seo_title),

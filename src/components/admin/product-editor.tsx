@@ -60,8 +60,6 @@ export interface EditorValues {
   swatchAvailable: boolean;
   hsnCode: string;
   gstRate: string;
-  silkMarkLabel: string;
-  handloomMarkLabel: string;
   status: string;
   scheduledAt: string;
   seoTitle: string;
@@ -537,7 +535,16 @@ export function ProductEditor({
                         variant="ghost"
                         size="sm"
                         className="ml-auto"
-                        onClick={() => setRows((r) => r.filter((x) => x.key !== key))}
+                        onClick={() => {
+                          if (
+                            v.id &&
+                            !confirm(
+                              `Remove Design ${i + 1}? When you save, it is deleted with its photos. To hide it for now, untick Active instead.`,
+                            )
+                          )
+                            return;
+                          setRows((r) => r.filter((x) => x.key !== key));
+                        }}
                       >
                         <Trash2Icon /> Remove
                       </Button>
@@ -647,38 +654,15 @@ export function ProductEditor({
           </Field>
         </Section>
 
-        <Section title="Authenticity" description="Store badges render only from these records.">
-          <Field
-            label="Silk Mark label number"
-            name="silkMarkLabel"
-            error={e.silkMarkLabel}
-            hint="Needed for “Pure Silk” and “Silk Mark” badges."
-          >
-            <Input
-              id="silkMarkLabel"
-              name="silkMarkLabel"
-              defaultValue={initial.silkMarkLabel}
-              className="font-mono uppercase"
-            />
-          </Field>
-          <Field
-            label="Handloom Mark label number"
-            name="handloomMarkLabel"
-            error={e.handloomMarkLabel}
-            hint="Needed to describe the piece as Handloom."
-          >
-            <Input
-              id="handloomMarkLabel"
-              name="handloomMarkLabel"
-              defaultValue={initial.handloomMarkLabel}
-              className="font-mono uppercase"
-            />
-          </Field>
+        <Section
+          title="GI tag & weaver"
+          description="Ticked: the store shows the “Bhagalpur Silk (GI)” badge. Unticked: no GI wording at all."
+        >
           <Check
             name="giEligible"
-            label="Bhagalpur Silk (GI) eligible"
+            label="Bhagalpur Silk (GI) tag"
             defaultChecked={initial.giEligible}
-            hint="Only for pieces made by the traditional process."
+            hint="Tick only for pieces made by the traditional Bhagalpur process."
           />
           <Field label="Weaver" name="weaverId">
             <select

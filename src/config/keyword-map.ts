@@ -48,7 +48,7 @@ export const KEYWORD_MAP: readonly KeywordTarget[] = [
     intent: "transactional",
     title: "Bhagalpuri Silk Sarees, Direct from Bhagalpur",
     description:
-      "Original Bhagalpuri silk sarees woven in Bhagalpur and sold by the makers, with fibre composition, weaver credit and Silk Mark numbers on certified pieces.",
+      "Original Bhagalpuri silk sarees woven in Bhagalpur and sold by the makers, with fibre composition, weaver credit and the GI tag on qualifying pieces.",
     source: "brief",
   },
   {

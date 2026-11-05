@@ -286,7 +286,6 @@ export const adminUrls = {
   product: (id: string) => `/admin/products/${segment(id)}`,
   collections: "/admin/collections",
   media: "/admin/media",
-  authenticity: "/admin/authenticity",
   inventory: "/admin/inventory",
   orders: "/admin/orders",
   order: (id: string) => `/admin/orders/${segment(id)}`,

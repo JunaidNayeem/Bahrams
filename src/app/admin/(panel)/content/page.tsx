@@ -16,14 +16,19 @@ const KIND: Record<string, string> = { legal: "Legal", help: "Help", craft: "Our
 async function Content() {
   await requireStaff("owner", "manager", "catalogue_editor");
   const supabase = await createClient();
-  const [{ data: pages }, { data: sections }] = await Promise.all([
+  const [{ data: pages }, { data: sections }, { data: live }] = await Promise.all([
     supabase
       .from("pages")
       .select("id, slug, kind, title, status, updated_at, page_versions!pages_current_version_fk ( version )")
       .order("kind")
       .order("title"),
-    supabase.from("home_sections").select("id, type, title, active, position").order("position"),
+    supabase.from("home_sections").select("id, type, title, active, position, config").order("position"),
+    supabase.from("products").select("id, title").eq("status", "published").order("published_at", { ascending: false }),
   ]);
+  const heroOf = (config: unknown) => {
+    const id = (config as { product_id?: unknown } | null)?.product_id;
+    return { productId: typeof id === "string" ? id : null, options: live ?? [] };
+  };
 
   return (
     <div className="grid gap-6 xl:grid-cols-[1fr_28rem]">
@@ -72,7 +77,16 @@ async function Content() {
         <p className="mb-2 text-xs text-muted-foreground">Reorder, rename or hide sections. Changes show on the home page immediately.</p>
         <ul className="divide-y divide-border">
           {(sections ?? []).map((s, i, all) => (
-            <HomeSectionRow key={s.id} id={s.id} type={s.type} title={s.title} active={s.active} first={i === 0} last={i === all.length - 1} />
+            <HomeSectionRow
+              key={s.id}
+              id={s.id}
+              type={s.type}
+              title={s.title}
+              active={s.active}
+              first={i === 0}
+              last={i === all.length - 1}
+              hero={s.type === "hero" ? heroOf(s.config) : undefined}
+            />
           ))}
         </ul>
       </Panel>
