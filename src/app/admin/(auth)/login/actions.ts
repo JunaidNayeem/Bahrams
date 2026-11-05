@@ -46,7 +46,9 @@ export async function signInStaff(_prev: LoginState, form: FormData): Promise<Lo
 
   // Only same-site admin paths are honoured, so `next` cannot become an open redirect.
   const next = parsed.data.next;
-  redirect(next && next.startsWith("/admin") && !next.startsWith("//") ? next : adminUrls.dashboard);
+  redirect(
+    next && next.startsWith("/admin") && !next.startsWith("//") ? next : adminUrls.dashboard,
+  );
 }
 
 export async function signOutStaff() {

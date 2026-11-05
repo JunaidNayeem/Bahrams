@@ -19,14 +19,27 @@ interface Props {
   fixedQuantity: boolean;
 }
 
-export function CartLineControls({ variantId, title, sellUnit, quantity, minQty, maxQty, fixedQuantity }: Props) {
+export function CartLineControls({
+  variantId,
+  title,
+  sellUnit,
+  quantity,
+  minQty,
+  maxQty,
+  fixedQuantity,
+}: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
   function run(action: () => Promise<{ ok: boolean; message: string }>) {
     startTransition(async () => {
       const result = await action();
-      if (!result.ok) toast({ title: "Couldn't update your bag", description: result.message, variant: "destructive" });
+      if (!result.ok)
+        toast({
+          title: "Couldn't update your bag",
+          description: result.message,
+          variant: "destructive",
+        });
       router.refresh();
     });
   }

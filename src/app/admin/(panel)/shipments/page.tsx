@@ -23,7 +23,9 @@ async function Shipments() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("shipments")
-    .select("id, courier, service, awb, status, cod_amount_paise, shipped_at, delivered_at, ndr_count, ndr_reason, orders ( id, order_number, shipping_address )")
+    .select(
+      "id, courier, service, awb, status, cod_amount_paise, shipped_at, delivered_at, ndr_count, ndr_reason, orders ( id, order_number, shipping_address )",
+    )
     .order("shipped_at", { ascending: false, nullsFirst: false });
 
   return (
@@ -48,7 +50,10 @@ async function Shipments() {
                 <td className={`${tableCls.td} font-mono`}>{s.awb}</td>
                 <td className={tableCls.td}>
                   {s.orders && (
-                    <Link href={adminUrls.order(s.orders.id)} className="font-medium hover:underline">
+                    <Link
+                      href={adminUrls.order(s.orders.id)}
+                      className="font-medium hover:underline"
+                    >
                       {s.orders.order_number}
                     </Link>
                   )}
@@ -61,10 +66,18 @@ async function Shipments() {
                 </td>
                 <td className={tableCls.td}>
                   <Pill tone={TONE[s.status] ?? "neutral"}>{s.status.replace(/_/g, " ")}</Pill>
-                  {s.ndr_count > 0 && <p className="mt-1 text-xs text-destructive">NDR: {s.ndr_reason}</p>}
+                  {s.ndr_count > 0 && (
+                    <p className="mt-1 text-xs text-destructive">NDR: {s.ndr_reason}</p>
+                  )}
                 </td>
-                <td className={`${tableCls.td} text-right tabular-nums`}>{s.cod_amount_paise ? formatINR(s.cod_amount_paise, { omitZeroPaise: true }) : "Prepaid"}</td>
-                <td className={`${tableCls.td} whitespace-nowrap text-muted-foreground`}>{formatDateTime(s.shipped_at)}</td>
+                <td className={`${tableCls.td} text-right tabular-nums`}>
+                  {s.cod_amount_paise
+                    ? formatINR(s.cod_amount_paise, { omitZeroPaise: true })
+                    : "Prepaid"}
+                </td>
+                <td className={`${tableCls.td} whitespace-nowrap text-muted-foreground`}>
+                  {formatDateTime(s.shipped_at)}
+                </td>
               </tr>
             );
           })}

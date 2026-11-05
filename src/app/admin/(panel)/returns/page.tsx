@@ -9,14 +9,20 @@ import { createClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Returns & exchanges" };
 
-const RESOLUTION: Record<string, string> = { exchange: "Exchange", store_credit: "Store credit", refund_to_source: "Refund to source" };
+const RESOLUTION: Record<string, string> = {
+  exchange: "Exchange",
+  store_credit: "Store credit",
+  refund_to_source: "Refund to source",
+};
 
 async function Returns() {
   await requireStaff("owner", "manager", "fulfilment", "support", "accountant");
   const supabase = await createClient();
   const { data } = await supabase
     .from("returns")
-    .select("id, status, resolution, reason, customer_comment, created_at, orders ( id, order_number, shipping_address )")
+    .select(
+      "id, status, resolution, reason, customer_comment, created_at, orders ( id, order_number, shipping_address )",
+    )
     .order("created_at", { ascending: false });
 
   return (
@@ -49,16 +55,24 @@ async function Returns() {
                   </Link>
                 )}
               </td>
-              <td className={tableCls.td}>{(r.orders?.shipping_address as { full_name?: string } | null)?.full_name}</td>
+              <td className={tableCls.td}>
+                {(r.orders?.shipping_address as { full_name?: string } | null)?.full_name}
+              </td>
               <td className={tableCls.td}>
                 {r.reason}
-                {r.customer_comment && <p className="max-w-80 text-xs text-muted-foreground">“{r.customer_comment}”</p>}
+                {r.customer_comment && (
+                  <p className="max-w-80 text-xs text-muted-foreground">“{r.customer_comment}”</p>
+                )}
               </td>
               <td className={tableCls.td}>{r.resolution ? RESOLUTION[r.resolution] : "—"}</td>
               <td className={tableCls.td}>
-                <Pill tone={r.status === "requested" ? "warning" : "neutral"}>{r.status.replace(/_/g, " ")}</Pill>
+                <Pill tone={r.status === "requested" ? "warning" : "neutral"}>
+                  {r.status.replace(/_/g, " ")}
+                </Pill>
               </td>
-              <td className={`${tableCls.td} whitespace-nowrap text-muted-foreground`}>{formatDateTime(r.created_at)}</td>
+              <td className={`${tableCls.td} whitespace-nowrap text-muted-foreground`}>
+                {formatDateTime(r.created_at)}
+              </td>
             </tr>
           ))}
         </tbody>

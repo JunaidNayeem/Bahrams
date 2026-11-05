@@ -1,4 +1,12 @@
-import { AlertTriangleIcon, IndianRupeeIcon, PackageIcon, PhoneCallIcon, ShoppingBagIcon, TruckIcon, Undo2Icon } from "lucide-react";
+import {
+  AlertTriangleIcon,
+  IndianRupeeIcon,
+  PackageIcon,
+  PhoneCallIcon,
+  ShoppingBagIcon,
+  TruckIcon,
+  Undo2Icon,
+} from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 
@@ -41,7 +49,12 @@ async function Dashboard() {
       />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Today's orders" value={d.today.orders} hint={inr(d.today.revenuePaise)} icon={ShoppingBagIcon} />
+        <StatCard
+          label="Today's orders"
+          value={d.today.orders}
+          hint={inr(d.today.revenuePaise)}
+          icon={ShoppingBagIcon}
+        />
         <StatCard
           label="Revenue, 30 days"
           value={inr(d.last30.revenuePaise)}
@@ -54,7 +67,13 @@ async function Dashboard() {
           hint="Target above 70% to keep COD returns low"
           icon={IndianRupeeIcon}
         />
-        <StatCard label="Ready to ship" value={d.toShip} hint="Confirmed or packed" icon={TruckIcon} href={`${adminUrls.orders}?status=confirmed`} />
+        <StatCard
+          label="Ready to ship"
+          value={d.toShip}
+          hint="Confirmed or packed"
+          icon={TruckIcon}
+          href={`${adminUrls.orders}?status=confirmed`}
+        />
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -104,12 +123,15 @@ async function Dashboard() {
                 <li key={m.method}>
                   <div className="flex justify-between">
                     <span>{METHOD_LABEL[m.method] ?? m.method}</span>
-                    <span className="tabular-nums text-muted-foreground">
+                    <span className="text-muted-foreground tabular-nums">
                       {m.orders} · {Math.round(share * 100)}%
                     </span>
                   </div>
                   <div className="mt-1 h-1.5 rounded-full bg-muted" aria-hidden>
-                    <div className="h-full rounded-full bg-madder-700" style={{ width: `${share * 100}%` }} />
+                    <div
+                      className="h-full rounded-full bg-madder-700"
+                      style={{ width: `${share * 100}%` }}
+                    />
                   </div>
                 </li>
               );
@@ -142,7 +164,10 @@ async function Dashboard() {
                 {d.recentOrders.map((o) => (
                   <tr key={o.id} className={tableCls.tr}>
                     <td className={tableCls.td}>
-                      <Link href={adminUrls.order(o.id)} className="font-medium underline-offset-4 hover:underline">
+                      <Link
+                        href={adminUrls.order(o.id)}
+                        className="font-medium underline-offset-4 hover:underline"
+                      >
                         {o.orderNumber}
                       </Link>
                     </td>
@@ -150,8 +175,12 @@ async function Dashboard() {
                     <td className={tableCls.td}>
                       <OrderStatusPill status={o.status} />
                     </td>
-                    <td className={`${tableCls.td} text-right tabular-nums`}>{inr(o.totalPaise)}</td>
-                    <td className={`${tableCls.td} whitespace-nowrap text-muted-foreground`}>{formatDateTime(o.placedAt)}</td>
+                    <td className={`${tableCls.td} text-right tabular-nums`}>
+                      {inr(o.totalPaise)}
+                    </td>
+                    <td className={`${tableCls.td} whitespace-nowrap text-muted-foreground`}>
+                      {formatDateTime(o.placedAt)}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -174,7 +203,10 @@ async function Dashboard() {
           <Panel
             title="Low stock"
             action={
-              <Link href={adminUrls.inventory} className="text-xs underline-offset-4 hover:underline">
+              <Link
+                href={adminUrls.inventory}
+                className="text-xs underline-offset-4 hover:underline"
+              >
                 Inventory
               </Link>
             }
@@ -188,7 +220,7 @@ async function Dashboard() {
                     <Link href={adminUrls.product(s.productId)} className="hover:underline">
                       {s.title}
                     </Link>
-                    <span className="whitespace-nowrap tabular-nums text-muted-foreground">
+                    <span className="whitespace-nowrap text-muted-foreground tabular-nums">
                       {s.available} {s.unit === "metre" ? "m" : "left"}
                     </span>
                   </li>

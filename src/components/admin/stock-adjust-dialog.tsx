@@ -5,7 +5,15 @@ import { useState, useTransition } from "react";
 
 import { adjustStock } from "@/app/admin/(panel)/inventory/actions";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
@@ -80,7 +88,14 @@ export function StockAdjustDialog({
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="quantity">Quantity {unit === "metre" ? "(m)" : ""}</Label>
-              <Input id="quantity" name="quantity" type="number" min={unit === "metre" ? 0.5 : 1} step={unit === "metre" ? 0.5 : 1} required />
+              <Input
+                id="quantity"
+                name="quantity"
+                type="number"
+                min={unit === "metre" ? 0.5 : 1}
+                step={unit === "metre" ? 0.5 : 1}
+                required
+              />
             </div>
           </div>
           <div className="space-y-1.5">
@@ -105,7 +120,12 @@ export function StockAdjustDialog({
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="note">Note (optional)</Label>
-            <Input id="note" name="note" maxLength={200} placeholder="e.g. Batch from Nathnagar loom" />
+            <Input
+              id="note"
+              name="note"
+              maxLength={200}
+              placeholder="e.g. Batch from Nathnagar loom"
+            />
           </div>
           {error && (
             <p role="alert" className="text-sm text-destructive">

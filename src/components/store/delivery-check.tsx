@@ -10,7 +10,8 @@ import { Label } from "@/components/ui/label";
 
 export function DeliveryCheck({ madeToOrderLeadDays }: { madeToOrderLeadDays: number | null }) {
   const [result, action, pending] = useActionState<DeliveryCheckResult | null, FormData>(
-    (_prev, form) => checkDelivery({ pincode: String(form.get("pincode") ?? ""), madeToOrderLeadDays }),
+    (_prev, form) =>
+      checkDelivery({ pincode: String(form.get("pincode") ?? ""), madeToOrderLeadDays }),
     null,
   );
 

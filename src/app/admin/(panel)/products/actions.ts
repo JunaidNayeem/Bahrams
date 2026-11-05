@@ -344,7 +344,14 @@ export async function saveProduct(_prev: SaveState, form: FormData): Promise<Sav
       .select("id, storage_path")
       .in("variant_id", ids);
     // Their photos would otherwise fall back to "shared by all designs" (variant_id set null).
-    if (media?.length) await supabase.from("product_media").delete().in("id", media.map((m) => m.id));
+    if (media?.length)
+      await supabase
+        .from("product_media")
+        .delete()
+        .in(
+          "id",
+          media.map((m) => m.id),
+        );
     const del = await supabase.from("product_variants").delete().in("id", ids);
     if (del.error) return { ok: false, message: del.error.message, errors: {} };
     if (media?.length)
@@ -606,7 +613,9 @@ export async function deleteProduct(productId: string): Promise<{ ok: boolean; m
 
   const { data: product } = await supabase
     .from("products")
-    .select("id, slug, title, kind, status, product_variants ( id ), product_media ( storage_path )")
+    .select(
+      "id, slug, title, kind, status, product_variants ( id ), product_media ( storage_path )",
+    )
     .eq("id", productId)
     .maybeSingle();
   if (!product) return { ok: false, message: "Product not found. It may already be deleted." };
@@ -675,7 +684,10 @@ export async function deleteProduct(productId: string): Promise<{ ok: boolean; m
     const target = sectionUrl(product.kind);
     await supabase
       .from("redirects")
-      .upsert({ from_path: oldUrl, to_path: target, status_code: 301 }, { onConflict: "from_path" });
+      .upsert(
+        { from_path: oldUrl, to_path: target, status_code: 301 },
+        { onConflict: "from_path" },
+      );
     await supabase.from("redirects").update({ to_path: target }).eq("to_path", oldUrl);
   }
 

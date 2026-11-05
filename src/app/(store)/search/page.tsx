@@ -48,7 +48,13 @@ export default function SearchPage({ searchParams }: PageProps<"/search">) {
         <label htmlFor="q" className="sr-only">
           Search sarees and fabric
         </label>
-        <Input id="q" name="q" type="search" placeholder="Tussar, matka, zari border…" autoComplete="off" />
+        <Input
+          id="q"
+          name="q"
+          type="search"
+          placeholder="Tussar, matka, zari border…"
+          autoComplete="off"
+        />
         <Button type="submit">Search</Button>
       </form>
       <Suspense fallback={<Skeleton className="h-64 w-full" />}>

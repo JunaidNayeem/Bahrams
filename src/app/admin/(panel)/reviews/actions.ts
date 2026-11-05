@@ -28,7 +28,11 @@ export async function replyToReview(id: string, body: string) {
   const supabase = await createClient();
   const { error } = await supabase
     .from("reviews")
-    .update({ reply_body: text || null, replied_by: text ? staff.userId : null, replied_at: text ? new Date().toISOString() : null })
+    .update({
+      reply_body: text || null,
+      replied_by: text ? staff.userId : null,
+      replied_at: text ? new Date().toISOString() : null,
+    })
     .eq("id", id);
   if (error) return { ok: false, message: error.message };
   updateTag(CATALOG_TAG);

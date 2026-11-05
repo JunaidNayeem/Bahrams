@@ -8,13 +8,25 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
 
-export function ReviewControls({ id, status, reply }: { id: string; status: string; reply: string | null }) {
+export function ReviewControls({
+  id,
+  status,
+  reply,
+}: {
+  id: string;
+  status: string;
+  reply: string | null;
+}) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const run = (fn: () => Promise<{ ok: boolean; message: string }>) =>
     start(async () => {
       const res = await fn();
-      toast({ title: res.ok ? "Done" : "Not saved", description: res.message, variant: res.ok ? "default" : "destructive" });
+      toast({
+        title: res.ok ? "Done" : "Not saved",
+        description: res.message,
+        variant: res.ok ? "default" : "destructive",
+      });
       router.refresh();
     });
 
@@ -22,12 +34,21 @@ export function ReviewControls({ id, status, reply }: { id: string; status: stri
     <div className="space-y-3">
       <div className="flex gap-2">
         {status !== "approved" && (
-          <Button size="sm" disabled={pending} onClick={() => run(() => moderateReview(id, "approved"))}>
+          <Button
+            size="sm"
+            disabled={pending}
+            onClick={() => run(() => moderateReview(id, "approved"))}
+          >
             Approve
           </Button>
         )}
         {status !== "rejected" && (
-          <Button size="sm" variant="outline" disabled={pending} onClick={() => run(() => moderateReview(id, "rejected"))}>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={pending}
+            onClick={() => run(() => moderateReview(id, "rejected"))}
+          >
             {status === "approved" ? "Hide" : "Reject"}
           </Button>
         )}

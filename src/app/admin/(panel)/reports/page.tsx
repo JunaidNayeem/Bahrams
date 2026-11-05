@@ -16,11 +16,24 @@ import { cn } from "@/lib/utils";
 
 export const metadata = { title: "Reports" };
 
-const SALE = new Set(["confirmed", "packed", "shipped", "out_for_delivery", "delivery_failed", "delivered", "return_requested", "returned"]);
+const SALE = new Set([
+  "confirmed",
+  "packed",
+  "shipped",
+  "out_for_delivery",
+  "delivery_failed",
+  "delivered",
+  "return_requested",
+  "returned",
+]);
 const PERIODS = [30, 90, 365] as const;
 const inr = (p: number) => formatINR(p, { omitZeroPaise: true });
 
-async function Reports({ searchParams }: { searchParams: PageProps<"/admin/reports">["searchParams"] }) {
+async function Reports({
+  searchParams,
+}: {
+  searchParams: PageProps<"/admin/reports">["searchParams"];
+}) {
   await requireStaff("owner", "manager", "accountant");
   const now = await requestNow();
   const daysParam = Number((await searchParams).days);
@@ -30,24 +43,38 @@ async function Reports({ searchParams }: { searchParams: PageProps<"/admin/repor
   const supabase = await createClient();
   const { data: orders, error } = await supabase
     .from("orders")
-    .select("id, status, source, payment_method, payment_status, total_paise, cod_fee_paise, shipping_paise, place_of_supply_state_code, placed_at, order_items ( hsn_code, gst_rate_bps, line_total_paise, tax_paise, quantity, sell_unit, products ( primary_fibre ) )")
+    .select(
+      "id, status, source, payment_method, payment_status, total_paise, cod_fee_paise, shipping_paise, place_of_supply_state_code, placed_at, order_items ( hsn_code, gst_rate_bps, line_total_paise, tax_paise, quantity, sell_unit, products ( primary_fibre ) )",
+    )
     .gte("placed_at", since);
   if (error) throw error;
 
   const sales = orders.filter((o) => SALE.has(o.status));
   const revenue = sales.reduce((n, o) => n + o.total_paise, 0);
-  const returned = orders.filter((o) => o.status === "return_requested" || o.status === "returned").length;
+  const returned = orders.filter(
+    (o) => o.status === "return_requested" || o.status === "returned",
+  ).length;
   const rto = orders.filter((o) => o.status === "rto").length;
   const cod = orders.filter((o) => o.payment_method === "cod");
 
   // GST by HSN. Seller is in Bihar (10): same-state supplies split CGST/SGST, others are IGST.
-  const hsn = new Map<string, { rate: number; qty: number; gross: number; tax: number; intra: number; inter: number }>();
+  const hsn = new Map<
+    string,
+    { rate: number; qty: number; gross: number; tax: number; intra: number; inter: number }
+  >();
   const byFibre = new Map<string, number>();
   for (const o of sales) {
     const intra = o.place_of_supply_state_code === siteConfig.sellerState.gstStateCode;
     for (const it of o.order_items) {
       const key = `${it.hsn_code}@${it.gst_rate_bps}`;
-      const row = hsn.get(key) ?? { rate: it.gst_rate_bps / 100, qty: 0, gross: 0, tax: 0, intra: 0, inter: 0 };
+      const row = hsn.get(key) ?? {
+        rate: it.gst_rate_bps / 100,
+        qty: 0,
+        gross: 0,
+        tax: 0,
+        intra: 0,
+        inter: 0,
+      };
       row.qty += Number(it.quantity);
       row.gross += it.line_total_paise;
       row.tax += it.tax_paise;
@@ -66,7 +93,9 @@ async function Reports({ searchParams }: { searchParams: PageProps<"/admin/repor
 
   const codDelivered = cod.filter((o) => o.status === "delivered");
   const codCollected = codDelivered.filter((o) => o.payment_status === "captured");
-  const codInTransit = cod.filter((o) => ["confirmed", "packed", "shipped", "out_for_delivery", "delivery_failed"].includes(o.status));
+  const codInTransit = cod.filter((o) =>
+    ["confirmed", "packed", "shipped", "out_for_delivery", "delivery_failed"].includes(o.status),
+  );
 
   return (
     <div className="space-y-6">
@@ -76,7 +105,12 @@ async function Reports({ searchParams }: { searchParams: PageProps<"/admin/repor
             key={d}
             href={withQuery(adminUrls.reports, { days: d === 30 ? undefined : d })}
             aria-current={d === days ? "page" : undefined}
-            className={cn("rounded-full border px-3 py-1.5 text-sm", d === days ? "border-foreground bg-foreground text-background" : "border-border bg-card")}
+            className={cn(
+              "rounded-full border px-3 py-1.5 text-sm",
+              d === days
+                ? "border-foreground bg-foreground text-background"
+                : "border-border bg-card",
+            )}
           >
             Last {d} days
           </Link>
@@ -85,8 +119,16 @@ async function Reports({ searchParams }: { searchParams: PageProps<"/admin/repor
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard label="Net sales" value={inr(revenue)} hint={`${sales.length} orders`} />
-        <StatCard label="Average order value" value={sales.length ? inr(Math.round(revenue / sales.length / 100) * 100) : "—"} hint="Target above ₹4,000" />
-        <StatCard label="Return / exchange rate" value={`${orders.length ? Math.round((returned / orders.length) * 100) : 0}%`} hint="Target under 8%" />
+        <StatCard
+          label="Average order value"
+          value={sales.length ? inr(Math.round(revenue / sales.length / 100) * 100) : "—"}
+          hint="Target above ₹4,000"
+        />
+        <StatCard
+          label="Return / exchange rate"
+          value={`${orders.length ? Math.round((returned / orders.length) * 100) : 0}%`}
+          hint="Target under 8%"
+        />
         <StatCard
           label="COD RTO rate"
           value={`${cod.length ? Math.round((rto / cod.length) * 100) : 0}%`}
@@ -101,8 +143,24 @@ async function Reports({ searchParams }: { searchParams: PageProps<"/admin/repor
           <CsvButton
             filename={`bahram-hsn-summary-${days}d.csv`}
             rows={[
-              ["HSN", "Rate %", "Quantity", "Value incl. GST (INR)", "Taxable value (INR)", "CGST+SGST (INR)", "IGST (INR)"],
-              ...hsnRows.map((r) => [r.hsn, r.rate, r.qty, (r.gross / 100).toFixed(2), ((r.gross - r.tax) / 100).toFixed(2), (r.intra / 100).toFixed(2), (r.inter / 100).toFixed(2)]),
+              [
+                "HSN",
+                "Rate %",
+                "Quantity",
+                "Value incl. GST (INR)",
+                "Taxable value (INR)",
+                "CGST+SGST (INR)",
+                "IGST (INR)",
+              ],
+              ...hsnRows.map((r) => [
+                r.hsn,
+                r.rate,
+                r.qty,
+                (r.gross / 100).toFixed(2),
+                ((r.gross - r.tax) / 100).toFixed(2),
+                (r.intra / 100).toFixed(2),
+                (r.inter / 100).toFixed(2),
+              ]),
             ]}
           />
         }
@@ -126,7 +184,9 @@ async function Reports({ searchParams }: { searchParams: PageProps<"/admin/repor
                   <td className={`${tableCls.td} font-mono`}>{r.hsn}</td>
                   <td className={`${tableCls.td} text-right`}>{r.rate}%</td>
                   <td className={`${tableCls.td} text-right tabular-nums`}>{r.qty}</td>
-                  <td className={`${tableCls.td} text-right tabular-nums`}>{formatINR(r.gross - r.tax)}</td>
+                  <td className={`${tableCls.td} text-right tabular-nums`}>
+                    {formatINR(r.gross - r.tax)}
+                  </td>
                   <td className={`${tableCls.td} text-right tabular-nums`}>{formatINR(r.intra)}</td>
                   <td className={`${tableCls.td} text-right tabular-nums`}>{formatINR(r.inter)}</td>
                   <td className={`${tableCls.td} text-right tabular-nums`}>{formatINR(r.gross)}</td>
@@ -135,7 +195,9 @@ async function Reports({ searchParams }: { searchParams: PageProps<"/admin/repor
             </tbody>
           </table>
         </div>
-        <p className="mt-6 text-xs text-muted-foreground">Working figures for the CA. GSTR-1 filing stays with the accountant.</p>
+        <p className="mt-6 text-xs text-muted-foreground">
+          Working figures for the CA. GSTR-1 filing stays with the accountant.
+        </p>
       </Panel>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -148,7 +210,10 @@ async function Reports({ searchParams }: { searchParams: PageProps<"/admin/repor
                   <span className="tabular-nums">{inr(value)}</span>
                 </div>
                 <div className="mt-1 h-1.5 rounded-full bg-muted" aria-hidden>
-                  <div className="h-full rounded-full bg-madder-700" style={{ width: `${(value / fibreMax) * 100}%` }} />
+                  <div
+                    className="h-full rounded-full bg-madder-700"
+                    style={{ width: `${(value / fibreMax) * 100}%` }}
+                  />
                 </div>
               </li>
             ))}
@@ -200,7 +265,10 @@ async function Reports({ searchParams }: { searchParams: PageProps<"/admin/repor
 export default function ReportsPage({ searchParams }: PageProps<"/admin/reports">) {
   return (
     <>
-      <PageHeader title="Reports" description="Sales, GST workings, COD money and the KPIs from the launch plan." />
+      <PageHeader
+        title="Reports"
+        description="Sales, GST workings, COD money and the KPIs from the launch plan."
+      />
       <Suspense fallback={<Skeleton className="h-96 w-full" />}>
         <Reports searchParams={searchParams} />
       </Suspense>

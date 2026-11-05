@@ -29,7 +29,11 @@ function useRun() {
   const run = (fn: () => Promise<ContentResult>) =>
     start(async () => {
       const res = await fn();
-      toast({ title: res.ok ? "Saved" : "Not saved", description: res.message, variant: res.ok ? "default" : "destructive" });
+      toast({
+        title: res.ok ? "Saved" : "Not saved",
+        description: res.message,
+        variant: res.ok ? "default" : "destructive",
+      });
       if (res.ok) router.refresh();
     });
   return { pending, run };
@@ -54,28 +58,49 @@ export function HomeSectionRow({
   hero?: { productId: string | null; options: { id: string; title: string }[] };
 }) {
   const { pending, run } = useRun();
-  const picked = hero?.productId && hero.options.some((o) => o.id === hero.productId) ? hero.productId : "";
+  const picked =
+    hero?.productId && hero.options.some((o) => o.id === hero.productId) ? hero.productId : "";
   return (
     <li className="flex flex-wrap items-center gap-3 py-3">
       <div className="flex flex-col">
-        <Button variant="ghost" size="icon-sm" aria-label="Move up" disabled={first || pending} onClick={() => run(() => moveHomeSection(id, -1))}>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Move up"
+          disabled={first || pending}
+          onClick={() => run(() => moveHomeSection(id, -1))}
+        >
           <ArrowUpIcon />
         </Button>
-        <Button variant="ghost" size="icon-sm" aria-label="Move down" disabled={last || pending} onClick={() => run(() => moveHomeSection(id, 1))}>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Move down"
+          disabled={last || pending}
+          onClick={() => run(() => moveHomeSection(id, 1))}
+        >
           <ArrowDownIcon />
         </Button>
       </div>
       <div className="min-w-48 flex-1">
-        <p className="text-xs tracking-wide text-muted-foreground uppercase">{type.replace(/_/g, " ")}</p>
+        <p className="text-xs tracking-wide text-muted-foreground uppercase">
+          {type.replace(/_/g, " ")}
+        </p>
         <Input
           defaultValue={title ?? ""}
           aria-label={`Heading for ${type.replace(/_/g, " ")} section`}
-          onBlur={(e) => e.target.value !== (title ?? "") && run(() => renameHomeSection(id, e.target.value))}
+          onBlur={(e) =>
+            e.target.value !== (title ?? "") && run(() => renameHomeSection(id, e.target.value))
+          }
           className="mt-1 h-9"
         />
       </div>
       <label className="flex items-center gap-2 text-sm">
-        <Switch checked={active} disabled={pending} onCheckedChange={(v) => run(() => toggleHomeSection(id, v))} />
+        <Switch
+          checked={active}
+          disabled={pending}
+          onCheckedChange={(v) => run(() => toggleHomeSection(id, v))}
+        />
         {active ? "Shown" : "Hidden"}
       </label>
       {hero && (
@@ -97,7 +122,9 @@ export function HomeSectionRow({
               </option>
             ))}
           </select>
-          <p className="text-xs text-muted-foreground">Only published products are listed. Its first design&rsquo;s first photo is shown.</p>
+          <p className="text-xs text-muted-foreground">
+            Only published products are listed. Its first design&rsquo;s first photo is shown.
+          </p>
         </div>
       )}
     </li>
@@ -111,7 +138,14 @@ export function PageEditorForm({
 }: {
   id: string;
   kind: string;
-  initial: { title: string; body: string; seoTitle: string; seoDescription: string; status: string; effectiveFrom: string };
+  initial: {
+    title: string;
+    body: string;
+    seoTitle: string;
+    seoDescription: string;
+    status: string;
+    effectiveFrom: string;
+  };
 }) {
   const { pending, run } = useRun();
   const [body, setBody] = useState(initial.body);
@@ -177,13 +211,15 @@ export function PageEditorForm({
           )}
           <input type="hidden" name="body" value={body} />
           <p className="text-xs text-muted-foreground">
-            <code>## Heading</code> · <code>### Subheading</code> · <code>- bullet</code> · <code>1. numbered</code> · <code>**bold**</code> ·{" "}
-            <code>[link](/path)</code> · blank line = new paragraph
+            <code>## Heading</code> · <code>### Subheading</code> · <code>- bullet</code> ·{" "}
+            <code>1. numbered</code> · <code>**bold**</code> · <code>[link](/path)</code> · blank
+            line = new paragraph
           </p>
           <p className="text-xs text-muted-foreground">
-            Photos and videos: click where they should go, then use the buttons above. Each sits on its own line as{" "}
-            <code>![description](address)</code> or <code>@[title](address)</code>; move or delete that line to move or remove it. Add a
-            caption with <code>![description](address &quot;Caption&quot;)</code>. Use Preview to check.
+            Photos and videos: click where they should go, then use the buttons above. Each sits on
+            its own line as <code>![description](address)</code> or <code>@[title](address)</code>;
+            move or delete that line to move or remove it. Add a caption with{" "}
+            <code>![description](address &quot;Caption&quot;)</code>. Use Preview to check.
           </p>
         </div>
       </div>
@@ -191,7 +227,12 @@ export function PageEditorForm({
         <div className="space-y-4 rounded-lg border border-border bg-card p-5">
           <div className="space-y-1.5">
             <Label htmlFor="status">Status</Label>
-            <select id="status" name="status" defaultValue={initial.status} className="h-10 w-full rounded-md border border-input bg-card px-3 text-sm">
+            <select
+              id="status"
+              name="status"
+              defaultValue={initial.status}
+              className="h-10 w-full rounded-md border border-input bg-card px-3 text-sm"
+            >
               <option value="draft">Draft</option>
               <option value="published">Published</option>
               <option value="archived">Archived</option>
@@ -200,13 +241,24 @@ export function PageEditorForm({
           {kind === "legal" && (
             <div className="space-y-1.5">
               <Label htmlFor="effectiveFrom">Effective from</Label>
-              <Input id="effectiveFrom" name="effectiveFrom" type="date" defaultValue={initial.effectiveFrom} />
+              <Input
+                id="effectiveFrom"
+                name="effectiveFrom"
+                type="date"
+                defaultValue={initial.effectiveFrom}
+              />
             </div>
           )}
           {kind !== "legal" && <input type="hidden" name="effectiveFrom" value="" />}
           <div className="space-y-1.5">
-            <Label htmlFor="changeSummary">What changed {kind === "legal" ? "(required)" : "(optional)"}</Label>
-            <Input id="changeSummary" name="changeSummary" placeholder="e.g. Updated return window wording" />
+            <Label htmlFor="changeSummary">
+              What changed {kind === "legal" ? "(required)" : "(optional)"}
+            </Label>
+            <Input
+              id="changeSummary"
+              name="changeSummary"
+              placeholder="e.g. Updated return window wording"
+            />
           </div>
         </div>
         <div className="space-y-4 rounded-lg border border-border bg-card p-5">
@@ -216,7 +268,13 @@ export function PageEditorForm({
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="seoDescription">Meta description</Label>
-            <Textarea id="seoDescription" name="seoDescription" defaultValue={initial.seoDescription} maxLength={170} rows={3} />
+            <Textarea
+              id="seoDescription"
+              name="seoDescription"
+              defaultValue={initial.seoDescription}
+              maxLength={170}
+              rows={3}
+            />
           </div>
         </div>
         <Button type="submit" size="lg" className="w-full" disabled={pending}>

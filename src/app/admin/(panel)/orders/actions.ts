@@ -22,7 +22,9 @@ const transitionSchema = z.object({
 
 export type ActionResult = { ok: boolean; message: string };
 
-export async function transitionOrder(input: z.input<typeof transitionSchema>): Promise<ActionResult> {
+export async function transitionOrder(
+  input: z.input<typeof transitionSchema>,
+): Promise<ActionResult> {
   const staff = await requireStaff(...ORDER_STAFF);
   const parsed = transitionSchema.safeParse(input);
   if (!parsed.success) return { ok: false, message: "Invalid request." };
@@ -38,23 +40,42 @@ export async function transitionOrder(input: z.input<typeof transitionSchema>): 
 
   const transition = getTransition(order.status, to);
   if (!transition || !transition.actors.includes("staff")) {
-    return { ok: false, message: `An order can't move from ${order.status.replace(/_/g, " ")} to ${to.replace(/_/g, " ")}.` };
+    return {
+      ok: false,
+      message: `An order can't move from ${order.status.replace(/_/g, " ")} to ${to.replace(/_/g, " ")}.`,
+    };
   }
-  if (transition.requiresReason && !reason) return { ok: false, message: "Please record a reason." };
-  if (to === "cancelled" && staff.role === "support" && order.status !== "awaiting_cod_confirmation" && order.status !== "pending_payment") {
+  if (transition.requiresReason && !reason)
+    return { ok: false, message: "Please record a reason." };
+  if (
+    to === "cancelled" &&
+    staff.role === "support" &&
+    order.status !== "awaiting_cod_confirmation" &&
+    order.status !== "pending_payment"
+  ) {
     return { ok: false, message: "Only fulfilment or a manager can cancel a confirmed order." };
   }
-  if (to === "shipped" && (!courier || !awb)) return { ok: false, message: "Enter the courier and AWB number." };
+  if (to === "shipped" && (!courier || !awb))
+    return { ok: false, message: "Enter the courier and AWB number." };
 
   // Stock follows the order only when this checkout actually holds reservations (orders created
   // by phone or imported history have none, so there is nothing to commit, release or restock).
-  const { data: holds } = await supabase.from("stock_reservations").select("status").eq("checkout_id", orderId);
+  const { data: holds } = await supabase
+    .from("stock_reservations")
+    .select("status")
+    .eq("checkout_id", orderId);
   const hasActive = (holds ?? []).some((h) => h.status === "active");
   const hasCommitted = (holds ?? []).some((h) => h.status === "committed");
 
   if (transition.stockEffect === "commit_reservation" && hasActive) {
     const { error } = await supabase.rpc("commit_reservation", { p_checkout_id: orderId });
-    if (error) return { ok: false, message: error.message.includes("reservation_lapsed") ? "The reserved stock has been sold elsewhere." : error.message };
+    if (error)
+      return {
+        ok: false,
+        message: error.message.includes("reservation_lapsed")
+          ? "The reserved stock has been sold elsewhere."
+          : error.message,
+      };
   }
   if (transition.stockEffect === "release_reservation" && hasActive) {
     await supabase.rpc("release_reservation", { p_checkout_id: orderId });
@@ -97,19 +118,30 @@ export async function transitionOrder(input: z.input<typeof transitionSchema>): 
   if (error) return { ok: false, message: error.message };
 
   if (reason) {
-    await supabase.from("order_notes").insert({ order_id: orderId, author_id: staff.userId, body: `${to.replace(/_/g, " ")}: ${reason}` });
+    await supabase.from("order_notes").insert({
+      order_id: orderId,
+      author_id: staff.userId,
+      body: `${to.replace(/_/g, " ")}: ${reason}`,
+    });
   }
   if (transition.stockEffect) updateTag(CATALOG_TAG);
   return { ok: true, message: "Order updated. The customer message has been queued." };
 }
 
-export async function addOrderNote(orderId: string, body: string, customerVisible: boolean): Promise<ActionResult> {
+export async function addOrderNote(
+  orderId: string,
+  body: string,
+  customerVisible: boolean,
+): Promise<ActionResult> {
   const staff = await requireStaff(...ORDER_STAFF);
   const text = body.trim().slice(0, 1000);
   if (!text) return { ok: false, message: "Write a note first." };
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("order_notes")
-    .insert({ order_id: orderId, author_id: staff.userId, body: text, customer_visible: customerVisible });
+  const { error } = await supabase.from("order_notes").insert({
+    order_id: orderId,
+    author_id: staff.userId,
+    body: text,
+    customer_visible: customerVisible,
+  });
   return error ? { ok: false, message: error.message } : { ok: true, message: "Note added." };
 }

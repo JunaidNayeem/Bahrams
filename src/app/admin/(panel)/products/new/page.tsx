@@ -18,7 +18,11 @@ async function Editor() {
     <ProductEditor
       initial={emptyEditorValues()}
       weavers={weavers}
-      aside={<p className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">Save the product first, then add photos.</p>}
+      aside={
+        <p className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
+          Save the product first, then add photos.
+        </p>
+      }
     />
   );
 }

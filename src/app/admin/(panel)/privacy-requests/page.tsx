@@ -18,7 +18,10 @@ const TYPE: Record<string, string> = {
 async function Requests() {
   await requireStaff("owner", "manager", "support");
   const supabase = await createClient();
-  const { data } = await supabase.from("data_requests").select("*").order("created_at", { ascending: false });
+  const { data } = await supabase
+    .from("data_requests")
+    .select("*")
+    .order("created_at", { ascending: false });
 
   return (
     <div className="overflow-x-auto rounded-lg border border-border bg-card">
@@ -41,7 +44,9 @@ async function Requests() {
               <td className={tableCls.td}>
                 <Pill tone={r.status === "completed" ? "success" : "warning"}>{r.status}</Pill>
               </td>
-              <td className={`${tableCls.td} whitespace-nowrap text-muted-foreground`}>{formatDateTime(r.due_at)}</td>
+              <td className={`${tableCls.td} whitespace-nowrap text-muted-foreground`}>
+                {formatDateTime(r.due_at)}
+              </td>
             </tr>
           ))}
         </tbody>

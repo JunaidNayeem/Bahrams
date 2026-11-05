@@ -12,11 +12,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { RatingStars } from "@/components/ui/rating-stars";
 import { productUrl, routes, weaverUrl } from "@/config/routes";
 import { siteConfig } from "@/config/site";
-import {
-  getProductCard,
-  listFeaturedProducts,
-  listProductsInCollection,
-} from "@/lib/data/catalog";
+import { getProductCard, listFeaturedProducts, listProductsInCollection } from "@/lib/data/catalog";
 import { getHomeSections, listRecentReviews, listWeavers, type HomeSection } from "@/lib/data/cms";
 import { organizationJsonLd, websiteJsonLd } from "@/lib/seo/jsonld";
 import { keywordPageMetadata } from "@/lib/seo/metadata";

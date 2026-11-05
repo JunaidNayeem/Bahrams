@@ -18,7 +18,9 @@ async function Reviews() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("reviews")
-    .select("id, author_name, author_city, rating, title, body, status, verified_purchase, reply_body, created_at, products ( id, title )")
+    .select(
+      "id, author_name, author_city, rating, title, body, status, verified_purchase, reply_body, created_at, products ( id, title )",
+    )
     .order("created_at", { ascending: false });
   if (error) throw error;
   const reviews = [...data].sort((a, b) => ORDER[a.status] - ORDER[b.status]);
@@ -26,10 +28,23 @@ async function Reviews() {
   return (
     <ul className="space-y-4">
       {reviews.map((r) => (
-        <li key={r.id} className="grid gap-4 rounded-lg border border-border bg-card p-5 md:grid-cols-[1fr_18rem]">
+        <li
+          key={r.id}
+          className="grid gap-4 rounded-lg border border-border bg-card p-5 md:grid-cols-[1fr_18rem]"
+        >
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <Pill tone={r.status === "pending" ? "warning" : r.status === "approved" ? "success" : "neutral"}>{r.status}</Pill>
+              <Pill
+                tone={
+                  r.status === "pending"
+                    ? "warning"
+                    : r.status === "approved"
+                      ? "success"
+                      : "neutral"
+                }
+              >
+                {r.status}
+              </Pill>
               <RatingStars rating={r.rating} size="sm" />
               {r.verified_purchase && <Pill tone="info">verified purchase</Pill>}
             </div>
@@ -39,7 +54,10 @@ async function Reviews() {
               {r.author_name}
               {r.author_city ? `, ${r.author_city}` : ""} · {formatDate(r.created_at)} ·{" "}
               {r.products && (
-                <Link href={adminUrls.product(r.products.id)} className="underline-offset-4 hover:underline">
+                <Link
+                  href={adminUrls.product(r.products.id)}
+                  className="underline-offset-4 hover:underline"
+                >
                   {r.products.title}
                 </Link>
               )}

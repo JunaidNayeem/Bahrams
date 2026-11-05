@@ -35,17 +35,26 @@ const couponSchema = z
   })
   .superRefine((c, ctx) => {
     const v = Number(c.value);
-    if (c.type === "percentage" && !(v > 0 && v <= 50)) ctx.addIssue({ code: "custom", path: ["value"], message: "Percentage between 1 and 50" });
-    if (c.type === "flat" && !(v > 0)) ctx.addIssue({ code: "custom", path: ["value"], message: "Enter the discount in rupees" });
-    if (c.startsAt && c.endsAt && c.endsAt <= c.startsAt) ctx.addIssue({ code: "custom", path: ["endsAt"], message: "End must be after start" });
+    if (c.type === "percentage" && !(v > 0 && v <= 50))
+      ctx.addIssue({ code: "custom", path: ["value"], message: "Percentage between 1 and 50" });
+    if (c.type === "flat" && !(v > 0))
+      ctx.addIssue({ code: "custom", path: ["value"], message: "Enter the discount in rupees" });
+    if (c.startsAt && c.endsAt && c.endsAt <= c.startsAt)
+      ctx.addIssue({ code: "custom", path: ["endsAt"], message: "End must be after start" });
   });
 
 export async function createCoupon(form: FormData): Promise<{ ok: boolean; message: string }> {
   const staff = await requireStaff(...MARKETERS);
-  const parsed = couponSchema.safeParse({ ...Object.fromEntries(form), firstOrderOnly: form.get("firstOrderOnly") === "on" });
+  const parsed = couponSchema.safeParse({
+    ...Object.fromEntries(form),
+    firstOrderOnly: form.get("firstOrderOnly") === "on",
+  });
   if (!parsed.success) {
     const i = parsed.error.issues[0];
-    return { ok: false, message: i ? `${i.path.join(".") || "Coupon"}: ${i.message}` : "Check the coupon." };
+    return {
+      ok: false,
+      message: i ? `${i.path.join(".") || "Coupon"}: ${i.message}` : "Check the coupon.",
+    };
   }
   const c = parsed.data;
   const supabase = await createClient();
@@ -65,13 +74,22 @@ export async function createCoupon(form: FormData): Promise<{ ok: boolean; messa
     active: true,
     created_by: staff.userId,
   });
-  if (error) return { ok: false, message: error.code === "23505" ? "That code already exists." : error.message };
+  if (error)
+    return {
+      ok: false,
+      message: error.code === "23505" ? "That code already exists." : error.message,
+    };
   return { ok: true, message: `Coupon ${c.code} is live.` };
 }
 
-export async function setCouponActive(id: string, active: boolean): Promise<{ ok: boolean; message: string }> {
+export async function setCouponActive(
+  id: string,
+  active: boolean,
+): Promise<{ ok: boolean; message: string }> {
   await requireStaff(...MARKETERS);
   const supabase = await createClient();
   const { error } = await supabase.from("coupons").update({ active }).eq("id", id);
-  return error ? { ok: false, message: error.message } : { ok: true, message: active ? "Coupon enabled." : "Coupon paused." };
+  return error
+    ? { ok: false, message: error.message }
+    : { ok: true, message: active ? "Coupon enabled." : "Coupon paused." };
 }

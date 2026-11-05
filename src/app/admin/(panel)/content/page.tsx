@@ -19,11 +19,20 @@ async function Content() {
   const [{ data: pages }, { data: sections }, { data: live }] = await Promise.all([
     supabase
       .from("pages")
-      .select("id, slug, kind, title, status, updated_at, page_versions!pages_current_version_fk ( version )")
+      .select(
+        "id, slug, kind, title, status, updated_at, page_versions!pages_current_version_fk ( version )",
+      )
       .order("kind")
       .order("title"),
-    supabase.from("home_sections").select("id, type, title, active, position, config").order("position"),
-    supabase.from("products").select("id, title").eq("status", "published").order("published_at", { ascending: false }),
+    supabase
+      .from("home_sections")
+      .select("id, type, title, active, position, config")
+      .order("position"),
+    supabase
+      .from("products")
+      .select("id, title")
+      .eq("status", "published")
+      .order("published_at", { ascending: false }),
   ]);
   const heroOf = (config: unknown) => {
     const id = (config as { product_id?: unknown } | null)?.product_id;
@@ -51,7 +60,10 @@ async function Content() {
               {(pages ?? []).map((p) => (
                 <tr key={p.id} className={tableCls.tr}>
                   <td className={tableCls.td}>
-                    <Link href={`${adminUrls.content}/pages/${p.id}`} className="font-medium hover:underline">
+                    <Link
+                      href={`${adminUrls.content}/pages/${p.id}`}
+                      className="font-medium hover:underline"
+                    >
                       {p.title}
                     </Link>
                     <p className="font-mono text-xs text-muted-foreground">/{p.slug}</p>
@@ -60,10 +72,19 @@ async function Content() {
                   <td className={tableCls.td}>
                     <PublishStatusPill status={p.status} />
                   </td>
-                  <td className={`${tableCls.td} tabular-nums`}>v{p.page_versions?.version ?? "—"}</td>
-                  <td className={`${tableCls.td} text-muted-foreground`}>{formatDate(p.updated_at)}</td>
+                  <td className={`${tableCls.td} tabular-nums`}>
+                    v{p.page_versions?.version ?? "—"}
+                  </td>
+                  <td className={`${tableCls.td} text-muted-foreground`}>
+                    {formatDate(p.updated_at)}
+                  </td>
                   <td className={tableCls.td}>
-                    <Link href={`/${p.slug}`} target="_blank" aria-label={`View ${p.title}`} className="text-muted-foreground hover:text-foreground">
+                    <Link
+                      href={`/${p.slug}`}
+                      target="_blank"
+                      aria-label={`View ${p.title}`}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
                       <ExternalLinkIcon className="size-4" />
                     </Link>
                   </td>
@@ -74,7 +95,9 @@ async function Content() {
         </div>
       </Panel>
       <Panel title="Home page sections">
-        <p className="mb-2 text-xs text-muted-foreground">Reorder, rename or hide sections. Changes show on the home page immediately.</p>
+        <p className="mb-2 text-xs text-muted-foreground">
+          Reorder, rename or hide sections. Changes show on the home page immediately.
+        </p>
         <ul className="divide-y divide-border">
           {(sections ?? []).map((s, i, all) => (
             <HomeSectionRow
@@ -97,7 +120,10 @@ async function Content() {
 export default function ContentPage() {
   return (
     <>
-      <PageHeader title="Content" description="Legal and help pages, Our story, and the home page layout." />
+      <PageHeader
+        title="Content"
+        description="Legal and help pages, Our story, and the home page layout."
+      />
       <Suspense fallback={<Skeleton className="h-96 w-full" />}>
         <Content />
       </Suspense>

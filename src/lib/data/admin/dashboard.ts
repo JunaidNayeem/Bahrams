@@ -62,7 +62,9 @@ export async function getDashboard(): Promise<DashboardData> {
   const [orders, items, levels, returns] = await Promise.all([
     supabase
       .from("orders")
-      .select("id, order_number, status, payment_method, total_paise, placed_at, created_at, shipping_address, email")
+      .select(
+        "id, order_number, status, payment_method, total_paise, placed_at, created_at, shipping_address, email",
+      )
       .gte("created_at", since.toISOString())
       .order("created_at", { ascending: false }),
     supabase
@@ -71,13 +73,19 @@ export async function getDashboard(): Promise<DashboardData> {
       .gte("orders.created_at", since.toISOString()),
     supabase
       .from("inventory_levels")
-      .select("on_hand, reserved, low_stock_threshold, product_variants!inner ( sku, sell_unit, product_id, products!inner ( title ) )"),
-    supabase.from("returns").select("id", { count: "exact", head: true }).in("status", ["requested", "approved", "received"]),
+      .select(
+        "on_hand, reserved, low_stock_threshold, product_variants!inner ( sku, sell_unit, product_id, products!inner ( title ) )",
+      ),
+    supabase
+      .from("returns")
+      .select("id", { count: "exact", head: true })
+      .in("status", ["requested", "approved", "received"]),
   ]);
   for (const r of [orders, items, levels]) if (r.error) throw r.error;
 
   // Phone and imported orders can be entered after they were placed: report on placed_at.
-  const placedAt = (o: { placed_at: string | null; created_at: string }) => o.placed_at ?? o.created_at;
+  const placedAt = (o: { placed_at: string | null; created_at: string }) =>
+    o.placed_at ?? o.created_at;
   const all = [...orders.data!].sort((a, b) => placedAt(b).localeCompare(placedAt(a)));
   const sales = all.filter((o) => SALE_STATUSES.includes(o.status));
   const sum = (rows: typeof all) => rows.reduce((n, o) => n + o.total_paise, 0);
@@ -85,7 +93,8 @@ export async function getDashboard(): Promise<DashboardData> {
   const prepaid = sales.filter((o) => o.payment_method && o.payment_method !== "cod").length;
 
   const byDay = new Map<string, { revenue: number; orders: number }>();
-  for (let d = 29; d >= 0; d--) byDay.set(istDayKey(istMidnight(d).toISOString()), { revenue: 0, orders: 0 });
+  for (let d = 29; d >= 0; d--)
+    byDay.set(istDayKey(istMidnight(d).toISOString()), { revenue: 0, orders: 0 });
   for (const o of sales) {
     const bucket = byDay.get(istDayKey(placedAt(o)));
     if (bucket) {
@@ -95,7 +104,8 @@ export async function getDashboard(): Promise<DashboardData> {
   }
 
   const mix = new Map<PaymentMethod, number>();
-  for (const o of sales) if (o.payment_method) mix.set(o.payment_method, (mix.get(o.payment_method) ?? 0) + 1);
+  for (const o of sales)
+    if (o.payment_method) mix.set(o.payment_method, (mix.get(o.payment_method) ?? 0) + 1);
 
   const top = new Map<string, { units: number; revenuePaise: number }>();
   for (const it of items.data!) {
@@ -107,7 +117,17 @@ export async function getDashboard(): Promise<DashboardData> {
   }
 
   // Aggregate per variant across locations before comparing with the threshold.
-  const perVariant = new Map<string, { sku: string; title: string; unit: string; productId: string; available: number; threshold: number }>();
+  const perVariant = new Map<
+    string,
+    {
+      sku: string;
+      title: string;
+      unit: string;
+      productId: string;
+      available: number;
+      threshold: number;
+    }
+  >();
   for (const l of levels.data!) {
     const v = l.product_variants;
     const row = perVariant.get(v.sku) ?? {
@@ -119,7 +139,10 @@ export async function getDashboard(): Promise<DashboardData> {
       threshold: 0,
     };
     row.available += Number(l.on_hand) - Number(l.reserved);
-    row.threshold = Math.max(row.threshold, Number(l.low_stock_threshold ?? (v.sell_unit === "metre" ? 10 : 0)));
+    row.threshold = Math.max(
+      row.threshold,
+      Number(l.low_stock_threshold ?? (v.sell_unit === "metre" ? 10 : 0)),
+    );
     perVariant.set(v.sku, row);
   }
 
@@ -144,9 +167,17 @@ export async function getDashboard(): Promise<DashboardData> {
       .filter((v) => v.available <= v.threshold)
       .sort((a, b) => a.available - b.available)
       .slice(0, 8)
-      .map(({ sku, title, available, unit, productId }) => ({ sku, title, available, unit, productId })),
+      .map(({ sku, title, available, unit, productId }) => ({
+        sku,
+        title,
+        available,
+        unit,
+        productId,
+      })),
     revenueByDay: [...byDay.entries()].map(([day, v]) => ({ day: day.slice(5), ...v })),
-    paymentMix: [...mix.entries()].map(([method, n]) => ({ method, orders: n })).sort((a, b) => b.orders - a.orders),
+    paymentMix: [...mix.entries()]
+      .map(([method, n]) => ({ method, orders: n }))
+      .sort((a, b) => b.orders - a.orders),
     topProducts: [...top.entries()]
       .map(([title, v]) => ({ title, ...v }))
       .sort((a, b) => b.revenuePaise - a.revenuePaise)

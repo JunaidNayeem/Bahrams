@@ -3,7 +3,7 @@ import type { Metadata, Viewport } from "next";
 import { Toaster } from "@/components/ui/toaster";
 import { rootMetadata } from "@/lib/seo/metadata";
 import { cn } from "@/lib/utils";
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/next";
 
 import { fontVariables } from "./fonts";
 import "./globals.css";

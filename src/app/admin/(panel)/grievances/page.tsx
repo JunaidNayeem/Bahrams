@@ -13,14 +13,21 @@ function due(iso: string | null, doneAt: string | null) {
   if (!iso) return "—";
   const hours = Math.round((Date.parse(iso) - Date.now()) / 3_600_000);
   if (hours < 0) return <Pill tone="danger">overdue {Math.abs(hours)}h</Pill>;
-  return <Pill tone={hours < 12 ? "warning" : "neutral"}>{hours < 48 ? `${hours}h left` : `${Math.round(hours / 24)}d left`}</Pill>;
+  return (
+    <Pill tone={hours < 12 ? "warning" : "neutral"}>
+      {hours < 48 ? `${hours}h left` : `${Math.round(hours / 24)}d left`}
+    </Pill>
+  );
 }
 
 async function Grievances() {
   await requireStaff("owner", "manager", "support");
   await connection();
   const supabase = await createClient();
-  const { data } = await supabase.from("grievances").select("*").order("created_at", { ascending: false });
+  const { data } = await supabase
+    .from("grievances")
+    .select("*")
+    .order("created_at", { ascending: false });
 
   return (
     <div className="overflow-x-auto rounded-lg border border-border bg-card">
@@ -51,7 +58,9 @@ async function Grievances() {
                 </p>
               </td>
               <td className={tableCls.td}>
-                <Pill tone={g.status === "resolved" ? "success" : "warning"}>{g.status.replace(/_/g, " ")}</Pill>
+                <Pill tone={g.status === "resolved" ? "success" : "warning"}>
+                  {g.status.replace(/_/g, " ")}
+                </Pill>
               </td>
               <td className={tableCls.td}>{due(g.ack_due_at, g.acknowledged_at)}</td>
               <td className={tableCls.td}>{due(g.resolve_due_at, g.resolved_at)}</td>

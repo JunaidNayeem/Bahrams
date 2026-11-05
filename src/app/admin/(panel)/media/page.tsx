@@ -24,16 +24,28 @@ async function Media() {
   return (
     <>
       <p className="mb-4 text-sm text-muted-foreground">
-        {data?.length ?? 0} photos · {missingAlt === 0 ? "every photo has alt text" : `${missingAlt} missing alt text`}
+        {data?.length ?? 0} photos ·{" "}
+        {missingAlt === 0 ? "every photo has alt text" : `${missingAlt} missing alt text`}
       </p>
       <ul className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6">
         {(data ?? []).map((m) => (
           <li key={m.id} className="space-y-1">
-            <Link href={m.products ? adminUrls.product(m.products.id) : "#"} className="relative block aspect-[4/5] overflow-hidden rounded-md bg-muted">
-              <Image src={productMediaUrl(m.storage_path)} alt={m.alt} fill sizes="200px" className="object-cover" />
+            <Link
+              href={m.products ? adminUrls.product(m.products.id) : "#"}
+              className="relative block aspect-[4/5] overflow-hidden rounded-md bg-muted"
+            >
+              <Image
+                src={productMediaUrl(m.storage_path)}
+                alt={m.alt}
+                fill
+                sizes="200px"
+                className="object-cover"
+              />
             </Link>
             <p className="truncate text-xs font-medium">{m.products?.title}</p>
-            <p className="truncate text-xs text-muted-foreground">{m.width && m.height ? `${m.width}×${m.height}` : "WebP"}</p>
+            <p className="truncate text-xs text-muted-foreground">
+              {m.width && m.height ? `${m.width}×${m.height}` : "WebP"}
+            </p>
           </li>
         ))}
       </ul>
@@ -44,7 +56,10 @@ async function Media() {
 export default function MediaPage() {
   return (
     <>
-      <PageHeader title="Media library" description="All product photos. Upload and reorder them on each product; uploads are converted to WebP." />
+      <PageHeader
+        title="Media library"
+        description="All product photos. Upload and reorder them on each product; uploads are converted to WebP."
+      />
       <Suspense fallback={<Skeleton className="h-96 w-full" />}>
         <Media />
       </Suspense>

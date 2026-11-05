@@ -17,10 +17,13 @@ const schema = z.object({
   note: z.string().trim().max(200).optional(),
 });
 
-export async function adjustStock(input: z.input<typeof schema>): Promise<{ ok: boolean; message: string }> {
+export async function adjustStock(
+  input: z.input<typeof schema>,
+): Promise<{ ok: boolean; message: string }> {
   await requireStaff("owner", "manager", "catalogue_editor", "fulfilment");
   const parsed = schema.safeParse(input);
-  if (!parsed.success) return { ok: false, message: parsed.error.issues[0]?.message ?? "Check the adjustment." };
+  if (!parsed.success)
+    return { ok: false, message: parsed.error.issues[0]?.message ?? "Check the adjustment." };
   const { variantId, locationId, delta, reason, note } = parsed.data;
 
   const supabase = await createClient();
@@ -40,5 +43,8 @@ export async function adjustStock(input: z.input<typeof schema>): Promise<{ ok: 
     };
   }
   updateTag(CATALOG_TAG);
-  return { ok: true, message: `Stock ${delta > 0 ? "increased" : "reduced"} by ${Math.abs(delta)}.` };
+  return {
+    ok: true,
+    message: `Stock ${delta > 0 ? "increased" : "reduced"} by ${Math.abs(delta)}.`,
+  };
 }

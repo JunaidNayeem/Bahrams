@@ -11,7 +11,12 @@ import { adminUrls, CATALOGUE_SECTIONS, productUrl } from "@/config/routes";
 import { requireStaff } from "@/lib/auth";
 import { listAdminProducts } from "@/lib/data/admin/products";
 import { fibreLabel } from "@/lib/domain/claims";
-import { PRODUCT_KINDS, PUBLISH_STATUSES, type ProductKind, type PublishStatus } from "@/lib/domain/enums";
+import {
+  PRODUCT_KINDS,
+  PUBLISH_STATUSES,
+  type ProductKind,
+  type PublishStatus,
+} from "@/lib/domain/enums";
 import { formatINR } from "@/lib/domain/money";
 
 export const metadata = { title: "Products" };
@@ -27,15 +32,30 @@ async function ProductTable({ searchParams }: { searchParams: SP }) {
   const q = one(sp.q)?.trim();
   const rows = await listAdminProducts({
     q: q || undefined,
-    status: (PUBLISH_STATUSES as readonly string[]).includes(status ?? "") ? (status as PublishStatus) : undefined,
-    kind: (PRODUCT_KINDS as readonly string[]).includes(kind ?? "") ? (kind as ProductKind) : undefined,
+    status: (PUBLISH_STATUSES as readonly string[]).includes(status ?? "")
+      ? (status as PublishStatus)
+      : undefined,
+    kind: (PRODUCT_KINDS as readonly string[]).includes(kind ?? "")
+      ? (kind as ProductKind)
+      : undefined,
   });
 
   return (
     <>
       <form className="mb-4 flex flex-wrap items-center gap-2" role="search">
-        <Input name="q" defaultValue={q} placeholder="Search title or slug" className="max-w-xs" aria-label="Search products" />
-        <select name="status" defaultValue={status ?? ""} aria-label="Status" className="h-10 rounded-md border border-input bg-card px-3 text-sm">
+        <Input
+          name="q"
+          defaultValue={q}
+          placeholder="Search title or slug"
+          className="max-w-xs"
+          aria-label="Search products"
+        />
+        <select
+          name="status"
+          defaultValue={status ?? ""}
+          aria-label="Status"
+          className="h-10 rounded-md border border-input bg-card px-3 text-sm"
+        >
           <option value="">All statuses</option>
           {PUBLISH_STATUSES.map((s) => (
             <option key={s} value={s}>
@@ -43,7 +63,12 @@ async function ProductTable({ searchParams }: { searchParams: SP }) {
             </option>
           ))}
         </select>
-        <select name="kind" defaultValue={kind ?? ""} aria-label="Type" className="h-10 rounded-md border border-input bg-card px-3 text-sm">
+        <select
+          name="kind"
+          defaultValue={kind ?? ""}
+          aria-label="Type"
+          className="h-10 rounded-md border border-input bg-card px-3 text-sm"
+        >
           <option value="">All types</option>
           {PRODUCT_KINDS.map((k) => (
             <option key={k} value={k}>
@@ -75,10 +100,21 @@ async function ProductTable({ searchParams }: { searchParams: SP }) {
                 <td className={tableCls.td}>
                   <div className="flex items-center gap-3">
                     <div className="relative size-12 shrink-0 overflow-hidden rounded bg-muted">
-                      {p.thumbnail && <Image src={p.thumbnail} alt="" fill sizes="48px" className="object-cover" />}
+                      {p.thumbnail && (
+                        <Image
+                          src={p.thumbnail}
+                          alt=""
+                          fill
+                          sizes="48px"
+                          className="object-cover"
+                        />
+                      )}
                     </div>
                     <div>
-                      <Link href={adminUrls.product(p.id)} className="font-medium underline-offset-4 hover:underline">
+                      <Link
+                        href={adminUrls.product(p.id)}
+                        className="font-medium underline-offset-4 hover:underline"
+                      >
                         {p.title}
                       </Link>
                       <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -98,10 +134,14 @@ async function ProductTable({ searchParams }: { searchParams: SP }) {
                   {p.priceMinPaise === null
                     ? "—"
                     : formatINR(p.priceMinPaise, { omitZeroPaise: true }) +
-                      (p.priceMaxPaise && p.priceMaxPaise > p.priceMinPaise ? `–${formatINR(p.priceMaxPaise, { omitZeroPaise: true })}` : "") +
+                      (p.priceMaxPaise && p.priceMaxPaise > p.priceMinPaise
+                        ? `–${formatINR(p.priceMaxPaise, { omitZeroPaise: true })}`
+                        : "") +
                       (p.sellUnit === "metre" ? " /m" : "")}
                 </td>
-                <td className={`${tableCls.td} text-right tabular-nums ${p.stock <= 0 ? "text-destructive" : ""}`}>
+                <td
+                  className={`${tableCls.td} text-right tabular-nums ${p.stock <= 0 ? "text-destructive" : ""}`}
+                >
                   {p.stock}
                   {p.sellUnit === "metre" ? " m" : ""}
                 </td>
@@ -110,7 +150,12 @@ async function ProductTable({ searchParams }: { searchParams: SP }) {
                 </td>
                 <td className={tableCls.td}>
                   {p.status === "published" && (
-                    <Link href={productUrl(p.slug)} target="_blank" aria-label={`View ${p.title} in store`} className="text-muted-foreground hover:text-foreground">
+                    <Link
+                      href={productUrl(p.slug)}
+                      target="_blank"
+                      aria-label={`View ${p.title} in store`}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
                       <ExternalLinkIcon className="size-4" />
                     </Link>
                   )}

@@ -44,8 +44,12 @@ async function Staff() {
                   <td className={`${tableCls.td} font-medium`}>{s.display_name}</td>
                   <td className={tableCls.td}>{s.email}</td>
                   <td className={tableCls.td}>{ROLE[s.role]}</td>
-                  <td className={tableCls.td}>{s.active ? <Pill tone="success">active</Pill> : <Pill>disabled</Pill>}</td>
-                  <td className={`${tableCls.td} text-muted-foreground`}>{formatDate(s.created_at)}</td>
+                  <td className={tableCls.td}>
+                    {s.active ? <Pill tone="success">active</Pill> : <Pill>disabled</Pill>}
+                  </td>
+                  <td className={`${tableCls.td} text-muted-foreground`}>
+                    {formatDate(s.created_at)}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -75,7 +79,13 @@ async function Staff() {
                   <td className={tableCls.td}>{m.label}</td>
                   {STAFF_ROLES.map((r) => (
                     <td key={r} className={`${tableCls.td} text-center`}>
-                      {m.roles.includes(r) ? <span aria-label="yes">●</span> : <span className="text-muted-foreground" aria-label="no">·</span>}
+                      {m.roles.includes(r) ? (
+                        <span aria-label="yes">●</span>
+                      ) : (
+                        <span className="text-muted-foreground" aria-label="no">
+                          ·
+                        </span>
+                      )}
                     </td>
                   ))}
                 </tr>
@@ -83,7 +93,10 @@ async function Staff() {
             </tbody>
           </table>
         </div>
-        <p className="mt-6 text-xs text-muted-foreground">The same rules are enforced again in the database (row-level security), not only in the menu.</p>
+        <p className="mt-6 text-xs text-muted-foreground">
+          The same rules are enforced again in the database (row-level security), not only in the
+          menu.
+        </p>
       </Panel>
     </div>
   );

@@ -8,7 +8,9 @@ async function announcement(): Promise<string | null> {
   const settings = await getStoreSettings();
   const parts: string[] = [];
   if (settings.freeShippingThresholdPaise !== null) {
-    parts.push(`Free shipping above ${formatINR(settings.freeShippingThresholdPaise, { omitZeroPaise: true })}`);
+    parts.push(
+      `Free shipping above ${formatINR(settings.freeShippingThresholdPaise, { omitZeroPaise: true })}`,
+    );
   }
   if (settings.prepaidIncentive.type !== "none" && settings.prepaidIncentive.message) {
     parts.push(settings.prepaidIncentive.message);

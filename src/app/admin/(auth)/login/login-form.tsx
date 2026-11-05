@@ -9,7 +9,9 @@ import { Label } from "@/components/ui/label";
 import { signInStaff, type LoginState } from "./actions";
 
 export function LoginForm({ next }: { next?: string }) {
-  const [state, action, pending] = useActionState<LoginState, FormData>(signInStaff, { error: null });
+  const [state, action, pending] = useActionState<LoginState, FormData>(signInStaff, {
+    error: null,
+  });
   return (
     <form action={action} className="space-y-4">
       {next && <input type="hidden" name="next" value={next} />}
@@ -19,7 +21,13 @@ export function LoginForm({ next }: { next?: string }) {
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="password">Password</Label>
-        <Input id="password" name="password" type="password" autoComplete="current-password" required />
+        <Input
+          id="password"
+          name="password"
+          type="password"
+          autoComplete="current-password"
+          required
+        />
       </div>
       {state.error && (
         <p role="alert" className="text-sm text-destructive">

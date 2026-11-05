@@ -33,13 +33,19 @@ async function Chrome({ children }: { children: React.ReactNode }) {
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-border bg-card/95 px-4 backdrop-blur">
           <AdminMobileNav groups={groups} />
-          <Link href="/" target="_blank" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+          <Link
+            href="/"
+            target="_blank"
+            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+          >
             View store <ExternalLinkIcon className="size-3.5" aria-hidden />
           </Link>
           <div className="ml-auto flex items-center gap-3">
             <div className="text-right text-sm leading-tight">
               <p className="font-medium">{staff.displayName}</p>
-              <p className="text-xs text-muted-foreground">{ROLE_LABELS[staff.role] ?? staff.role}</p>
+              <p className="text-xs text-muted-foreground">
+                {ROLE_LABELS[staff.role] ?? staff.role}
+              </p>
             </div>
             <form action={signOutStaff}>
               <Button variant="ghost" size="icon" aria-label="Sign out">

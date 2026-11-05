@@ -36,14 +36,20 @@ async function checkQuantity(variantId: string, quantity: number) {
   }
   const rule = quantityRuleFor(unit, {
     min,
-    max: Math.min(v.max_qty === null ? Infinity : Number(v.max_qty), unit === "metre" ? Math.floor(available * 2) / 2 : Math.floor(available)),
+    max: Math.min(
+      v.max_qty === null ? Infinity : Number(v.max_qty),
+      unit === "metre" ? Math.floor(available * 2) / 2 : Math.floor(available),
+    ),
   });
   const result = validateQuantity(quantity, rule);
   if (!result.valid) return { ok: false as const, message: result.message };
   return { ok: true as const, quantity: result.quantity, title: v.products.title, unit };
 }
 
-export async function addToCart(input: { variantId: string; quantity: number }): Promise<CartActionResult> {
+export async function addToCart(input: {
+  variantId: string;
+  quantity: number;
+}): Promise<CartActionResult> {
   const parsed = lineSchema.safeParse(input);
   if (!parsed.success) return { ok: false, message: "Choose a valid quantity." };
 
@@ -57,17 +63,25 @@ export async function addToCart(input: { variantId: string; quantity: number }):
     ? lines.map((l) => (l.v === parsed.data.variantId ? { ...l, q: check.quantity } : l))
     : [...lines, { v: parsed.data.variantId, q: check.quantity }];
   await writeCartCookie(next);
-  return { ok: true, message: `${check.title} (${formatQuantity(check.quantity, check.unit)}) is in your bag.` };
+  return {
+    ok: true,
+    message: `${check.title} (${formatQuantity(check.quantity, check.unit)}) is in your bag.`,
+  };
 }
 
-export async function updateCartLine(input: { variantId: string; quantity: number }): Promise<CartActionResult> {
+export async function updateCartLine(input: {
+  variantId: string;
+  quantity: number;
+}): Promise<CartActionResult> {
   const parsed = lineSchema.safeParse(input);
   if (!parsed.success) return { ok: false, message: "Choose a valid quantity." };
 
   const check = await checkQuantity(parsed.data.variantId, parsed.data.quantity);
   if (!check.ok) return check;
   const lines = await readCartCookie();
-  await writeCartCookie(lines.map((l) => (l.v === parsed.data.variantId ? { ...l, q: check.quantity } : l)));
+  await writeCartCookie(
+    lines.map((l) => (l.v === parsed.data.variantId ? { ...l, q: check.quantity } : l)),
+  );
   return { ok: true, message: "Bag updated." };
 }
 

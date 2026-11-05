@@ -6,7 +6,10 @@ export const metadata = noindexMetadata("Track your order", "/track-order");
 export default function Page() {
   return (
     <ComingSoon title="Track your order">
-      <p>Order tracking by order number and phone is coming soon. Until then, message us on WhatsApp with your order number.</p>
+      <p>
+        Order tracking by order number and phone is coming soon. Until then, message us on WhatsApp
+        with your order number.
+      </p>
     </ComingSoon>
   );
 }

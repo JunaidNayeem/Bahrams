@@ -7,7 +7,14 @@ import { estimateDelivery, formatDeliveryWindow } from "@/lib/domain/shipping";
 import { pincodeSchema } from "@/lib/domain/validation";
 
 export type DeliveryCheckResult =
-  | { ok: true; pincode: string; place: string | null; window: string; madeToOrder: boolean; cod: string }
+  | {
+      ok: true;
+      pincode: string;
+      place: string | null;
+      window: string;
+      madeToOrder: boolean;
+      cod: string;
+    }
   | { ok: false; message: string };
 
 export async function checkDelivery(input: {

@@ -27,12 +27,16 @@ async function Promotions() {
       <div className="grid gap-4 md:grid-cols-2">
         <div className="rounded-lg border border-border bg-card p-5">
           <p className="text-sm font-semibold">Prepaid incentive (automatic)</p>
-          <p className="mt-1 text-sm text-muted-foreground">{settings.prepaidIncentive.message ?? "None"} — steers buyers from COD to UPI.</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {settings.prepaidIncentive.message ?? "None"} — steers buyers from COD to UPI.
+          </p>
         </div>
         <div className="rounded-lg border border-border bg-card p-5">
           <p className="text-sm font-semibold">Free shipping</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            On orders above {settings.freeShippingThresholdPaise ? inr(settings.freeShippingThresholdPaise) : "—"}; change it in Settings.
+            On orders above{" "}
+            {settings.freeShippingThresholdPaise ? inr(settings.freeShippingThresholdPaise) : "—"};
+            change it in Settings.
           </p>
         </div>
       </div>
@@ -55,7 +59,9 @@ async function Promotions() {
                 <tr key={c.id} className={tableCls.tr}>
                   <td className={tableCls.td}>
                     <span className="font-mono font-medium">{c.code}</span>
-                    {c.description && <p className="text-xs text-muted-foreground">{c.description}</p>}
+                    {c.description && (
+                      <p className="text-xs text-muted-foreground">{c.description}</p>
+                    )}
                   </td>
                   <td className={tableCls.td}>
                     {c.type === "percentage"
@@ -65,12 +71,20 @@ async function Promotions() {
                         : "Free shipping"}
                   </td>
                   <td className={`${tableCls.td} text-muted-foreground`}>
-                    {[c.min_order_paise ? `over ${inr(c.min_order_paise)}` : null, c.first_order_only ? "first order" : null, c.usage_limit_per_customer ? `${c.usage_limit_per_customer}× per customer` : null]
+                    {[
+                      c.min_order_paise ? `over ${inr(c.min_order_paise)}` : null,
+                      c.first_order_only ? "first order" : null,
+                      c.usage_limit_per_customer
+                        ? `${c.usage_limit_per_customer}× per customer`
+                        : null,
+                    ]
                       .filter(Boolean)
                       .join(" · ") || "—"}
                   </td>
                   <td className={`${tableCls.td} whitespace-nowrap`}>
-                    {c.starts_at || c.ends_at ? `${formatDate(c.starts_at)} – ${formatDate(c.ends_at)}` : "Always"}
+                    {c.starts_at || c.ends_at
+                      ? `${formatDate(c.starts_at)} – ${formatDate(c.ends_at)}`
+                      : "Always"}
                     {ended && (
                       <span className="ml-2">
                         <Pill>ended</Pill>

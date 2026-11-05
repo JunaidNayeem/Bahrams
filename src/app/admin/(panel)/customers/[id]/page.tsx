@@ -2,7 +2,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
-import { formatDateTime, OrderStatusPill, PageHeader, Panel, Pill, StatCard, tableCls } from "@/components/admin/ui";
+import {
+  formatDateTime,
+  OrderStatusPill,
+  PageHeader,
+  Panel,
+  Pill,
+  StatCard,
+  tableCls,
+} from "@/components/admin/ui";
 import { Skeleton } from "@/components/ui/skeleton";
 import { adminUrls } from "@/config/routes";
 import { requireStaff } from "@/lib/auth";
@@ -34,8 +42,12 @@ async function Customer({ params }: { params: PageProps<"/admin/customers/[id]">
     .maybeSingle();
   if (!c) notFound();
 
-  const orders = [...c.orders].sort((a, b) => (b.placed_at ?? b.created_at).localeCompare(a.placed_at ?? a.created_at));
-  const delivered = orders.filter((o) => !["cancelled", "pending_payment", "rto"].includes(o.status));
+  const orders = [...c.orders].sort((a, b) =>
+    (b.placed_at ?? b.created_at).localeCompare(a.placed_at ?? a.created_at),
+  );
+  const delivered = orders.filter(
+    (o) => !["cancelled", "pending_payment", "rto"].includes(o.status),
+  );
   const spent = delivered.reduce((n, o) => n + o.total_paise, 0);
   // DPDP: the current state per purpose is the latest event in an append-only log.
   const consent = new Map<string, { granted: boolean; at: string }>();
@@ -62,8 +74,21 @@ async function Customer({ params }: { params: PageProps<"/admin/customers/[id]">
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard label="Orders" value={delivered.length} />
         <StatCard label="Lifetime value" value={formatINR(spent, { omitZeroPaise: true })} />
-        <StatCard label="Average order" value={delivered.length ? formatINR(Math.round(spent / delivered.length / 100) * 100, { omitZeroPaise: true }) : "—"} />
-        <StatCard label="Customer since" value={new Date(c.created_at).toLocaleDateString("en-IN", { month: "short", year: "numeric" })} />
+        <StatCard
+          label="Average order"
+          value={
+            delivered.length
+              ? formatINR(Math.round(spent / delivered.length / 100) * 100, { omitZeroPaise: true })
+              : "—"
+          }
+        />
+        <StatCard
+          label="Customer since"
+          value={new Date(c.created_at).toLocaleDateString("en-IN", {
+            month: "short",
+            year: "numeric",
+          })}
+        />
       </div>
       <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_20rem]">
         <Panel title="Orders">
@@ -80,8 +105,12 @@ async function Customer({ params }: { params: PageProps<"/admin/customers/[id]">
                     <td className={tableCls.td}>
                       <OrderStatusPill status={o.status} />
                     </td>
-                    <td className={`${tableCls.td} text-right tabular-nums`}>{formatINR(o.total_paise, { omitZeroPaise: true })}</td>
-                    <td className={`${tableCls.td} text-muted-foreground`}>{formatDateTime(o.placed_at ?? o.created_at)}</td>
+                    <td className={`${tableCls.td} text-right tabular-nums`}>
+                      {formatINR(o.total_paise, { omitZeroPaise: true })}
+                    </td>
+                    <td className={`${tableCls.td} text-muted-foreground`}>
+                      {formatDateTime(o.placed_at ?? o.created_at)}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -96,12 +125,20 @@ async function Customer({ params }: { params: PageProps<"/admin/customers/[id]">
                 return (
                   <li key={p} className="flex items-center justify-between gap-2">
                     <span>{PURPOSE_TEXT[p]}</span>
-                    {s ? <Pill tone={s.granted ? "success" : "neutral"}>{s.granted ? "granted" : "withdrawn"}</Pill> : <Pill>not asked</Pill>}
+                    {s ? (
+                      <Pill tone={s.granted ? "success" : "neutral"}>
+                        {s.granted ? "granted" : "withdrawn"}
+                      </Pill>
+                    ) : (
+                      <Pill>not asked</Pill>
+                    )}
                   </li>
                 );
               })}
             </ul>
-            <p className="mt-3 text-xs text-muted-foreground">Marketing is never sent without a granted opt-in. The log is append-only.</p>
+            <p className="mt-3 text-xs text-muted-foreground">
+              Marketing is never sent without a granted opt-in. The log is append-only.
+            </p>
           </Panel>
           <Panel title="Addresses">
             {c.addresses.length === 0 ? (

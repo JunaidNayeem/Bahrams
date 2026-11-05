@@ -17,11 +17,7 @@ import { siteConfig } from "@/config/site";
 import { listProductSlugs } from "@/lib/data/catalog";
 import { getAvailability, getProduct, type ProductDetail } from "@/lib/data/product";
 import { getStoreSettings } from "@/lib/data/settings";
-import {
-  CLAIM_BADGE_LABELS,
-  compositionLabel,
-  fibreLabel,
-} from "@/lib/domain/claims";
+import { CLAIM_BADGE_LABELS, compositionLabel, fibreLabel } from "@/lib/domain/claims";
 import { breadcrumbJsonLd } from "@/lib/seo/jsonld";
 import { productMetadata } from "@/lib/seo/metadata";
 import {

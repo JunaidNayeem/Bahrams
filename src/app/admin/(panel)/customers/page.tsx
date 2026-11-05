@@ -11,16 +11,31 @@ import { createClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Customers" };
 
-const COUNTED = new Set(["confirmed", "packed", "shipped", "out_for_delivery", "delivery_failed", "delivered", "return_requested", "returned"]);
+const COUNTED = new Set([
+  "confirmed",
+  "packed",
+  "shipped",
+  "out_for_delivery",
+  "delivery_failed",
+  "delivered",
+  "return_requested",
+  "returned",
+]);
 
-async function Customers({ searchParams }: { searchParams: PageProps<"/admin/customers">["searchParams"] }) {
+async function Customers({
+  searchParams,
+}: {
+  searchParams: PageProps<"/admin/customers">["searchParams"];
+}) {
   await requireStaff("owner", "manager", "support", "accountant");
   const raw = (await searchParams).q;
   const q = typeof raw === "string" ? raw.trim().toLowerCase() : "";
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("customers")
-    .select("id, full_name, email, phone, tags, created_at, business_name, orders ( status, total_paise, placed_at, created_at )")
+    .select(
+      "id, full_name, email, phone, tags, created_at, business_name, orders ( status, total_paise, placed_at, created_at )",
+    )
     .is("deleted_at", null)
     .order("created_at", { ascending: false });
   if (error) throw error;
@@ -28,17 +43,32 @@ async function Customers({ searchParams }: { searchParams: PageProps<"/admin/cus
   const rows = data
     .map((c) => {
       const sales = c.orders.filter((o) => COUNTED.has(o.status));
-      const last = c.orders.map((o) => o.placed_at ?? o.created_at).sort().at(-1) ?? null;
+      const last =
+        c.orders
+          .map((o) => o.placed_at ?? o.created_at)
+          .sort()
+          .at(-1) ?? null;
       return { c, orders: sales.length, spent: sales.reduce((n, o) => n + o.total_paise, 0), last };
     })
-    .filter(({ c }) => !q || [c.full_name, c.email, c.phone].some((v) => (v ?? "").toLowerCase().includes(q)))
+    .filter(
+      ({ c }) =>
+        !q || [c.full_name, c.email, c.phone].some((v) => (v ?? "").toLowerCase().includes(q)),
+    )
     .sort((a, b) => b.spent - a.spent);
 
   return (
     <>
       <form className="mb-4 flex gap-2" role="search">
-        <Input name="q" defaultValue={q} placeholder="Name, email or phone" className="max-w-sm" aria-label="Search customers" />
-        <span className="ml-auto self-center text-sm text-muted-foreground">{rows.length} customers</span>
+        <Input
+          name="q"
+          defaultValue={q}
+          placeholder="Name, email or phone"
+          className="max-w-sm"
+          aria-label="Search customers"
+        />
+        <span className="ml-auto self-center text-sm text-muted-foreground">
+          {rows.length} customers
+        </span>
       </form>
       <div className="overflow-x-auto rounded-lg border border-border bg-card">
         <table className={tableCls.table}>
@@ -65,7 +95,9 @@ async function Customers({ searchParams }: { searchParams: PageProps<"/admin/cus
                       </Pill>
                     ))}
                   </span>
-                  {c.business_name && <p className="text-xs text-muted-foreground">{c.business_name}</p>}
+                  {c.business_name && (
+                    <p className="text-xs text-muted-foreground">{c.business_name}</p>
+                  )}
                 </td>
                 <td className={`${tableCls.td} text-muted-foreground`}>
                   {c.email}
@@ -73,7 +105,9 @@ async function Customers({ searchParams }: { searchParams: PageProps<"/admin/cus
                   {c.phone}
                 </td>
                 <td className={`${tableCls.td} text-right tabular-nums`}>{orders}</td>
-                <td className={`${tableCls.td} text-right tabular-nums`}>{formatINR(spent, { omitZeroPaise: true })}</td>
+                <td className={`${tableCls.td} text-right tabular-nums`}>
+                  {formatINR(spent, { omitZeroPaise: true })}
+                </td>
                 <td className={`${tableCls.td} text-muted-foreground`}>{formatDate(last)}</td>
               </tr>
             ))}
@@ -87,7 +121,10 @@ async function Customers({ searchParams }: { searchParams: PageProps<"/admin/cus
 export default function CustomersPage({ searchParams }: PageProps<"/admin/customers">) {
   return (
     <>
-      <PageHeader title="Customers" description="Shoppers, boutiques and repeat buyers, ranked by lifetime value." />
+      <PageHeader
+        title="Customers"
+        description="Shoppers, boutiques and repeat buyers, ranked by lifetime value."
+      />
       <Suspense fallback={<Skeleton className="h-96 w-full" />}>
         <Customers searchParams={searchParams} />
       </Suspense>

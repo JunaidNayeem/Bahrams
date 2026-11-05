@@ -19,7 +19,11 @@ const MAX_IMAGE_SIDE = { width: 2000, height: 2500 };
  */
 async function prepareImage(file: File) {
   const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
-  const scale = Math.min(1, MAX_IMAGE_SIDE.width / bitmap.width, MAX_IMAGE_SIDE.height / bitmap.height);
+  const scale = Math.min(
+    1,
+    MAX_IMAGE_SIDE.width / bitmap.width,
+    MAX_IMAGE_SIDE.height / bitmap.height,
+  );
   const width = Math.round(bitmap.width * scale);
   const height = Math.round(bitmap.height * scale);
   const canvas = document.createElement("canvas");
@@ -35,7 +39,11 @@ async function prepareImage(file: File) {
   return { blob, width, height, ext: blob.type === "image/webp" ? "webp" : "jpg" };
 }
 
-const baseName = (name: string) => name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").trim();
+const baseName = (name: string) =>
+  name
+    .replace(/\.[^.]+$/, "")
+    .replace(/[-_]+/g, " ")
+    .trim();
 
 /**
  * Buttons above the page editor that upload a photo or video (or take a YouTube / Vimeo link)
@@ -80,7 +88,10 @@ export function ContentMediaToolbar({ onInsert }: { onInsert: (markup: string) =
         });
         onInsert(`![${alt.trim().replace(/[[\]]/g, "")}](${url})`);
       }
-      toast({ title: "Photo added", description: "Inserted where your cursor was. Save the page to publish it." });
+      toast({
+        title: "Photo added",
+        description: "Inserted where your cursor was. Save the page to publish it.",
+      });
     } catch (e) {
       toast({
         title: "Upload failed",
@@ -143,18 +154,47 @@ export function ContentMediaToolbar({ onInsert }: { onInsert: (markup: string) =
 
   return (
     <div className="flex flex-wrap items-center gap-2" aria-busy={Boolean(busy)}>
-      <Button type="button" variant="outline" size="sm" disabled={Boolean(busy)} onClick={() => imageRef.current?.click()}>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        disabled={Boolean(busy)}
+        onClick={() => imageRef.current?.click()}
+      >
         <ImagePlusIcon /> Photo
       </Button>
-      <Button type="button" variant="outline" size="sm" disabled={Boolean(busy)} onClick={() => videoRef.current?.click()}>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        disabled={Boolean(busy)}
+        onClick={() => videoRef.current?.click()}
+      >
         <FilmIcon /> Video file
       </Button>
       <Button type="button" variant="outline" size="sm" disabled={Boolean(busy)} onClick={addLink}>
         <LinkIcon /> YouTube / Vimeo link
       </Button>
-      {busy && <span className="text-xs text-muted-foreground" role="status">{busy}</span>}
-      <input ref={imageRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple hidden onChange={(e) => addImages(e.target.files)} />
-      <input ref={videoRef} type="file" accept="video/mp4,video/webm" hidden onChange={(e) => addVideo(e.target.files)} />
+      {busy && (
+        <span className="text-xs text-muted-foreground" role="status">
+          {busy}
+        </span>
+      )}
+      <input
+        ref={imageRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/avif"
+        multiple
+        hidden
+        onChange={(e) => addImages(e.target.files)}
+      />
+      <input
+        ref={videoRef}
+        type="file"
+        accept="video/mp4,video/webm"
+        hidden
+        onChange={(e) => addVideo(e.target.files)}
+      />
     </div>
   );
 }

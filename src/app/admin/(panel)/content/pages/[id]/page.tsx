@@ -21,7 +21,9 @@ async function Editor({ params }: { params: PageProps<"/admin/content/pages/[id]
   const supabase = await createClient();
   const { data: page } = await supabase
     .from("pages")
-    .select("id, slug, kind, title, status, seo_title, seo_description, current_version_id, page_versions!page_versions_page_id_fkey ( id, version, title, body_html, effective_from, change_summary, created_at )")
+    .select(
+      "id, slug, kind, title, status, seo_title, seo_description, current_version_id, page_versions!page_versions_page_id_fkey ( id, version, title, body_html, effective_from, change_summary, created_at )",
+    )
     .eq("id", id)
     .maybeSingle();
   if (!page) notFound();
@@ -35,7 +37,11 @@ async function Editor({ params }: { params: PageProps<"/admin/content/pages/[id]
         description={`/${page.slug}`}
         back={{ href: adminUrls.content, label: "Content" }}
         actions={
-          <Link href={`/${page.slug}`} target="_blank" className={buttonVariants({ variant: "outline" })}>
+          <Link
+            href={`/${page.slug}`}
+            target="_blank"
+            className={buttonVariants({ variant: "outline" })}
+          >
             View on site <ExternalLinkIcon />
           </Link>
         }
@@ -59,8 +65,12 @@ async function Editor({ params }: { params: PageProps<"/admin/content/pages/[id]
             <li key={v.id} className="flex flex-wrap gap-x-3">
               <span className="font-medium tabular-nums">v{v.version}</span>
               <span>{v.change_summary ?? "—"}</span>
-              {v.effective_from && <span className="text-muted-foreground">effective {v.effective_from}</span>}
-              <span className="ml-auto text-xs text-muted-foreground">{formatDateTime(v.created_at)}</span>
+              {v.effective_from && (
+                <span className="text-muted-foreground">effective {v.effective_from}</span>
+              )}
+              <span className="ml-auto text-xs text-muted-foreground">
+                {formatDateTime(v.created_at)}
+              </span>
             </li>
           ))}
         </ol>

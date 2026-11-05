@@ -76,9 +76,14 @@ export function StatCard({
     <>
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         {label}
-        {Icon && <Icon className={cn("size-4", tone === "warning" ? "text-warning" : "text-gold-text")} aria-hidden />}
+        {Icon && (
+          <Icon
+            className={cn("size-4", tone === "warning" ? "text-warning" : "text-gold-text")}
+            aria-hidden
+          />
+        )}
       </div>
-      <p className="mt-2 text-2xl font-semibold tabular-nums lining-nums">{value}</p>
+      <p className="mt-2 text-2xl font-semibold lining-nums tabular-nums">{value}</p>
       {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
     </>
   );
@@ -107,7 +112,12 @@ const TONE: Record<Tone, string> = {
 
 export function Pill({ tone = "neutral", children }: { tone?: Tone; children: React.ReactNode }) {
   return (
-    <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap", TONE[tone])}>
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap",
+        TONE[tone],
+      )}
+    >
       {children}
     </span>
   );
@@ -162,7 +172,12 @@ export function PaymentStatusPill({ status }: { status: PaymentStatus }) {
 }
 
 export function PublishStatusPill({ status }: { status: PublishStatus }) {
-  const tone: Record<PublishStatus, Tone> = { draft: "neutral", scheduled: "info", published: "success", archived: "neutral" };
+  const tone: Record<PublishStatus, Tone> = {
+    draft: "neutral",
+    scheduled: "info",
+    published: "success",
+    archived: "neutral",
+  };
   return <Pill tone={tone[status]}>{status}</Pill>;
 }
 
@@ -177,10 +192,17 @@ export const tableCls = {
 
 export function formatDateTime(iso: string | null | undefined) {
   if (!iso) return "—";
-  return new Date(iso).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Kolkata" });
+  return new Date(iso).toLocaleString("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Asia/Kolkata",
+  });
 }
 
 export function formatDate(iso: string | null | undefined) {
   if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-IN", { dateStyle: "medium", timeZone: "Asia/Kolkata" });
+  return new Date(iso).toLocaleDateString("en-IN", {
+    dateStyle: "medium",
+    timeZone: "Asia/Kolkata",
+  });
 }

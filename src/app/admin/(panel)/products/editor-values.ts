@@ -1,7 +1,8 @@
 import type { EditorValues } from "@/components/admin/product-editor";
 import type { AdminProduct } from "@/lib/data/admin/products";
 
-const str = (v: number | string | null | undefined) => (v === null || v === undefined ? "" : String(v));
+const str = (v: number | string | null | undefined) =>
+  v === null || v === undefined ? "" : String(v);
 
 /** Stored description HTML (paragraphs) → editable plain text. */
 function htmlToText(html: string | null): string {
@@ -61,7 +62,19 @@ export function emptyEditorValues(): EditorValues {
     seoDescription: "",
     noindex: false,
     variants: [
-      { id: "", sku: "", title: "", colour: "", colourHex: "", sellUnit: "piece", price: "", compareAt: "", minQty: "1", active: true, stock: null },
+      {
+        id: "",
+        sku: "",
+        title: "",
+        colour: "",
+        colourHex: "",
+        sellUnit: "piece",
+        price: "",
+        compareAt: "",
+        minQty: "1",
+        active: true,
+        stock: null,
+      },
     ],
   };
 }
@@ -114,7 +127,9 @@ export function toEditorValues(p: AdminProduct): EditorValues {
         compareAt: v.compare_at_paise ? String(v.compare_at_paise / 100) : "",
         minQty: String(Number(v.min_qty)),
         active: v.active,
-        stock: String(v.inventory_levels.reduce((n, l) => n + Number(l.on_hand) - Number(l.reserved), 0)),
+        stock: String(
+          v.inventory_levels.reduce((n, l) => n + Number(l.on_hand) - Number(l.reserved), 0),
+        ),
       })),
   };
 }

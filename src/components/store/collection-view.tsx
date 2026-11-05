@@ -5,7 +5,12 @@ import { Suspense } from "react";
 
 import { ZariDivider } from "@/components/brand/zari-divider";
 import { JsonLd } from "@/components/seo/json-ld";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { routes, withQuery } from "@/config/routes";
@@ -107,7 +112,15 @@ async function Header({ path }: { path: string }) {
   );
 }
 
-function FilterChip({ href, active, children }: { href: string; active: boolean; children: React.ReactNode }) {
+function FilterChip({
+  href,
+  active,
+  children,
+}: {
+  href: string;
+  active: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <Link
       href={href}
@@ -115,7 +128,9 @@ function FilterChip({ href, active, children }: { href: string; active: boolean;
       aria-current={active ? "true" : undefined}
       className={cn(
         "inline-flex min-h-9 items-center rounded-full border px-3 text-sm transition-colors",
-        active ? "border-foreground bg-foreground text-background" : "border-border bg-card hover:border-charcoal-500",
+        active
+          ? "border-foreground bg-foreground text-background"
+          : "border-border bg-card hover:border-charcoal-500",
       )}
     >
       {children}
@@ -123,7 +138,13 @@ function FilterChip({ href, active, children }: { href: string; active: boolean;
   );
 }
 
-async function Results({ path, searchParams }: { path: string; searchParams: Promise<SearchParams> }) {
+async function Results({
+  path,
+  searchParams,
+}: {
+  path: string;
+  searchParams: Promise<SearchParams>;
+}) {
   const collection = await getCollection(path);
   if (!collection) notFound();
   const filters = parseFilters(await searchParams);
@@ -144,7 +165,11 @@ async function Results({ path, searchParams }: { path: string; searchParams: Pro
     <div className="container-page space-y-6">
       <div className="flex flex-col gap-4 border-y border-border py-4">
         {result.facets.fibres.length > 1 && (
-          <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filter by fabric">
+          <div
+            className="flex flex-wrap items-center gap-2"
+            role="group"
+            aria-label="Filter by fabric"
+          >
             <span className="mr-1 text-sm font-medium">Fabric</span>
             <FilterChip href={href({ fibre: undefined })} active={!filters.fibre}>
               All
@@ -157,13 +182,21 @@ async function Results({ path, searchParams }: { path: string; searchParams: Pro
           </div>
         )}
         {result.facets.colours.length > 1 && (
-          <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filter by colour">
+          <div
+            className="flex flex-wrap items-center gap-2"
+            role="group"
+            aria-label="Filter by colour"
+          >
             <span className="mr-1 text-sm font-medium">Colour</span>
             <FilterChip href={href({ colour: undefined })} active={!filters.colour}>
               All
             </FilterChip>
             {result.facets.colours.map((c) => (
-              <FilterChip key={c} href={href({ colour: c.toLowerCase() })} active={filters.colour?.toLowerCase() === c.toLowerCase()}>
+              <FilterChip
+                key={c}
+                href={href({ colour: c.toLowerCase() })}
+                active={filters.colour?.toLowerCase() === c.toLowerCase()}
+              >
                 {c}
               </FilterChip>
             ))}
@@ -176,7 +209,11 @@ async function Results({ path, searchParams }: { path: string; searchParams: Pro
           <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Sort">
             <span className="text-sm font-medium">Sort</span>
             {SORTS.map((s) => (
-              <FilterChip key={s} href={href({ sort: s === collection.defaultSort ? undefined : s })} active={sort === s}>
+              <FilterChip
+                key={s}
+                href={href({ sort: s === collection.defaultSort ? undefined : s })}
+                active={sort === s}
+              >
                 {SORT_LABELS[s]}
               </FilterChip>
             ))}
@@ -207,7 +244,9 @@ async function Results({ path, searchParams }: { path: string; searchParams: Pro
               aria-current={n === result.page ? "page" : undefined}
               className={cn(
                 "grid size-10 place-items-center rounded-md border text-sm",
-                n === result.page ? "border-foreground bg-foreground text-background" : "border-border hover:bg-accent",
+                n === result.page
+                  ? "border-foreground bg-foreground text-background"
+                  : "border-border hover:bg-accent",
               )}
             >
               {n}
@@ -234,7 +273,9 @@ async function Footer({ path }: { path: string }) {
       )}
       {collection.faqs.length > 0 && (
         <div>
-          <h2 className="font-display text-display-sm">Questions about {collection.title.toLowerCase()}</h2>
+          <h2 className="font-display text-display-sm">
+            Questions about {collection.title.toLowerCase()}
+          </h2>
           <Accordion type="single" collapsible className="mt-4">
             {collection.faqs.map((faq) => (
               <AccordionItem key={faq.question} value={faq.question}>
@@ -261,7 +302,13 @@ function ResultsSkeleton() {
 }
 
 /** Shared template for every catalogue listing (sections, collections, occasions, price bands). */
-export function CollectionView({ path, searchParams }: { path: string; searchParams: Promise<SearchParams> }) {
+export function CollectionView({
+  path,
+  searchParams,
+}: {
+  path: string;
+  searchParams: Promise<SearchParams>;
+}) {
   return (
     <>
       <Header path={path} />

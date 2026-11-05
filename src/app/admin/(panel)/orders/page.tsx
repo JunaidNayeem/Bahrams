@@ -36,21 +36,36 @@ const TABS: (OrderStatus | "all")[] = [
   "cancelled",
 ];
 
-const METHOD: Record<string, string> = { upi: "UPI", card: "Card", netbanking: "Netbanking", wallet: "Wallet", emi: "EMI", cod: "COD" };
+const METHOD: Record<string, string> = {
+  upi: "UPI",
+  card: "Card",
+  netbanking: "Netbanking",
+  wallet: "Wallet",
+  emi: "EMI",
+  cod: "COD",
+};
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 
-async function Orders({ searchParams }: { searchParams: PageProps<"/admin/orders">["searchParams"] }) {
+async function Orders({
+  searchParams,
+}: {
+  searchParams: PageProps<"/admin/orders">["searchParams"];
+}) {
   await requireStaff("owner", "manager", "fulfilment", "support", "accountant");
   const sp = await searchParams;
   const statusParam = one(sp.status);
-  const status = (ORDER_STATUSES as readonly string[]).includes(statusParam ?? "") ? (statusParam as OrderStatus) : null;
+  const status = (ORDER_STATUSES as readonly string[]).includes(statusParam ?? "")
+    ? (statusParam as OrderStatus)
+    : null;
   const q = one(sp.q)?.trim() ?? "";
   const method = one(sp.method);
 
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("orders")
-    .select("id, order_number, status, payment_method, payment_status, total_paise, placed_at, created_at, email, phone, source, shipping_address, order_items ( title, quantity, sell_unit )")
+    .select(
+      "id, order_number, status, payment_method, payment_status, total_paise, placed_at, created_at, email, phone, source, shipping_address, order_items ( title, quantity, sell_unit )",
+    )
     .order("placed_at", { ascending: false, nullsFirst: false })
     .limit(500);
   if (error) throw error;
@@ -58,7 +73,8 @@ async function Orders({ searchParams }: { searchParams: PageProps<"/admin/orders
   const counts = new Map<string, number>();
   for (const o of data) counts.set(o.status, (counts.get(o.status) ?? 0) + 1);
 
-  const name = (o: (typeof data)[number]) => (o.shipping_address as { full_name?: string; city?: string } | null) ?? {};
+  const name = (o: (typeof data)[number]) =>
+    (o.shipping_address as { full_name?: string; city?: string } | null) ?? {};
   const needle = q.toLowerCase();
   const rows = data
     .filter((o) => !status || o.status === status)
@@ -81,15 +97,28 @@ async function Orders({ searchParams }: { searchParams: PageProps<"/admin/orders
           return (
             <Link
               key={t}
-              href={withQuery(adminUrls.orders, { status: t === "all" ? undefined : t, q: q || undefined, method })}
+              href={withQuery(adminUrls.orders, {
+                status: t === "all" ? undefined : t,
+                q: q || undefined,
+                method,
+              })}
               aria-current={active ? "page" : undefined}
               className={cn(
                 "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm",
-                active ? "border-foreground bg-foreground text-background" : "border-border bg-card hover:border-charcoal-500",
+                active
+                  ? "border-foreground bg-foreground text-background"
+                  : "border-border bg-card hover:border-charcoal-500",
               )}
             >
               {t === "all" ? "All" : ORDER_STATUS_LABELS[t]}
-              <span className={cn("text-xs tabular-nums", active ? "opacity-80" : "text-muted-foreground")}>{count}</span>
+              <span
+                className={cn(
+                  "text-xs tabular-nums",
+                  active ? "opacity-80" : "text-muted-foreground",
+                )}
+              >
+                {count}
+              </span>
             </Link>
           );
         })}
@@ -97,8 +126,19 @@ async function Orders({ searchParams }: { searchParams: PageProps<"/admin/orders
 
       <form className="mb-4 flex flex-wrap gap-2" role="search">
         {status && <input type="hidden" name="status" value={status} />}
-        <Input name="q" defaultValue={q} placeholder="Order number, name, email or phone" className="max-w-sm" aria-label="Search orders" />
-        <select name="method" defaultValue={method ?? ""} aria-label="Payment method" className="h-10 rounded-md border border-input bg-card px-3 text-sm">
+        <Input
+          name="q"
+          defaultValue={q}
+          placeholder="Order number, name, email or phone"
+          className="max-w-sm"
+          aria-label="Search orders"
+        />
+        <select
+          name="method"
+          defaultValue={method ?? ""}
+          aria-label="Payment method"
+          className="h-10 rounded-md border border-input bg-card px-3 text-sm"
+        >
           <option value="">All payments</option>
           {Object.entries(METHOD).map(([k, v]) => (
             <option key={k} value={k}>
@@ -106,7 +146,9 @@ async function Orders({ searchParams }: { searchParams: PageProps<"/admin/orders
             </option>
           ))}
         </select>
-        <button className="h-10 rounded-md border border-input bg-card px-4 text-sm hover:bg-accent">Search</button>
+        <button className="h-10 rounded-md border border-input bg-card px-4 text-sm hover:bg-accent">
+          Search
+        </button>
       </form>
 
       <div className="overflow-x-auto rounded-lg border border-border bg-card">
@@ -133,10 +175,15 @@ async function Orders({ searchParams }: { searchParams: PageProps<"/admin/orders
             {rows.map((o) => (
               <tr key={o.id} className={tableCls.tr}>
                 <td className={tableCls.td}>
-                  <Link href={adminUrls.order(o.id)} className="font-medium underline-offset-4 hover:underline">
+                  <Link
+                    href={adminUrls.order(o.id)}
+                    className="font-medium underline-offset-4 hover:underline"
+                  >
                     {o.order_number}
                   </Link>
-                  {o.source !== "web" && <p className="text-xs text-muted-foreground capitalize">{o.source} order</p>}
+                  {o.source !== "web" && (
+                    <p className="text-xs text-muted-foreground capitalize">{o.source} order</p>
+                  )}
                 </td>
                 <td className={tableCls.td}>
                   {name(o).full_name ?? o.email}
@@ -149,11 +196,17 @@ async function Orders({ searchParams }: { searchParams: PageProps<"/admin/orders
                   <OrderStatusPill status={o.status} />
                 </td>
                 <td className={tableCls.td}>
-                  <span className="mr-2 text-xs">{o.payment_method ? METHOD[o.payment_method] : "—"}</span>
+                  <span className="mr-2 text-xs">
+                    {o.payment_method ? METHOD[o.payment_method] : "—"}
+                  </span>
                   <PaymentStatusPill status={o.payment_status} />
                 </td>
-                <td className={`${tableCls.td} text-right tabular-nums`}>{formatINR(o.total_paise, { omitZeroPaise: true })}</td>
-                <td className={`${tableCls.td} whitespace-nowrap text-muted-foreground`}>{formatDateTime(o.placed_at ?? o.created_at)}</td>
+                <td className={`${tableCls.td} text-right tabular-nums`}>
+                  {formatINR(o.total_paise, { omitZeroPaise: true })}
+                </td>
+                <td className={`${tableCls.td} whitespace-nowrap text-muted-foreground`}>
+                  {formatDateTime(o.placed_at ?? o.created_at)}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -166,7 +219,10 @@ async function Orders({ searchParams }: { searchParams: PageProps<"/admin/orders
 export default function OrdersPage({ searchParams }: PageProps<"/admin/orders">) {
   return (
     <>
-      <PageHeader title="Orders" description="Every order from the website, phone and WhatsApp, moving through its lifecycle." />
+      <PageHeader
+        title="Orders"
+        description="Every order from the website, phone and WhatsApp, moving through its lifecycle."
+      />
       <Suspense fallback={<Skeleton className="h-96 w-full" />}>
         <Orders searchParams={searchParams} />
       </Suspense>

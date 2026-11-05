@@ -6,7 +6,14 @@ import { useState, useTransition } from "react";
 
 import { addOrderNote, transitionOrder } from "@/app/admin/(panel)/orders/actions";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -84,7 +91,10 @@ export function OrderActions({
 
   // Exception paths (failed delivery, RTO, cancel, rejecting a return) are secondary buttons.
   const exception = (s: NextStep) =>
-    s.to === "cancelled" || s.to === "delivery_failed" || s.to === "rto" || (status === "return_requested" && s.to === "delivered");
+    s.to === "cancelled" ||
+    s.to === "delivery_failed" ||
+    s.to === "rto" ||
+    (status === "return_requested" && s.to === "delivered");
   const primary = steps.filter((s) => !exception(s));
   const secondary = steps.filter((s) => !primary.includes(s));
 
@@ -100,7 +110,9 @@ export function OrderActions({
           <MessageCircleIcon className="size-4" /> Confirm with customer on WhatsApp
         </a>
       )}
-      {steps.length === 0 && <p className="text-sm text-muted-foreground">This order is complete — no further steps.</p>}
+      {steps.length === 0 && (
+        <p className="text-sm text-muted-foreground">This order is complete — no further steps.</p>
+      )}
       <div className="flex flex-col gap-2">
         {primary.map((s) => (
           <Button key={s.to} onClick={() => choose(s)} disabled={pending}>
@@ -118,7 +130,13 @@ export function OrderActions({
         <DialogContent>
           <form onSubmit={submitDialog} className="space-y-4">
             <DialogHeader>
-              <DialogTitle>{dialog?.to === "shipped" ? "Ship this order" : dialog?.to === "cancelled" ? "Cancel this order" : "Record a reason"}</DialogTitle>
+              <DialogTitle>
+                {dialog?.to === "shipped"
+                  ? "Ship this order"
+                  : dialog?.to === "cancelled"
+                    ? "Cancel this order"
+                    : "Record a reason"}
+              </DialogTitle>
               <DialogDescription>
                 {dialog?.to === "shipped"
                   ? "The customer receives tracking details by WhatsApp and email."
@@ -148,7 +166,11 @@ export function OrderActions({
               </p>
             )}
             <DialogFooter>
-              <Button type="submit" disabled={pending} variant={dialog?.to === "cancelled" ? "destructive" : "default"}>
+              <Button
+                type="submit"
+                disabled={pending}
+                variant={dialog?.to === "cancelled" ? "destructive" : "default"}
+              >
                 {pending ? "Saving…" : "Confirm"}
               </Button>
             </DialogFooter>
@@ -169,7 +191,11 @@ export function OrderNoteForm({ orderId }: { orderId: string }) {
         const form = e.currentTarget;
         const f = new FormData(form);
         start(async () => {
-          const res = await addOrderNote(orderId, String(f.get("body") ?? ""), f.get("visible") === "on");
+          const res = await addOrderNote(
+            orderId,
+            String(f.get("body") ?? ""),
+            f.get("visible") === "on",
+          );
           if (!res.ok) {
             toast({ title: "Note not saved", description: res.message, variant: "destructive" });
             return;
@@ -183,10 +209,16 @@ export function OrderNoteForm({ orderId }: { orderId: string }) {
       <Label htmlFor="note-body" className="sr-only">
         Add a note
       </Label>
-      <Textarea id="note-body" name="body" rows={2} placeholder="Add a note (e.g. customer asked for evening delivery)" />
+      <Textarea
+        id="note-body"
+        name="body"
+        rows={2}
+        placeholder="Add a note (e.g. customer asked for evening delivery)"
+      />
       <div className="flex items-center justify-between">
         <label className="flex items-center gap-2 text-xs text-muted-foreground">
-          <input type="checkbox" name="visible" className="size-4 accent-madder-700" /> Visible to customer
+          <input type="checkbox" name="visible" className="size-4 accent-madder-700" /> Visible to
+          customer
         </label>
         <Button size="sm" variant="outline" disabled={pending}>
           Add note

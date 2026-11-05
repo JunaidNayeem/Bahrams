@@ -4,7 +4,11 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 
 const inr = (rupees: number) => `₹${Math.round(rupees).toLocaleString("en-IN")}`;
 const compactInr = (rupees: number) =>
-  rupees >= 100000 ? `₹${(rupees / 100000).toFixed(1)}L` : rupees >= 1000 ? `₹${Math.round(rupees / 1000)}k` : `₹${rupees}`;
+  rupees >= 100000
+    ? `₹${(rupees / 100000).toFixed(1)}L`
+    : rupees >= 1000
+      ? `₹${Math.round(rupees / 1000)}k`
+      : `₹${rupees}`;
 
 interface Point {
   day: string;
@@ -32,7 +36,11 @@ export function RevenueChart({ data }: { data: Point[] }) {
     <figure>
       <div className="h-64" aria-hidden>
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }} barCategoryGap={2}>
+          <BarChart
+            data={data}
+            margin={{ top: 8, right: 8, bottom: 0, left: 0 }}
+            barCategoryGap={2}
+          >
             <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="0" />
             <XAxis
               dataKey="day"
@@ -49,7 +57,12 @@ export function RevenueChart({ data }: { data: Point[] }) {
               tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
             />
             <Tooltip content={<ChartTooltip />} cursor={{ fill: "var(--muted)", opacity: 0.6 }} />
-            <Bar dataKey="revenue" fill="var(--color-madder-700)" radius={[4, 4, 0, 0]} maxBarSize={18} />
+            <Bar
+              dataKey="revenue"
+              fill="var(--color-madder-700)"
+              radius={[4, 4, 0, 0]}
+              maxBarSize={18}
+            />
           </BarChart>
         </ResponsiveContainer>
       </div>

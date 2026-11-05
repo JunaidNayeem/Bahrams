@@ -30,13 +30,19 @@ const pageSchema = z.object({
 export async function savePage(form: FormData): Promise<ContentResult> {
   await requireStaff(...CONTENT_STAFF);
   const parsed = pageSchema.safeParse(Object.fromEntries(form));
-  if (!parsed.success) return { ok: false, message: parsed.error.issues[0]?.message ?? "Check the form." };
+  if (!parsed.success)
+    return { ok: false, message: parsed.error.issues[0]?.message ?? "Check the form." };
   const p = parsed.data;
   const supabase = await createClient();
 
-  const { data: page } = await supabase.from("pages").select("id, slug, kind").eq("id", p.id).single();
+  const { data: page } = await supabase
+    .from("pages")
+    .select("id, slug, kind")
+    .eq("id", p.id)
+    .single();
   if (!page) return { ok: false, message: "Page not found." };
-  if (page.kind === "legal" && !p.changeSummary) return { ok: false, message: "Legal pages need a short summary of what changed." };
+  if (page.kind === "legal" && !p.changeSummary)
+    return { ok: false, message: "Legal pages need a short summary of what changed." };
 
   const { data: latest } = await supabase
     .from("page_versions")
@@ -97,7 +103,9 @@ export async function moveHomeSection(id: string, direction: -1 | 1): Promise<Co
   const j = i + direction;
   if (i < 0 || j < 0 || j >= list.length) return { ok: false, message: "Can't move further." };
   [list[i], list[j]] = [list[j], list[i]];
-  await Promise.all(list.map((s, idx) => supabase.from("home_sections").update({ position: idx }).eq("id", s.id)));
+  await Promise.all(
+    list.map((s, idx) => supabase.from("home_sections").update({ position: idx }).eq("id", s.id)),
+  );
   updateTag(CMS_TAG);
   return { ok: true, message: "Order updated." };
 }
@@ -105,33 +113,59 @@ export async function moveHomeSection(id: string, direction: -1 | 1): Promise<Co
 export async function renameHomeSection(id: string, title: string): Promise<ContentResult> {
   await requireStaff(...CONTENT_STAFF);
   const supabase = await createClient();
-  const { error } = await supabase.from("home_sections").update({ title: title.trim().slice(0, 120) || null }).eq("id", id);
+  const { error } = await supabase
+    .from("home_sections")
+    .update({ title: title.trim().slice(0, 120) || null })
+    .eq("id", id);
   if (error) return { ok: false, message: error.message };
   updateTag(CMS_TAG);
   return { ok: true, message: "Heading updated." };
 }
 
 /** The product the home hero shows. Null goes back to the newest (or featured-ranked) piece. */
-export async function setHeroProduct(sectionId: string, productId: string | null): Promise<ContentResult> {
+export async function setHeroProduct(
+  sectionId: string,
+  productId: string | null,
+): Promise<ContentResult> {
   await requireStaff(...CONTENT_STAFF);
   const supabase = await createClient();
-  const { data: section } = await supabase.from("home_sections").select("id, type, config").eq("id", sectionId).single();
+  const { data: section } = await supabase
+    .from("home_sections")
+    .select("id, type, config")
+    .eq("id", sectionId)
+    .single();
   if (!section || section.type !== "hero") return { ok: false, message: "Hero section not found." };
 
   let title: string | null = null;
   if (productId) {
-    const { data: product } = await supabase.from("products").select("title, status").eq("id", productId).maybeSingle();
+    const { data: product } = await supabase
+      .from("products")
+      .select("title, status")
+      .eq("id", productId)
+      .maybeSingle();
     if (!product) return { ok: false, message: "Product not found." };
-    if (product.status !== "published") return { ok: false, message: `"${product.title}" isn't published yet, so the home page can't show it.` };
+    if (product.status !== "published")
+      return {
+        ok: false,
+        message: `"${product.title}" isn't published yet, so the home page can't show it.`,
+      };
     title = product.title;
   }
 
   const config = { ...(section.config as Record<string, unknown>) };
   if (productId) config.product_id = productId;
   else delete config.product_id;
-  const { error } = await supabase.from("home_sections").update({ config: config as { [key: string]: Json | undefined } }).eq("id", sectionId);
+  const { error } = await supabase
+    .from("home_sections")
+    .update({ config: config as { [key: string]: Json | undefined } })
+    .eq("id", sectionId);
   if (error) return { ok: false, message: error.message };
   updateTag(CMS_TAG);
   updateTag(CATALOG_TAG);
-  return { ok: true, message: title ? `The home page now features "${title}".` : "The home page now features the newest piece." };
+  return {
+    ok: true,
+    message: title
+      ? `The home page now features "${title}".`
+      : "The home page now features the newest piece.",
+  };
 }

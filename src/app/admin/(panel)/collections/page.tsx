@@ -12,29 +12,53 @@ import { createClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "Collections" };
 
-const SECTION: Record<string, string> = { root: "Department", sarees: "Sarees", fabric: "Fabric", occasion: "Occasion", shop: "Price band" };
+const SECTION: Record<string, string> = {
+  root: "Department",
+  sarees: "Sarees",
+  fabric: "Fabric",
+  occasion: "Occasion",
+  shop: "Price band",
+};
 
 /** Plain-English summary of a collection's automatic rules. */
 function describeRules(rules: Record<string, unknown>): string {
   const parts: string[] = [];
   const list = (v: unknown) => (Array.isArray(v) ? (v as string[]) : []);
-  if (list(rules.kinds).length) parts.push(list(rules.kinds).map((k) => k.replace(/_/g, " ")).join(", "));
-  if (list(rules.fibres).length) parts.push(list(rules.fibres).map((f) => fibreLabel(f as Fibre)).join(", "));
+  if (list(rules.kinds).length)
+    parts.push(
+      list(rules.kinds)
+        .map((k) => k.replace(/_/g, " "))
+        .join(", "),
+    );
+  if (list(rules.fibres).length)
+    parts.push(
+      list(rules.fibres)
+        .map((f) => fibreLabel(f as Fibre))
+        .join(", "),
+    );
   if (list(rules.occasions).length) parts.push(`for ${list(rules.occasions).join(", ")}`);
   if (rules.has_zari) parts.push("with zari");
   if (rules.gi_eligible) parts.push("GI-eligible only");
   if (rules.swatch_available) parts.push("swatch available");
-  if (typeof rules.new_within_days === "number") parts.push(`published in the last ${rules.new_within_days} days`);
-  if (typeof rules.price_min_paise === "number") parts.push(`from ${formatINR(rules.price_min_paise, { omitZeroPaise: true })}`);
-  if (typeof rules.price_max_paise === "number") parts.push(`under ${formatINR(rules.price_max_paise, { omitZeroPaise: true })}`);
-  if (list(rules.exclude_kinds).length) parts.push(`excluding ${list(rules.exclude_kinds).join(", ")}`);
+  if (typeof rules.new_within_days === "number")
+    parts.push(`published in the last ${rules.new_within_days} days`);
+  if (typeof rules.price_min_paise === "number")
+    parts.push(`from ${formatINR(rules.price_min_paise, { omitZeroPaise: true })}`);
+  if (typeof rules.price_max_paise === "number")
+    parts.push(`under ${formatINR(rules.price_max_paise, { omitZeroPaise: true })}`);
+  if (list(rules.exclude_kinds).length)
+    parts.push(`excluding ${list(rules.exclude_kinds).join(", ")}`);
   return parts.join(" · ") || "All products";
 }
 
 async function Collections() {
   await requireStaff("owner", "manager", "catalogue_editor");
   const supabase = await createClient();
-  const { data } = await supabase.from("collections").select("*").order("section").order("position");
+  const { data } = await supabase
+    .from("collections")
+    .select("*")
+    .order("section")
+    .order("position");
   return (
     <div className="overflow-x-auto rounded-lg border border-border bg-card">
       <table className={tableCls.table}>
@@ -59,15 +83,24 @@ async function Collections() {
               </td>
               <td className={tableCls.td}>{SECTION[c.section] ?? c.section}</td>
               <td className={`${tableCls.td} text-muted-foreground`}>
-                {c.membership === "manual" ? "Hand-picked products" : describeRules(c.rules as Record<string, unknown>)}
+                {c.membership === "manual"
+                  ? "Hand-picked products"
+                  : describeRules(c.rules as Record<string, unknown>)}
               </td>
-              <td className={`${tableCls.td} tabular-nums`}>{Array.isArray(c.faqs) ? c.faqs.length : 0}</td>
+              <td className={`${tableCls.td} tabular-nums`}>
+                {Array.isArray(c.faqs) ? c.faqs.length : 0}
+              </td>
               <td className={tableCls.td}>
                 <PublishStatusPill status={c.status} />
               </td>
               <td className={tableCls.td}>
                 {c.path && (
-                  <Link href={c.path} target="_blank" aria-label={`View ${c.title}`} className="text-muted-foreground hover:text-foreground">
+                  <Link
+                    href={c.path}
+                    target="_blank"
+                    aria-label={`View ${c.title}`}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
                     <ExternalLinkIcon className="size-4" />
                   </Link>
                 )}
