@@ -73,3 +73,44 @@ export function findVariantBySku<T extends { sku: string }>(
   const wanted = sku.trim().toLowerCase();
   return variants.find((v) => v.sku.toLowerCase() === wanted);
 }
+
+/*
+ * One SKU per product. Staff enter it once; each design gets a code under it, used wherever a
+ * single design must be told apart (stock, cart, orders, ?variant= links, Google's variant data).
+ *   one design      → the SKU itself          LINEN-SAREE-0004
+ *   several designs → the SKU plus -D<n>      LINEN-SAREE-0004-D1, LINEN-SAREE-0004-D2
+ */
+
+/** Longest product SKU, leaving room for "-D99" within the 40-character design code. */
+export const PRODUCT_SKU_MAX = 36;
+const DESIGN_SUFFIX = /-D(\d{1,2})$/;
+
+/** The product SKU a design code belongs to ("LINEN-SAREE-0004-D2" → "LINEN-SAREE-0004"). */
+export function productSkuOf(code: string): string {
+  return code.replace(DESIGN_SUFFIX, "");
+}
+
+/**
+ * Design codes for a product's designs, in editor order. `current` holds each design's saved code
+ * (null for a design added in this save). A design keeps its number across saves, even when the
+ * SKU is renamed or another design is removed; new designs take the lowest free number.
+ */
+export function designCodes(productSku: string, current: readonly (string | null)[]): string[] {
+  if (current.length === 1) return [productSku];
+  const used = new Set<number>();
+  const kept = current.map((code) => {
+    const n = code ? Number(DESIGN_SUFFIX.exec(code)?.[1] ?? NaN) : NaN;
+    if (!Number.isInteger(n) || n < 1 || used.has(n)) return null;
+    used.add(n);
+    return n;
+  });
+  let next = 1;
+  return kept.map((n) => {
+    if (n === null) {
+      while (used.has(next)) next++;
+      used.add(next);
+      n = next;
+    }
+    return `${productSku}-D${n}`;
+  });
+}

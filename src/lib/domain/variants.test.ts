@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  designCodes,
   findVariantBySku,
   firstImageByVariant,
   imagesForVariant,
+  productSkuOf,
   variantChoiceKind,
   variantLabel,
   variantPath,
@@ -81,5 +83,44 @@ describe("variant URLs", () => {
     expect(findVariantBySku([peacock, temple], "ts-001-b")).toBe(temple);
     expect(findVariantBySku([peacock, temple], "nope")).toBeUndefined();
     expect(findVariantBySku([peacock, temple], null)).toBeUndefined();
+  });
+});
+
+describe("one SKU per product", () => {
+  it("gives a single design the product SKU itself", () => {
+    expect(designCodes("LINEN-SAREE-0004", [null])).toEqual(["LINEN-SAREE-0004"]);
+    expect(designCodes("LINEN-SAREE-0004", ["LINEN-SAREE-0004-D2"])).toEqual(["LINEN-SAREE-0004"]);
+  });
+
+  it("numbers several designs under the SKU", () => {
+    expect(designCodes("TS-01", [null, null, null])).toEqual(["TS-01-D1", "TS-01-D2", "TS-01-D3"]);
+  });
+
+  it("keeps each design's number when one is removed or the SKU is renamed", () => {
+    // Design 1 removed: the others keep D2 and D3.
+    expect(designCodes("TS-01", ["TS-01-D2", "TS-01-D3"])).toEqual(["TS-01-D2", "TS-01-D3"]);
+    expect(designCodes("TS-02", ["TS-01-D2", "TS-01-D3"])).toEqual(["TS-02-D2", "TS-02-D3"]);
+  });
+
+  it("gives new and old-style codes the lowest free number", () => {
+    // A product that had one design (code = SKU) gains a second; older per-design SKUs migrate.
+    expect(designCodes("LINEN-SAREE-0004", ["LINEN-SAREE-0004", null])).toEqual([
+      "LINEN-SAREE-0004-D1",
+      "LINEN-SAREE-0004-D2",
+    ]);
+    expect(designCodes("A-1", ["A-1-D2", "LINEN-SAREE-0005", null])).toEqual([
+      "A-1-D2",
+      "A-1-D1",
+      "A-1-D3",
+    ]);
+  });
+
+  it("never repeats a number", () => {
+    expect(designCodes("A-1", ["A-1-D1", "A-1-D1"])).toEqual(["A-1-D1", "A-1-D2"]);
+  });
+
+  it("recovers the product SKU from a design code", () => {
+    expect(productSkuOf("LINEN-SAREE-0004-D2")).toBe("LINEN-SAREE-0004");
+    expect(productSkuOf("LINEN-SAREE-0004")).toBe("LINEN-SAREE-0004");
   });
 });

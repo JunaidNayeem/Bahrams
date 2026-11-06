@@ -12,7 +12,7 @@ import { CATALOGUE_SECTIONS } from "@/config/routes";
 import { FIBRE_GROUPS, fibreLabel } from "@/lib/domain/claims";
 import { OCCASIONS, PRODUCT_KINDS, PUBLISH_STATUSES, type SellUnit } from "@/lib/domain/enums";
 import { slugify } from "@/lib/domain/slug";
-import { variantLabel } from "@/lib/domain/variants";
+import { PRODUCT_SKU_MAX, variantLabel } from "@/lib/domain/variants";
 import { cn } from "@/lib/utils";
 
 import { DesignPhotos, type MediaItem } from "./media-manager";
@@ -34,6 +34,8 @@ export interface EditorVariant {
 export interface EditorValues {
   id: string;
   title: string;
+  /** The product's one SKU; each design's code is derived from it on save. */
+  sku: string;
   slug: string;
   subtitle: string;
   kind: string;
@@ -255,6 +257,22 @@ export function ProductEditor({
           >
             <Input id="subtitle" name="subtitle" defaultValue={initial.subtitle} />
           </Field>
+          <Field
+            label="SKU"
+            name="sku"
+            error={e.sku}
+            hint="One SKU for the product. With several designs, each gets a code under it automatically (…-D1, …-D2) so stock and orders stay per design."
+          >
+            <Input
+              id="sku"
+              name="sku"
+              defaultValue={initial.sku}
+              maxLength={PRODUCT_SKU_MAX}
+              className="font-mono uppercase"
+              aria-invalid={Boolean(e.sku)}
+              required
+            />
+          </Field>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Type" name="kind">
               <select id="kind" name="kind" defaultValue={initial.kind} className={inputCls}>
@@ -421,6 +439,9 @@ export function ProductEditor({
                 <fieldset key={key} className="rounded-md border border-border p-4">
                   <legend className="px-1 text-xs font-medium text-muted-foreground">
                     Design {i + 1}
+                    {v.sku && rows.length > 1 && (
+                      <span className="font-mono font-normal"> · code {v.sku}</span>
+                    )}
                   </legend>
                   <input type="hidden" name={`variants.${i}.id`} value={v.id} />
                   <Field
@@ -438,14 +459,6 @@ export function ProductEditor({
                     />
                   </Field>
                   <div className="grid gap-3 sm:grid-cols-3">
-                    <Field label="SKU" name={`variants.${i}.sku`} error={err("sku")}>
-                      <Input
-                        id={`variants.${i}.sku`}
-                        name={`variants.${i}.sku`}
-                        defaultValue={v.sku}
-                        className="font-mono uppercase"
-                      />
-                    </Field>
                     <Field label="Colour" name={`variants.${i}.colour`}>
                       <div className="flex gap-2">
                         <Input

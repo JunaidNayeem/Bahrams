@@ -1,5 +1,6 @@
 import type { EditorValues } from "@/components/admin/product-editor";
 import type { AdminProduct } from "@/lib/data/admin/products";
+import { productSkuOf } from "@/lib/domain/variants";
 
 const str = (v: number | string | null | undefined) =>
   v === null || v === undefined ? "" : String(v);
@@ -30,6 +31,7 @@ export function emptyEditorValues(): EditorValues {
   return {
     id: "",
     title: "",
+    sku: "",
     slug: "",
     subtitle: "",
     kind: "saree",
@@ -80,9 +82,13 @@ export function emptyEditorValues(): EditorValues {
 }
 
 export function toEditorValues(p: AdminProduct): EditorValues {
+  // The product SKU is the first design's code without its -D<n> suffix. Older products whose
+  // designs had unrelated SKUs take the first one; the others are re-coded under it on save.
+  const first = [...p.product_variants].sort((a, b) => a.position - b.position)[0];
   return {
     id: p.id,
     title: p.title,
+    sku: first ? productSkuOf(first.sku) : "",
     slug: p.slug,
     subtitle: str(p.subtitle),
     kind: p.kind,

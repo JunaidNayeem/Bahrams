@@ -12,7 +12,7 @@ import { FIBRES, OCCASIONS, PRODUCT_KINDS, PUBLISH_STATUSES, SELL_UNITS } from "
 import { rupeesToPaise } from "@/lib/domain/money";
 import { validatePriorPrice } from "@/lib/domain/pricing";
 import { slugify } from "@/lib/domain/slug";
-import { variantLabel } from "@/lib/domain/variants";
+import { designCodes, PRODUCT_SKU_MAX, variantLabel } from "@/lib/domain/variants";
 import { createClient } from "@/lib/supabase/server";
 
 const EDITORS = ["owner", "manager", "catalogue_editor"] as const;
@@ -37,11 +37,6 @@ const optFibre = z
 
 const variantSchema = z.object({
   id: z.string().transform((v) => (v === "" ? null : v)),
-  sku: z
-    .string()
-    .trim()
-    .toUpperCase()
-    .regex(/^[A-Z0-9-]{3,40}$/, "3–40 capitals, digits or dashes"),
   title: text(80),
   colour: text(40),
   colourHex: z
@@ -60,6 +55,15 @@ const variantSchema = z.object({
 const productSchema = z.object({
   id: z.string().transform((v) => (v === "" ? null : v)),
   title: z.string().trim().min(3, "Give the product a title").max(140),
+  // One SKU for the whole product; designs get codes under it (designCodes).
+  sku: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(
+      new RegExp(`^[A-Z0-9-]{3,${PRODUCT_SKU_MAX}}$`),
+      `3–${PRODUCT_SKU_MAX} capitals, digits or dashes`,
+    ),
   slug: z
     .string()
     .trim()
@@ -105,7 +109,7 @@ const productSchema = z.object({
   variants: z.array(variantSchema).min(1, "Add at least one variant"),
 });
 
-/** Reads the editor's flat FormData (variants.0.sku, …) into the nested shape the schema expects. */
+/** Reads the editor's flat FormData (variants.0.price, …) into the nested shape the schema expects. */
 function fromForm(form: FormData) {
   const s = (k: string) => String(form.get(k) ?? "");
   const b = (k: string) => form.get(k) === "on";
@@ -117,6 +121,7 @@ function fromForm(form: FormData) {
   return {
     id: s("id"),
     title: s("title"),
+    sku: s("sku"),
     slug: s("slug") || s("title"),
     subtitle: s("subtitle"),
     kind: s("kind"),
@@ -150,7 +155,6 @@ function fromForm(form: FormData) {
     noindex: b("noindex"),
     variants: rows.map((i) => ({
       id: s(`variants.${i}.id`),
-      sku: s(`variants.${i}.sku`),
       title: s(`variants.${i}.title`),
       colour: s(`variants.${i}.colour`),
       colourHex: s(`variants.${i}.colourHex`),
@@ -210,7 +214,7 @@ export async function saveProduct(_prev: SaveState, form: FormData): Promise<Sav
           "Name this design (or give it a colour) so shoppers can tell it apart";
         return;
       }
-      const key = variantLabel({ sku: v.sku, title: v.title, colour: v.colour }).toLowerCase();
+      const key = variantLabel({ sku: "", title: v.title, colour: v.colour }).toLowerCase();
       if (seen.has(key))
         errors[`variants.${i}.title`] =
           `Same name as design ${seen.get(key)! + 1}; make each one distinct`;
@@ -259,7 +263,14 @@ export async function saveProduct(_prev: SaveState, form: FormData): Promise<Sav
 
   // Designs removed in the editor (saved before, missing from this form) are deleted for real,
   // with their photos. One that has been ordered can only be switched off (untick Active).
-  const removed = p.id ? await removedVariants(supabase, p.id, existingIds) : [];
+  const current = p.id ? await savedVariants(supabase, p.id) : [];
+  const removed = current.filter((v) => !existingIds.includes(v.id));
+  // Each design's code under the product SKU; saved designs keep their number.
+  const savedCode = new Map(current.map((v) => [v.id, v.sku]));
+  const codes = designCodes(
+    p.sku,
+    p.variants.map((v) => (v.id && savedCode.get(v.id)) || null),
+  );
   if (removed.length) {
     const ids = removed.map((v) => v.id);
     const [{ data: ordered }, { data: held }] = await Promise.all([
@@ -367,7 +378,7 @@ export async function saveProduct(_prev: SaveState, form: FormData): Promise<Sav
   for (const [i, v] of p.variants.entries()) {
     const variantRow = {
       product_id: productId,
-      sku: v.sku,
+      sku: codes[i],
       title: v.title,
       colour: v.colour,
       colour_hex: v.colourHex,
@@ -392,9 +403,9 @@ export async function saveProduct(_prev: SaveState, form: FormData): Promise<Sav
         ok: false,
         message:
           res.error.code === "23505"
-            ? `SKU ${v.sku} is already used by another product.`
+            ? `SKU ${p.sku} (design code ${codes[i]}) is already used by another product.`
             : res.error.message,
-        errors: res.error.code === "23505" ? { [`variants.${i}.sku`]: "Already in use" } : {},
+        errors: res.error.code === "23505" ? { sku: "Already used by another product" } : {},
       };
     }
     if (!v.id && v.openingStock && defaultLocation) {
@@ -505,17 +516,16 @@ async function mediaContext(mediaId: string) {
   return { supabase, media: data };
 }
 
-/** Saved designs of a product that the submitted editor form no longer contains. */
-async function removedVariants(
+/** A product's designs as currently saved (to find removed ones and keep design codes stable). */
+async function savedVariants(
   supabase: Awaited<ReturnType<typeof createClient>>,
   productId: string,
-  keptIds: string[],
 ) {
   const { data } = await supabase
     .from("product_variants")
     .select("id, sku, title, colour")
     .eq("product_id", productId);
-  return (data ?? []).filter((v) => !keptIds.includes(v.id));
+  return data ?? [];
 }
 
 async function variantBelongsTo(
